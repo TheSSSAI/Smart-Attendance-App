@@ -1,0 +1,829 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-UJ-003
+
+## 1.2 Name
+
+Subordinate Marks Attendance (Online)
+
+## 1.3 Description
+
+A Subordinate user with an active internet connection uses the mobile app to check-in or check-out. The app captures their precise GPS location (including accuracy) and client timestamp, creates an attendance record, and immediately syncs it to Firestore where server-side validation occurs.
+
+## 1.4 Type
+
+🔹 UserJourney
+
+## 1.5 Purpose
+
+To enable the core functionality of recording user attendance with verifiable location and time data.
+
+## 1.6 Complexity
+
+Low
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+Daily
+
+## 1.9 Participants
+
+- REPO-APP-MOBILE-010
+- data-persistence-layer
+- application-services-layer
+
+## 1.10 Key Interactions
+
+- User presses 'Check-In' button in the mobile app.
+- The app requests and captures the device's current GPS coordinates (lat, lon, accuracy) and client timestamp.
+- The app creates a new attendance record in the local Firestore cache with `status: 'pending'`.
+- Firestore SDK automatically syncs the new record to the backend over the active network.
+- An `onWrite` Cloud Function is triggered on the backend for the new document.
+- The function records the `serverTimestamp` and compares it with the `clientTimestamp` to check for clock discrepancies, flagging the record if necessary.
+
+## 1.11 Triggers
+
+- User initiates a check-in or check-out action in the mobile app.
+
+## 1.12 Outcomes
+
+- An attendance record is created or updated in Firestore with a 'pending' status.
+- The record includes client and server timestamps and GPS coordinates.
+- The record is flagged if a significant clock discrepancy is detected.
+
+## 1.13 Business Rules
+
+- Check-in and check-out must occur on the same calendar day (REQ-2.6.1).
+- A client-server timestamp discrepancy of more than 5 minutes must be flagged (REQ-3.2.1).
+
+## 1.14 Error Scenarios
+
+- GPS location permission is denied by the user, blocking the action.
+- Device is unable to get a timely GPS lock.
+- Network connection is lost during the sync process (falls back to offline flow).
+
+## 1.15 Integration Points
+
+- Device GPS Hardware Interface
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-UJ-003
+
+## 2.2 Name
+
+Implementation: Subordinate Marks Attendance (Online)
+
+## 2.3 Description
+
+A comprehensive technical sequence for a Subordinate user performing an online check-in. This diagram details the user interaction, client-side state management, device hardware integration, data persistence via the Firestore SDK, and server-side validation using an event-triggered Cloud Function.
+
+## 2.4 Participants
+
+### 2.4.1 Client Application
+
+#### 2.4.1.1 Repository Id
+
+REPO-APP-MOBILE-010
+
+#### 2.4.1.2 Display Name
+
+Mobile Application (Flutter)
+
+#### 2.4.1.3 Type
+
+🔹 Client Application
+
+#### 2.4.1.4 Technology
+
+Flutter 3.x, Dart, Riverpod 2.x
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4285F4 |
+| Stereotype | Client |
+
+### 2.4.2.0 Database
+
+#### 2.4.2.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.2.2 Display Name
+
+Firestore Database
+
+#### 2.4.2.3 Type
+
+🔹 Database
+
+#### 2.4.2.4 Technology
+
+Firestore SDK (Client), Firebase Admin SDK (Server), Security Rules
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFCA28 |
+| Stereotype | Persistence |
+
+### 2.4.3.0 Serverless Function
+
+#### 2.4.3.1 Repository Id
+
+application-services-layer
+
+#### 2.4.3.2 Display Name
+
+Cloud Functions Backend
+
+#### 2.4.3.3 Type
+
+🔹 Serverless Function
+
+#### 2.4.3.4 Technology
+
+TypeScript, Node.js 18+
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #34A853 |
+| Stereotype | Backend Logic |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.3 Message
+
+User taps 'Check-In' button. UI event handler (`onPressed`) is invoked.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+UI Event
+
+##### 2.5.1.10.2 Method
+
+onPressed()
+
+##### 2.5.1.10.3 Parameters
+
+*No items available*
+
+##### 2.5.1.10.4 Authentication
+
+User is authenticated (Firebase Auth session is active).
+
+##### 2.5.1.10.5 Error Handling
+
+Button is disabled if user is not authenticated.
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+<50ms visual feedback time
+
+### 2.5.2.0.0.0 State Management
+
+#### 2.5.2.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.2.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.2.3.0.0 Message
+
+Update UI state to 'loading'. Display a circular progress indicator to the user.
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 State Management
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+
+
+#### 2.5.2.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.2.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+State Management
+
+##### 2.5.2.10.2.0 Method
+
+Riverpod.Provider.update(state: loading)
+
+##### 2.5.2.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.2.10.4.0 Authentication
+
+N/A
+
+##### 2.5.2.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+Immediate UI update
+
+### 2.5.3.0.0.0 Device Integration
+
+#### 2.5.3.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.3.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.3.3.0.0 Message
+
+Request current device location via 'geolocator' package.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Device Integration
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7.0.0 Return Message
+
+Returns Future<Position> with GPS coordinates (lat, lon) and accuracy.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+Platform Channel (Flutter)
+
+##### 2.5.3.10.2.0 Method
+
+Geolocator.getCurrentPosition()
+
+##### 2.5.3.10.3.0 Parameters
+
+- desiredAccuracy: LocationAccuracy.high
+- timeLimit: Duration(seconds: 10)
+
+##### 2.5.3.10.4.0 Authentication
+
+N/A
+
+##### 2.5.3.10.5.0 Error Handling
+
+Catch `PermissionDeniedException` (show error UI with link to settings), `TimeoutException` (show 'Could not get location' error).
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+GPS lock time < 10 seconds (REQ-NFR-001)
+
+### 2.5.4.0.0.0 Data Write
+
+#### 2.5.4.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.4.3.0.0 Message
+
+Invoke AttendanceRepository.createRecord() with location data and client timestamp.
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 Data Write
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.4.7.0.0 Return Message
+
+Returns Future<void> upon successful write to local cache.
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+Firestore SDK
+
+##### 2.5.4.10.2.0 Method
+
+collection('attendance').add(recordData)
+
+##### 2.5.4.10.3.0 Parameters
+
+- recordData: { userId, tenantId, checkInTime: clientTimestamp, checkInGps: GeoPoint, status: 'pending' }
+
+##### 2.5.4.10.4.0 Authentication
+
+Firestore SDK uses the active Firebase Auth token.
+
+##### 2.5.4.10.5.0 Error Handling
+
+SDK handles initial write to local offline cache. Throws exception if local write fails.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+<100ms for local cache write
+
+### 2.5.5.0.0.0 Data Synchronization
+
+#### 2.5.5.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.5.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.5.3.0.0 Message
+
+Firestore SDK automatically syncs local record to the cloud backend over HTTPS/gRPC.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 Data Synchronization
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7.0.0 Return Message
+
+
+
+#### 2.5.5.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+HTTPS/gRPC
+
+##### 2.5.5.10.2.0 Method
+
+Firestore Backend Sync
+
+##### 2.5.5.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.5.10.4.0 Authentication
+
+Handled by SDK.
+
+##### 2.5.5.10.5.0 Error Handling
+
+If network is unavailable, sync is deferred. This triggers the offline flow (REQ-FUN-006).
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+<1s on stable connection (REQ-NFR-001)
+
+### 2.5.6.0.0.0 Event Trigger
+
+#### 2.5.6.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.6.2.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.6.3.0.0 Message
+
+Firestore `onWrite` trigger invokes 'validateAttendanceRecord' Cloud Function for the new document.
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Event Trigger
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.6.7.0.0 Return Message
+
+
+
+#### 2.5.6.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+Firebase Event Trigger
+
+##### 2.5.6.10.2.0 Method
+
+```javascript
+functions.firestore.document('/tenants/{tenantId}/attendance/{recordId}').onWrite
+```
+
+##### 2.5.6.10.3.0 Parameters
+
+- change: Change<DocumentSnapshot>
+- context: EventContext
+
+##### 2.5.6.10.4.0 Authentication
+
+N/A (trusted server environment)
+
+##### 2.5.6.10.5.0 Error Handling
+
+Function has built-in retries on failure. Persistent failures are sent to DLQ.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+Trigger invocation within seconds of write.
+
+### 2.5.7.0.0.0 Data Update
+
+#### 2.5.7.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.7.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.7.3.0.0 Message
+
+Update attendance document with `serverTimestamp` and `clock_discrepancy` flag if needed.
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 Data Update
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0 Return Message
+
+Returns Promise<WriteResult>
+
+#### 2.5.7.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+Firebase Admin SDK
+
+##### 2.5.7.10.2.0 Method
+
+docRef.update(updateData)
+
+##### 2.5.7.10.3.0 Parameters
+
+- updateData: { serverTimestamp: FieldValue.serverTimestamp(), flags: arrayUnion('clock_discrepancy') }
+
+##### 2.5.7.10.4.0 Authentication
+
+Admin SDK uses service account credentials.
+
+##### 2.5.7.10.5.0 Error Handling
+
+Function logs errors to Google Cloud Logging. Retries are handled by the platform.
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Latency
+
+< 500ms p95 for entire function execution (REQ-NFR-001)
+
+### 2.5.8.0.0.0 Data Push
+
+#### 2.5.8.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.8.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.8.3.0.0 Message
+
+Firestore pushes real-time update of the modified document to subscribed clients.
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 Data Push
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7.0.0 Return Message
+
+
+
+#### 2.5.8.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+##### 2.5.8.10.1.0 Protocol
+
+WebSocket/gRPC
+
+##### 2.5.8.10.2.0 Method
+
+Firestore Snapshot Listener
+
+##### 2.5.8.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.8.10.4.0 Authentication
+
+Handled by SDK.
+
+##### 2.5.8.10.5.0 Error Handling
+
+SDK manages connection state.
+
+##### 2.5.8.10.6.0 Performance
+
+###### 2.5.8.10.6.1 Latency
+
+Sub-second delivery
+
+### 2.5.9.0.0.0 State Management
+
+#### 2.5.9.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.9.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.9.3.0.0 Message
+
+Riverpod stream provider receives the updated record. Update UI state to 'success', hide indicator, and show confirmation message.
+
+#### 2.5.9.4.0.0 Sequence Number
+
+9
+
+#### 2.5.9.5.0.0 Type
+
+🔹 State Management
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0 Return Message
+
+
+
+#### 2.5.9.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0 Technical Details
+
+##### 2.5.9.10.1.0 Protocol
+
+State Management
+
+##### 2.5.9.10.2.0 Method
+
+Riverpod.StreamProvider.onData()
+
+##### 2.5.9.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.9.10.4.0 Authentication
+
+N/A
+
+##### 2.5.9.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.9.10.6.0 Performance
+
+###### 2.5.9.10.6.1 Latency
+
+Immediate UI update
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+Hardware Interface: Step 3 involves a critical interaction with the device's GPS hardware. The application must gracefully handle cases where permissions are denied or a GPS lock cannot be obtained in a timely manner, presenting a clear error message to the user.
+
+#### 2.6.1.2.0.0 Position
+
+top-right
+
+#### 2.6.1.3.0.0 Participant Id
+
+REPO-APP-MOBILE-010
+
+#### 2.6.1.4.0.0 Sequence Number
+
+3
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Server-Side Validation: The Cloud Function in Step 6-7 is a critical security and data integrity checkpoint. It operates in a trusted environment, allowing it to write fields like `serverTimestamp` and `flags` that are blocked from client-side writes by Firestore Security Rules.
+
+#### 2.6.2.2.0.0 Position
+
+bottom-right
+
+#### 2.6.2.3.0.0 Participant Id
+
+application-services-layer
+
+#### 2.6.2.4.0.0 Sequence Number
+
+7
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Firestore Security Rules must enforce that a user ... |
+| Performance Targets | Total user-perceived latency from 'Check-In' tap t... |
+| Error Handling Strategy | Client-side: Clearly distinguish between recoverab... |
+| Testing Considerations | Use the Firebase Local Emulator Suite to test the ... |
+| Monitoring Requirements | Use Firebase Performance Monitoring to create a cu... |
+| Deployment Considerations | Ensure Firestore composite indexes required for qu... |
+

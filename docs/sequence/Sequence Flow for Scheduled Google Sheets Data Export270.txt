@@ -1,0 +1,721 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-IF-006
+
+## 1.2 Name
+
+Scheduled Google Sheets Data Export
+
+## 1.3 Description
+
+A scheduled, automated Cloud Function queries for newly approved attendance records and appends them as new rows to a Google Sheet previously configured by a tenant Admin via an OAuth 2.0 flow.
+
+## 1.4 Type
+
+🔹 IntegrationFlow
+
+## 1.5 Purpose
+
+To provide organizations with an automated way to export their attendance data for external reporting, payroll preparation, or archival.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+Daily
+
+## 1.9 Participants
+
+- application-services-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- A scheduled Cloud Function is triggered by Google Cloud Scheduler.
+- The function queries Firestore for tenants with an active Google Sheets integration.
+- For each tenant, it retrieves the securely stored Google Sheets refresh token and sheet ID.
+- It queries the `attendance` collection for records with `status: 'approved'` that have not yet been exported.
+- The function uses the refresh token to obtain a short-lived access token from Google's OAuth 2.0 service.
+- It authenticates with the Google Sheets API using the access token.
+- It transforms the Firestore documents into the required row format and appends the new rows to the designated sheet.
+- It performs a batched write to update the exported records in Firestore with an `isExported: true` flag.
+
+## 1.11 Triggers
+
+- A time-based trigger from Google Cloud Scheduler.
+
+## 1.12 Outcomes
+
+- Approved attendance data is programmatically added to the customer's Google Sheet.
+- Data is exported in a consistent, predefined format.
+- The process runs automatically without user intervention.
+
+## 1.13 Business Rules
+
+- Only records with `status: 'approved'` are exported (REQ-3.5.2).
+- The export function must handle failures gracefully and queue records for the next successful run (REQ-3.5.3).
+
+## 1.14 Error Scenarios
+
+- The Admin has revoked the application's access in their Google account, invalidating the refresh token.
+- The target Google Sheet has been deleted or renamed.
+- The schema of the target Google Sheet has been altered, causing a validation failure.
+- The Google Sheets API is temporarily unavailable.
+
+## 1.15 Integration Points
+
+- Google Sheets API
+- Google Cloud Scheduler
+- Google OAuth 2.0 API
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-IF-006
+
+## 2.2 Name
+
+Scheduled Google Sheets Data Export Integration Flow
+
+## 2.3 Description
+
+A comprehensive technical sequence for the daily automated batch export of approved attendance data. A scheduled Cloud Function orchestrates the process, fetching tenant integration configurations, securely handling authentication with Google's OAuth 2.0 API, querying and transforming data from Firestore, and appending it to the designated Google Sheet. The design includes robust error handling for API failures and token revocations, and ensures data consistency by marking records as exported upon success.
+
+## 2.4 Participants
+
+### 2.4.1 Scheduler
+
+#### 2.4.1.1 Repository Id
+
+gcp-cloud-scheduler
+
+#### 2.4.1.2 Display Name
+
+Google Cloud Scheduler
+
+#### 2.4.1.3 Type
+
+🔹 Scheduler
+
+#### 2.4.1.4 Technology
+
+Google Cloud Platform
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #D4E1F5 |
+| Stereotype | GCP Service |
+
+### 2.4.2.0 Cloud Function (Scheduled)
+
+#### 2.4.2.1 Repository Id
+
+application-services-layer
+
+#### 2.4.2.2 Display Name
+
+Application Services
+
+#### 2.4.2.3 Type
+
+🔹 Cloud Function (Scheduled)
+
+#### 2.4.2.4 Technology
+
+TypeScript, Node.js
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #C3DDFD |
+| Stereotype | Firebase Cloud Function |
+
+### 2.4.3.0 Database
+
+#### 2.4.3.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.3.2 Display Name
+
+Data & Persistence Layer
+
+#### 2.4.3.3 Type
+
+🔹 Database
+
+#### 2.4.3.4 Technology
+
+Firestore
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFDDC1 |
+| Stereotype | Firestore |
+
+### 2.4.4.0 Security Service
+
+#### 2.4.4.1 Repository Id
+
+gcp-secret-manager
+
+#### 2.4.4.2 Display Name
+
+Google Secret Manager
+
+#### 2.4.4.3 Type
+
+🔹 Security Service
+
+#### 2.4.4.4 Technology
+
+Google Cloud Platform
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #D4E1F5 |
+| Stereotype | GCP Service |
+
+### 2.4.5.0 External API
+
+#### 2.4.5.1 Repository Id
+
+google-oauth-api
+
+#### 2.4.5.2 Display Name
+
+Google OAuth 2.0 API
+
+#### 2.4.5.3 Type
+
+🔹 External API
+
+#### 2.4.5.4 Technology
+
+HTTPS/REST
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | boundary |
+| Color | #E6E6FA |
+| Stereotype | External API |
+
+### 2.4.6.0 External API
+
+#### 2.4.6.1 Repository Id
+
+google-sheets-api
+
+#### 2.4.6.2 Display Name
+
+Google Sheets API
+
+#### 2.4.6.3 Type
+
+🔹 External API
+
+#### 2.4.6.4 Technology
+
+HTTPS/REST
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | boundary |
+| Color | #E6E6FA |
+| Stereotype | External API |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Trigger
+
+#### 2.5.1.1 Source Id
+
+gcp-cloud-scheduler
+
+#### 2.5.1.2 Target Id
+
+application-services-layer
+
+#### 2.5.1.3 Message
+
+Triggers 'exportAttendanceToSheets' function via Pub/Sub message at configured interval (e.g., daily at 02:00 UTC).
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Trigger
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | GCP Pub/Sub |
+| Method | onMessagePublished |
+| Parameters | Payload contains timestamp and timezone info. |
+| Authentication | IAM-based invocation permission. |
+| Error Handling | Scheduler will retry according to its policy if th... |
+| Performance | N/A |
+
+### 2.5.2.0 Query
+
+#### 2.5.2.1 Source Id
+
+application-services-layer
+
+#### 2.5.2.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.2.3 Message
+
+Queries `/linkedSheets` collection for all tenants with an active Google Sheets integration.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Query
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+Returns a list of documents, each containing `tenantId`, encrypted `refreshToken`, and `sheetId`.
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | db.collectionGroup('linkedSheets').where('status',... |
+| Parameters | Query filters for active integrations. |
+| Authentication | Function's service account IAM role. |
+| Error Handling | Logs error and terminates function if query fails. |
+| Performance | Requires a collection group index on `status` for ... |
+
+### 2.5.3.0 Loop
+
+#### 2.5.3.1 Source Id
+
+application-services-layer
+
+#### 2.5.3.2 Target Id
+
+application-services-layer
+
+#### 2.5.3.3 Message
+
+LOOP: For each active tenant integration
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Loop
+
+#### 2.5.3.6 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7 Return Message
+
+
+
+#### 2.5.3.8 Has Return
+
+❌ No
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | N/A |
+| Method | N/A |
+| Parameters | Loop iterates over the result set from step 2. |
+| Authentication | N/A |
+| Error Handling | An error for one tenant does not stop processing f... |
+| Performance | Processing is sequential per tenant to manage API ... |
+
+### 2.5.4.0 Request
+
+#### 2.5.4.1 Source Id
+
+application-services-layer
+
+#### 2.5.4.2 Target Id
+
+gcp-secret-manager
+
+#### 2.5.4.3 Message
+
+Fetches Google OAuth Client ID and Secret needed for token exchange.
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 Request
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+Returns the secret payload.
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+❌ No
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | GCP SDK |
+| Method | secretManagerClient.accessSecretVersion({ name: '.... |
+| Parameters | The resource name of the secret version. |
+| Authentication | Function's service account has Secret Manager Secr... |
+| Error Handling | Logs error and skips tenant if secrets cannot be f... |
+| Performance | Low latency, typically <50ms. |
+
+### 2.5.5.0 Request-Reply
+
+#### 2.5.5.1 Source Id
+
+application-services-layer
+
+#### 2.5.5.2 Target Id
+
+google-oauth-api
+
+#### 2.5.5.3 Message
+
+POST to exchange the tenant's stored refresh token for a new access token.
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 Request-Reply
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Return Message
+
+200 OK with `{ access_token, expires_in, scope, token_type }` or a 400/401 with an error code.
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | POST /token |
+| Parameters | Body: `{ client_id, client_secret, refresh_token, ... |
+| Authentication | N/A (Client ID/Secret provides app identity) |
+| Error Handling | If error is `invalid_grant` (revoked token), proce... |
+| Performance | External dependency, target <500ms. |
+
+#### 2.5.5.11 Nested Interactions
+
+- {'sourceId': 'application-services-layer', 'targetId': 'data-persistence-layer', 'message': "ALT [On OAuth Failure]: Sets the integration status to 'error' and logs the reason (e.g., 'Token Revoked').", 'sequenceNumber': '5.1', 'type': 'Update', 'isSynchronous': False, 'returnMessage': '', 'hasReturn': False, 'isActivation': False, 'technicalDetails': {'protocol': 'Firestore SDK', 'method': "db.doc('.../linkedSheets/{adminUserId}').update({ status: 'error', errorDetails: '...' })", 'parameters': 'New status and error message.', 'authentication': "Function's service account IAM role.", 'errorHandling': 'Logs failure to update Firestore. The process for this tenant is aborted.', 'performance': 'N/A'}}
+
+### 2.5.6.0 Query
+
+#### 2.5.6.1 Source Id
+
+application-services-layer
+
+#### 2.5.6.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.6.3 Message
+
+Queries for a batch of approved, non-exported attendance records for the tenant.
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 Query
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Return Message
+
+Returns a collection of up to 500 attendance documents.
+
+#### 2.5.6.8 Has Return
+
+✅ Yes
+
+#### 2.5.6.9 Is Activation
+
+❌ No
+
+#### 2.5.6.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | db.collection('attendance').where('tenantId', '=='... |
+| Parameters | Filters by tenantId, status, and export flag. Limi... |
+| Authentication | Firestore Security Rules are bypassed by service a... |
+| Error Handling | Logs error and skips tenant if query fails. |
+| Performance | Requires a composite index on (`tenantId`, `status... |
+
+### 2.5.7.0 Request-Reply
+
+#### 2.5.7.1 Source Id
+
+application-services-layer
+
+#### 2.5.7.2 Target Id
+
+google-sheets-api
+
+#### 2.5.7.3 Message
+
+Appends transformed attendance data to the configured Google Sheet.
+
+#### 2.5.7.4 Sequence Number
+
+7
+
+#### 2.5.7.5 Type
+
+🔹 Request-Reply
+
+#### 2.5.7.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7 Return Message
+
+200 OK on success, or an error object (e.g., 404 if sheet not found).
+
+#### 2.5.7.8 Has Return
+
+✅ Yes
+
+#### 2.5.7.9 Is Activation
+
+✅ Yes
+
+#### 2.5.7.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | POST /v4/spreadsheets/{spreadsheetId}/values/{rang... |
+| Parameters | Body: `{ values: [[RecordID, UserName, ...], ...] ... |
+| Authentication | `Authorization: Bearer {access_token}` header. |
+| Error Handling | Retry on 5xx errors. On permanent 4xx errors (e.g.... |
+| Performance | Latency depends on data size and API health. |
+
+### 2.5.8.0 Update
+
+#### 2.5.8.1 Source Id
+
+application-services-layer
+
+#### 2.5.8.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.8.3 Message
+
+Batched write to update all successfully exported records with `isExported: true`.
+
+#### 2.5.8.4 Sequence Number
+
+8
+
+#### 2.5.8.5 Type
+
+🔹 Update
+
+#### 2.5.8.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7 Return Message
+
+Confirmation of batch commit.
+
+#### 2.5.8.8 Has Return
+
+✅ Yes
+
+#### 2.5.8.9 Is Activation
+
+❌ No
+
+#### 2.5.8.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | batch.update(docRef, { isExported: true }); batch.... |
+| Parameters | A batch containing update operations for up to 500... |
+| Authentication | Function's service account IAM role. |
+| Error Handling | Critical failure. If commit fails, data may be exp... |
+| Performance | Efficient for bulk updates. |
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+Data Transformation: The function must transform Firestore documents (nested JSON with Timestamps/GeoPoints) into a flat array of strings/numbers matching the predefined Google Sheet column order: [Record ID, User Name, User Email, Check-In Time, Check-In Lat, Check-In Lng, ...].
+
+#### 2.6.1.2 Position
+
+top-right
+
+#### 2.6.1.3 Participant Id
+
+application-services-layer
+
+#### 2.6.1.4 Sequence Number
+
+7
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+Idempotency: The `isExported` flag is crucial. If the function fails after exporting but before updating Firestore (step 8), on the next run it will re-process the same records. The Google Sheet append operation is not idempotent, so duplicates could occur. A more robust solution might involve writing a unique job ID to a log and checking it, but the current design accepts this risk for simplicity.
+
+#### 2.6.2.2 Position
+
+bottom-right
+
+#### 2.6.2.3 Participant Id
+
+application-services-layer
+
+#### 2.6.2.4 Sequence Number
+
+8
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The tenant's Google OAuth refresh token must be en... |
+| Performance Targets | The entire function execution for all tenants shou... |
+| Error Handling Strategy | A Circuit Breaker pattern should be implemented fo... |
+| Testing Considerations | Integration tests must use mock services for Googl... |
+| Monitoring Requirements | The Cloud Function's execution count, duration, an... |
+| Deployment Considerations | The Cloud Function, its associated Pub/Sub topic, ... |
+

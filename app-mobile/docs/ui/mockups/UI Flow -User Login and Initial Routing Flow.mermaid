@@ -1,0 +1,54 @@
+flowchart TD
+    subgraph "Authentication Flow"
+        A[Start: User on Login Screen] --> B{Choose Login Method};
+        B -->|Email & Password| C[Enter Email & Password];
+        B -->|Phone OTP| D[Enter Phone Number];
+
+        C --> E{Submit Credentials};
+        E --> F[Auth Service Validates];
+        F --> G{Credentials Valid?};
+        G -- User-Facing Error --> H["'Invalid email or password'"];
+        H --> C;
+
+        D --> I[Auth Service Sends OTP];
+        I --> J[Enter Received OTP];
+        J --> K{Submit OTP};
+        K --> L[Auth Service Validates OTP];
+        L --> M{OTP Valid?};
+        M -- User-Facing Error --> N["'Invalid or expired code'"];
+        N --> J;
+
+        G -->|Yes| O[Login Success: Get Auth Token];
+        M -->|Yes| O;
+    end
+
+    subgraph "Authorization & Routing"
+        O --> P[Read User Status & Role from Token/DB];
+        P --> Q{User Status?};
+        
+        Q -->|'Invited'| R[Show 'Accept Terms & Policy' Screen];
+        R --> S{User Accepts?};
+        S -->|No| T[Logout / Stay on screen];
+        S -->|Yes| U[Update Status to 'Active'];
+        U --> P;
+
+        Q -->|'Deactivated'| V[Show 'Account Deactivated' Error];
+        V --> W[Logout];
+        W --> A;
+
+        Q -->|'Active'| X{User Role?};
+        X -->|'Admin'| Y["Show 'Use Web App' Message (Mobile)"];
+        X -->|'Supervisor'| Z[Redirect to Supervisor Dashboard];
+        X -->|'Subordinate'| AA[Redirect to Subordinate Dashboard];
+    end
+
+    %% Styling
+    classDef errorNode fill:#ffebee,stroke:#d32f2f,color:#333
+    classDef successNode fill:#e8f5e9,stroke:#4caf50,color:#333
+    classDef decisionNode fill:#fff9c4,stroke:#fbc02d,color:#333
+    classDef processNode fill:#e3f2fd,stroke:#2196f3,color:#333
+    
+    class H,N,V errorNode;
+    class O,U,Z,AA successNode;
+    class B,G,M,Q,S,X decisionNode;
+    class C,D,E,F,I,J,K,L,P,R,Y processNode;

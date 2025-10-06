@@ -1,0 +1,1054 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-AF-002
+
+## 1.2 Name
+
+User Login and Role-Based Access
+
+## 1.3 Description
+
+A registered user provides credentials to log in. The system authenticates them via Firebase Authentication, which returns a JWT containing their role and tenantId as custom claims. This token is then used for all subsequent requests, where Firestore Security Rules inspect it to enforce strict RBAC and multi-tenancy policies on every data operation.
+
+## 1.4 Type
+
+🔹 AuthenticationFlow
+
+## 1.5 Purpose
+
+To securely authenticate users and enforce Role-Based Access Control (RBAC) and tenant isolation for all system interactions.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- REPO-APP-MOBILE-010
+- presentation-layer
+- data-persistence-layer
+- security-layer
+
+## 1.10 Key Interactions
+
+- User submits credentials (email/password) via the mobile or web client.
+- Firebase Authentication validates the credentials against its user store.
+- Upon success, Firebase Authentication mints and signs a JWT containing the user's UID and their pre-configured custom claims (tenantId, role).
+- The JWT is returned to the client application.
+- The client SDK automatically includes this JWT in the header of all subsequent requests to Firebase services (Firestore, Cloud Functions).
+- Firestore Security Rules inspect the `request.auth.token` object on every read/write operation to enforce data access policies.
+
+## 1.11 Triggers
+
+- User attempts to log in to the application.
+
+## 1.12 Outcomes
+
+- User is successfully authenticated and holds a valid session token.
+- User can only access data and features permitted for their role and tenant.
+- Access is denied for invalid credentials or deactivated users.
+
+## 1.13 Business Rules
+
+- An account is temporarily locked for 15 minutes after 5 failed login attempts (REQ-3.1.5).
+- Users with `deactivated` status are denied login (REQ-3.1.3).
+- Firestore Security Rules are the ultimate authority for data access (REQ-NFR-003).
+
+## 1.14 Error Scenarios
+
+- Invalid credentials provided.
+- User account is deactivated or has not completed registration.
+- Firebase Authentication service is unavailable.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-AF-002
+
+## 2.2 Name
+
+Implementation: User Login and RBAC Enforcement
+
+## 2.3 Description
+
+This sequence details the complete, end-to-end process for a registered user authenticating with the system and the subsequent enforcement of Role-Based Access Control (RBAC) and multi-tenancy. The flow begins with the user submitting credentials via the client, which are validated by Firebase Authentication. Upon success, a JSON Web Token (JWT) is minted containing the user's UID, `tenantId`, and `role` as custom claims. This JWT is then automatically included by the client SDK in all subsequent API requests to backend services like Firestore. The Firestore Security Rules engine intercepts every data access request, inspects the JWT claims, and enforces the defined authorization policies, ensuring strict data isolation and role-based permissions.
+
+## 2.4 Participants
+
+### 2.4.1 Actor
+
+#### 2.4.1.1 Repository Id
+
+USER_ACTOR
+
+#### 2.4.1.2 Display Name
+
+User
+
+#### 2.4.1.3 Type
+
+🔹 Actor
+
+#### 2.4.1.4 Technology
+
+Human-Computer Interaction
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #E6E6E6 |
+| Stereotype | Human |
+
+### 2.4.2.0 Client Application
+
+#### 2.4.2.1 Repository Id
+
+REPO-APP-MOBILE-010
+
+#### 2.4.2.2 Display Name
+
+Mobile Application (Flutter)
+
+#### 2.4.2.3 Type
+
+🔹 Client Application
+
+#### 2.4.2.4 Technology
+
+Flutter 3.x, Firebase SDK
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #ADD8E6 |
+| Stereotype | Client |
+
+### 2.4.3.0 Identity Provider
+
+#### 2.4.3.1 Repository Id
+
+FIREBASE_AUTH_SERVICE
+
+#### 2.4.3.2 Display Name
+
+Firebase Authentication
+
+#### 2.4.3.3 Type
+
+🔹 Identity Provider
+
+#### 2.4.3.4 Technology
+
+Firebase Auth Service
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FFDDC1 |
+| Stereotype | IdP |
+
+### 2.4.4.0 Database Service
+
+#### 2.4.4.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.4.2 Display Name
+
+Firestore Database
+
+#### 2.4.4.3 Type
+
+🔹 Database Service
+
+#### 2.4.4.4 Technology
+
+Google Firestore
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #F0E68C |
+| Stereotype | Database |
+
+### 2.4.5.0 Authorization Engine
+
+#### 2.4.5.1 Repository Id
+
+security-layer
+
+#### 2.4.5.2 Display Name
+
+Firestore Security Rules
+
+#### 2.4.5.3 Type
+
+🔹 Authorization Engine
+
+#### 2.4.5.4 Technology
+
+Firestore Security Rules Language
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | boundary |
+| Color | #FFB6C1 |
+| Stereotype | Security |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+USER_ACTOR
+
+#### 2.5.1.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.3 Message
+
+Enters email and password on login screen.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+UI Event
+
+##### 2.5.1.10.2 Method
+
+onTap/onSubmit
+
+##### 2.5.1.10.3 Parameters
+
+- email: String
+- password: String
+
+##### 2.5.1.10.4 Authentication
+
+None
+
+##### 2.5.1.10.5 Error Handling
+
+Client-side validation for format and non-empty fields.
+
+### 2.5.2.0.0 API Call
+
+#### 2.5.2.1.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.2.2.0 Target Id
+
+FIREBASE_AUTH_SERVICE
+
+#### 2.5.2.3.0 Message
+
+Calls `signInWithEmailAndPassword` with user credentials.
+
+#### 2.5.2.4.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0 Type
+
+🔹 API Call
+
+#### 2.5.2.6.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0 Return Message
+
+Returns `UserCredential` object with JWT or throws `FirebaseAuthException`.
+
+#### 2.5.2.8.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10.0 Technical Details
+
+##### 2.5.2.10.1 Protocol
+
+HTTPS/TLS
+
+##### 2.5.2.10.2 Method
+
+Firebase SDK: FirebaseAuth.instance.signInWithEmailAndPassword()
+
+##### 2.5.2.10.3 Parameters
+
+- email: 'user@example.com'
+- password: 'user_password'
+
+##### 2.5.2.10.4 Authentication
+
+None
+
+##### 2.5.2.10.5 Error Handling
+
+Catch `FirebaseAuthException` with specific error codes.
+
+##### 2.5.2.10.6 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+< 1000ms
+
+#### 2.5.2.11.0.0 Nested Interactions
+
+##### 2.5.2.11.1.0 Internal Check
+
+###### 2.5.2.11.1.1 Source Id
+
+FIREBASE_AUTH_SERVICE
+
+###### 2.5.2.11.1.2 Target Id
+
+FIREBASE_AUTH_SERVICE
+
+###### 2.5.2.11.1.3 Message
+
+Checks failed login attempt counter for the user.
+
+###### 2.5.2.11.1.4 Sequence Number
+
+2.1
+
+###### 2.5.2.11.1.5 Type
+
+🔹 Internal Check
+
+###### 2.5.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.1.7 Return Message
+
+Proceeds if counter < 5; throws error if >= 5.
+
+###### 2.5.2.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.2.11.1.10 Technical Details
+
+####### 2.5.2.11.1.10.1 Protocol
+
+Internal RPC
+
+####### 2.5.2.11.1.10.2 Method
+
+CheckAccountLockoutPolicy
+
+####### 2.5.2.11.1.10.3 Parameters
+
+- email
+
+####### 2.5.2.11.1.10.4 Authentication
+
+N/A
+
+####### 2.5.2.11.1.10.5 Error Handling
+
+If counter >= 5, throw `auth/too-many-requests`.
+
+##### 2.5.2.11.2.0.0 Internal Check
+
+###### 2.5.2.11.2.1.0 Source Id
+
+FIREBASE_AUTH_SERVICE
+
+###### 2.5.2.11.2.2.0 Target Id
+
+FIREBASE_AUTH_SERVICE
+
+###### 2.5.2.11.2.3.0 Message
+
+Validates credentials against stored hash and checks user status.
+
+###### 2.5.2.11.2.4.0 Sequence Number
+
+2.2
+
+###### 2.5.2.11.2.5.0 Type
+
+🔹 Internal Check
+
+###### 2.5.2.11.2.6.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.2.7.0 Return Message
+
+Success, failure, or disabled status.
+
+###### 2.5.2.11.2.8.0 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.2.9.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.2.10.0 Technical Details
+
+####### 2.5.2.11.2.10.1 Protocol
+
+Internal RPC
+
+####### 2.5.2.11.2.10.2 Method
+
+VerifyCredentialsAndStatus
+
+####### 2.5.2.11.2.10.3 Parameters
+
+- email
+- password
+
+####### 2.5.2.11.2.10.4 Authentication
+
+N/A
+
+####### 2.5.2.11.2.10.5 Error Handling
+
+If password mismatch, throw `auth/invalid-credential`. If user record is disabled, throw `auth/user-disabled`. On failure, increment failed login counter.
+
+##### 2.5.2.11.3.0.0 Token Generation
+
+###### 2.5.2.11.3.1.0 Source Id
+
+FIREBASE_AUTH_SERVICE
+
+###### 2.5.2.11.3.2.0 Target Id
+
+FIREBASE_AUTH_SERVICE
+
+###### 2.5.2.11.3.3.0 Message
+
+Mints a signed JWT (ID Token) with custom claims.
+
+###### 2.5.2.11.3.4.0 Sequence Number
+
+2.3
+
+###### 2.5.2.11.3.5.0 Type
+
+🔹 Token Generation
+
+###### 2.5.2.11.3.6.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.3.7.0 Return Message
+
+Signed JWT string.
+
+###### 2.5.2.11.3.8.0 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.3.9.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.3.10.0 Technical Details
+
+####### 2.5.2.11.3.10.1 Protocol
+
+Internal Process
+
+####### 2.5.2.11.3.10.2 Method
+
+MintCustomToken
+
+####### 2.5.2.11.3.10.3 Parameters
+
+- uid: String
+- claims: { tenantId: '...', role: '...' }
+
+####### 2.5.2.11.3.10.4 Authentication
+
+N/A
+
+####### 2.5.2.11.3.10.5 Error Handling
+
+Internal service errors are logged.
+
+### 2.5.3.0.0.0.0 API Response
+
+#### 2.5.3.1.0.0.0 Source Id
+
+FIREBASE_AUTH_SERVICE
+
+#### 2.5.3.2.0.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.3.3.0.0.0 Message
+
+Returns `UserCredential` containing the JWT.
+
+#### 2.5.3.4.0.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0.0 Type
+
+🔹 API Response
+
+#### 2.5.3.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0.0 Technical Details
+
+##### 2.5.3.10.1.0.0 Protocol
+
+HTTPS/TLS
+
+##### 2.5.3.10.2.0.0 Method
+
+Response
+
+##### 2.5.3.10.3.0.0 Parameters
+
+- UserCredential object
+
+##### 2.5.3.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.3.10.5.0.0 Error Handling
+
+N/A
+
+### 2.5.4.0.0.0.0 Internal State Management
+
+#### 2.5.4.1.0.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.2.0.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.3.0.0.0 Message
+
+Firebase SDK securely caches the JWT for the session and handles automatic refresh.
+
+#### 2.5.4.4.0.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0.0 Type
+
+🔹 Internal State Management
+
+#### 2.5.4.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0.0 Technical Details
+
+##### 2.5.4.10.1.0.0 Protocol
+
+Internal Caching
+
+##### 2.5.4.10.2.0.0 Method
+
+SDK Session Management
+
+##### 2.5.4.10.3.0.0 Parameters
+
+- JWT
+
+##### 2.5.4.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.4.10.5.0.0 Error Handling
+
+Handles token refresh failures transparently or signs user out.
+
+### 2.5.5.0.0.0.0 UI Update
+
+#### 2.5.5.1.0.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.5.2.0.0.0 Target Id
+
+USER_ACTOR
+
+#### 2.5.5.3.0.0.0 Message
+
+Navigates to the user's role-specific dashboard.
+
+#### 2.5.5.4.0.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0.0 Type
+
+🔹 UI Update
+
+#### 2.5.5.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0.0 Return Message
+
+
+
+#### 2.5.5.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.5.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0.0 Technical Details
+
+##### 2.5.5.10.1.0.0 Protocol
+
+UI Navigation
+
+##### 2.5.5.10.2.0.0 Method
+
+Navigator.pushReplacement()
+
+##### 2.5.5.10.3.0.0 Parameters
+
+- DashboardScreen
+
+##### 2.5.5.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.5.10.5.0.0 Error Handling
+
+N/A
+
+### 2.5.6.0.0.0.0 Data Request
+
+#### 2.5.6.1.0.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.6.2.0.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.6.3.0.0.0 Message
+
+Requests data (e.g., user's own attendance records). JWT is automatically attached in the header.
+
+#### 2.5.6.4.0.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0.0 Type
+
+🔹 Data Request
+
+#### 2.5.6.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0.0 Return Message
+
+Returns requested documents or a 'permission-denied' error.
+
+#### 2.5.6.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.6.10.0.0.0 Technical Details
+
+##### 2.5.6.10.1.0.0 Protocol
+
+HTTPS/TLS (gRPC-web)
+
+##### 2.5.6.10.2.0.0 Method
+
+Firestore SDK: collection('attendance').where('userId', '==', uid).get()
+
+##### 2.5.6.10.3.0.0 Parameters
+
+- collection: 'attendance'
+- query: 'userId == ...'
+
+##### 2.5.6.10.4.0.0 Authentication
+
+Bearer Token (Firebase ID Token)
+
+##### 2.5.6.10.5.0.0 Error Handling
+
+Catch `FirebaseException` with code 'permission-denied'.
+
+##### 2.5.6.10.6.0.0 Performance
+
+###### 2.5.6.10.6.1.0 Latency
+
+< 500ms
+
+### 2.5.7.0.0.0.0 Authorization Check
+
+#### 2.5.7.1.0.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.7.2.0.0.0 Target Id
+
+security-layer
+
+#### 2.5.7.3.0.0.0 Message
+
+Forwards request and authenticated user context for authorization.
+
+#### 2.5.7.4.0.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0.0 Type
+
+🔹 Authorization Check
+
+#### 2.5.7.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0.0 Return Message
+
+Returns 'allow' or 'deny'.
+
+#### 2.5.7.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.7.10.0.0.0 Technical Details
+
+##### 2.5.7.10.1.0.0 Protocol
+
+Internal RPC
+
+##### 2.5.7.10.2.0.0 Method
+
+EvaluateSecurityRules
+
+##### 2.5.7.10.3.0.0 Parameters
+
+- request.path: '/tenants/{tenantId}/attendance/{docId}'
+- request.method: 'get'
+- request.auth: { uid: '...', token: { tenantId: '...', role: '...' } }
+
+##### 2.5.7.10.4.0.0 Authentication
+
+Internal System Trust
+
+##### 2.5.7.10.5.0.0 Error Handling
+
+Rule evaluation errors result in 'deny'.
+
+#### 2.5.7.11.0.0.0 Nested Interactions
+
+- {'sourceId': 'security-layer', 'targetId': 'security-layer', 'message': 'Evaluates rules against request context.', 'sequenceNumber': '7.1', 'type': 'Internal Logic', 'isSynchronous': True, 'returnMessage': 'Boolean result (true/false).', 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'Rule Engine', 'method': 'Match Path & Evaluate Conditions', 'parameters': ['match /tenants/{tenantId}/attendance/{docId} {', '  allow read: if request.auth.token.tenantId == tenantId && request.auth.uid == resource.data.userId;', '}'], 'authentication': 'N/A', 'errorHandling': 'Syntax or runtime errors in rules cause request to fail closed (deny).'}}
+
+### 2.5.8.0.0.0.0 Authorization Response
+
+#### 2.5.8.1.0.0.0 Source Id
+
+security-layer
+
+#### 2.5.8.2.0.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.8.3.0.0.0 Message
+
+Returns authorization decision: 'allow'.
+
+#### 2.5.8.4.0.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0.0 Type
+
+🔹 Authorization Response
+
+#### 2.5.8.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0.0 Return Message
+
+
+
+#### 2.5.8.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0.0 Technical Details
+
+##### 2.5.8.10.1.0.0 Protocol
+
+Internal RPC
+
+##### 2.5.8.10.2.0.0 Method
+
+Response
+
+##### 2.5.8.10.3.0.0 Parameters
+
+- allow: true
+
+##### 2.5.8.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.8.10.5.0.0 Error Handling
+
+N/A
+
+### 2.5.9.0.0.0.0 Data Response
+
+#### 2.5.9.1.0.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.9.2.0.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.9.3.0.0.0 Message
+
+Returns the requested Firestore documents.
+
+#### 2.5.9.4.0.0.0 Sequence Number
+
+9
+
+#### 2.5.9.5.0.0.0 Type
+
+🔹 Data Response
+
+#### 2.5.9.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0.0 Return Message
+
+
+
+#### 2.5.9.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0.0 Technical Details
+
+##### 2.5.9.10.1.0.0 Protocol
+
+HTTPS/TLS (gRPC-web)
+
+##### 2.5.9.10.2.0.0 Method
+
+Response
+
+##### 2.5.9.10.3.0.0 Parameters
+
+- QuerySnapshot
+
+##### 2.5.9.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.9.10.5.0.0 Error Handling
+
+N/A
+
+## 2.6.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0 Content
+
+
+
+```
+JWT Custom Claims Structure:
+{
+  "tenantId": "org_abc123",
+  "role": "Supervisor",
+  // standard claims...
+}
+```
+
+#### 2.6.1.2.0.0.0 Position
+
+TopRight
+
+#### 2.6.1.3.0.0.0 Participant Id
+
+FIREBASE_AUTH_SERVICE
+
+#### 2.6.1.4.0.0.0 Sequence Number
+
+2.3
+
+### 2.6.2.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0 Content
+
+
+
+```
+Example Firestore Rule for Tenant Isolation & RBAC:
+`match /tenants/{tenantId}/{document=**} {`
+`  allow read, write: if request.auth.token.tenantId == tenantId;`
+`}`
+```
+
+#### 2.6.2.2.0.0.0 Position
+
+BottomRight
+
+#### 2.6.2.3.0.0.0 Participant Id
+
+security-layer
+
+#### 2.6.2.4.0.0.0 Sequence Number
+
+7.1
+
+## 2.7.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The client application must never attempt to decod... |
+| Performance Targets | P95 latency for the `signInWithEmailAndPassword` o... |
+| Error Handling Strategy | The client must gracefully handle specific `Fireba... |
+| Testing Considerations | Use the Firebase Local Emulator Suite to test auth... |
+| Monitoring Requirements | Monitor Firebase Authentication for significant sp... |
+| Deployment Considerations | Firestore Security Rules are a critical piece of i... |
+

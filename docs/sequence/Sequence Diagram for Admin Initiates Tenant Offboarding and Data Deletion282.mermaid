@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor "Admin User" as AdminUser
+    actor "Admin Web Dashboard" as AdminWebDashboard
+    participant "Application Services" as ApplicationServices
+    participant "Data & Auth Layer" as DataAuthLayer
+    participant "Cloud Scheduler" as CloudScheduler
+
+    AdminUser->>AdminWebDashboard: 1. 1. Submits tenant deletion request from 'Danger Zone' settings page.
+    AdminWebDashboard-->>AdminUser: Displays confirmation modal.
+    AdminWebDashboard->>AdminUser: 2. 2. Renders confirmation modal requiring password re-entry.
+    AdminUser->>AdminWebDashboard: 3. 3. Enters password and confirms irreversible deletion.
+    activate DataAuthLayer
+    AdminWebDashboard->>DataAuthLayer: 4. 4. Re-authenticates user to confirm identity.
+    DataAuthLayer-->>AdminWebDashboard: Re-authentication successful or failed.
+    activate ApplicationServices
+    AdminWebDashboard->>ApplicationServices: 5. 5. Invoke function to initiate grace period.
+    ApplicationServices-->>AdminWebDashboard: Returns {success: true} or error.
+    ApplicationServices->>DataAuthLayer: 6. 5.1. Update tenant document to start grace period.
+    DataAuthLayer-->>ApplicationServices: Write result.
+    ApplicationServices->>DataAuthLayer: 7. 5.2. Create an audit log for the deletion request.
+    DataAuthLayer-->>ApplicationServices: Write result.
+    AdminWebDashboard->>AdminUser: 8. 6. Displays success message: 'Tenant deletion scheduled in 30 days.'
+    CloudScheduler->>ApplicationServices: 9. 7. [Daily] Trigger scheduled function to process deletions.
+    ApplicationServices->>DataAuthLayer: 10. 7.1. Query for tenants past their grace period.
+    DataAuthLayer-->>ApplicationServices: List of tenant documents to be deleted.
+    ApplicationServices->>ApplicationServices: 11. 7.2. [Loop] For each tenant, execute deletion logic.
+
+    note over ApplicationServices: Idempotency is critical. The scheduled deletion function (7) must be able to run multiple times f...
+
+    deactivate ApplicationServices
+    deactivate DataAuthLayer

@@ -1,0 +1,811 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-001
+
+## 1.2 Name
+
+New Tenant and Admin Registration
+
+## 1.3 Description
+
+A new user registers their organization via the web dashboard. This triggers a serverless workflow that validates the organization's uniqueness, creates an isolated tenant environment, provisions the first Admin user in Firebase Authentication and Firestore, and assigns the necessary security claims (tenantId, role) to the user's JWT for secure, role-based access.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To onboard a new organization by creating a secure, multi-tenant environment and the primary administrative user account.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- presentation-layer
+- application-services-layer
+- data-persistence-layer
+- security-layer
+
+## 1.10 Key Interactions
+
+- User submits registration form with organization name and credentials.
+- A callable Cloud Function validates the global uniqueness of the organization name against the `/tenants` collection.
+- Firebase Authentication creates the user's auth record.
+- A Firestore trigger on user creation or the callable function then creates a new tenant document in Firestore.
+- A user document is created in Firestore with the 'Admin' role.
+- The Cloud Function sets `tenantId` and `role: 'Admin'` as custom claims on the user's Firebase Auth token.
+- The client receives the token upon successful login and is redirected to the Admin dashboard.
+
+## 1.11 Triggers
+
+- A user submits the organization registration form from the web application.
+
+## 1.12 Outcomes
+
+- A new, isolated tenant is created in the system.
+- The registering user is established as the tenant's Admin with appropriate permissions.
+- The Admin is successfully logged in and can begin managing their tenant.
+
+## 1.13 Business Rules
+
+- Organization name must be globally unique (REQ-3.1.1).
+- The registering user is automatically assigned the 'Admin' role.
+- A valid `tenantId` custom claim is required for all subsequent data access.
+
+## 1.14 Error Scenarios
+
+- Organization name is already taken, registration is blocked with a user-friendly error.
+- Failure to set custom claims on the user token, preventing proper authorization.
+- Failure to create the tenant or user documents in Firestore, triggering a cleanup/rollback process.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-001-IMPL
+
+## 2.2 Name
+
+Implementation: New Tenant and Admin Registration Workflow
+
+## 2.3 Description
+
+A detailed technical sequence for the serverless workflow that provisions a new organization. The process is initiated by a user from the web dashboard, triggering a single, atomic Firebase Callable Function that orchestrates user creation in Firebase Authentication, data creation in Firestore within a transaction, and the setting of security claims (tenantId, role) on the user's JWT. This sequence ensures data consistency through compensation logic (rollback) in case of failure.
+
+## 2.4 Participants
+
+### 2.4.1 Flutter for Web Client
+
+#### 2.4.1.1 Repository Id
+
+presentation-layer
+
+#### 2.4.1.2 Display Name
+
+Admin Web Dashboard
+
+#### 2.4.1.3 Type
+
+🔹 Flutter for Web Client
+
+#### 2.4.1.4 Technology
+
+Flutter 3.x, Riverpod 2.x
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4285F4 |
+| Stereotype | UI |
+
+### 2.4.2.0 Serverless Business Logic
+
+#### 2.4.2.1 Repository Id
+
+application-services-layer
+
+#### 2.4.2.2 Display Name
+
+Callable Cloud Function
+
+#### 2.4.2.3 Type
+
+🔹 Serverless Business Logic
+
+#### 2.4.2.4 Technology
+
+TypeScript, Node.js 20, Firebase Cloud Functions v2
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #DB4437 |
+| Stereotype | Control |
+
+### 2.4.3.0 NoSQL Database
+
+#### 2.4.3.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.3.2 Display Name
+
+Firestore Database
+
+#### 2.4.3.3 Type
+
+🔹 NoSQL Database
+
+#### 2.4.3.4 Technology
+
+Firestore Native Mode
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #F4B400 |
+| Stereotype | Entity |
+
+### 2.4.4.0 Authentication Service
+
+#### 2.4.4.1 Repository Id
+
+security-layer
+
+#### 2.4.4.2 Display Name
+
+Firebase Authentication
+
+#### 2.4.4.3 Type
+
+🔹 Authentication Service
+
+#### 2.4.4.4 Technology
+
+Firebase Auth
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #0F9D58 |
+| Stereotype | Security |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Synchronous Request
+
+#### 2.5.1.1 Source Id
+
+presentation-layer
+
+#### 2.5.1.2 Target Id
+
+application-services-layer
+
+#### 2.5.1.3 Message
+
+1. User submits registration form, invoking `registerOrganization` function.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Synchronous Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+11. Returns success or error object to client. On success, client SDK handles login and token refresh.
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (Firebase Callable Function) |
+| Method | registerOrganization(data) |
+| Parameters | data: { organizationName: string, email: string, p... |
+| Authentication | N/A (Publicly callable endpoint) |
+| Error Handling | Receives specific error codes: 'already-exists' fo... |
+| Performance | End-to-end latency should be < 2000ms (p95). |
+
+### 2.5.2.0 Database Query
+
+#### 2.5.2.1 Source Id
+
+application-services-layer
+
+#### 2.5.2.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.2.3 Message
+
+2. Query `/tenants` to check for organization name uniqueness.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Database Query
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+3. Returns query result (empty or existing document).
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | db.collection('tenants').where('name', '==', organ... |
+| Parameters | organizationName: string |
+| Authentication | Server-side Admin privileges |
+| Error Handling | Catches potential Firestore query exceptions. |
+| Performance | Query must be backed by a composite index on the '... |
+
+#### 2.5.2.11 Nested Interactions
+
+- {'sourceId': 'application-services-layer', 'targetId': 'presentation-layer', 'message': "3a. [If name exists] Return error 'already-exists'.", 'sequenceNumber': 3.1, 'type': 'Error Response', 'isSynchronous': True, 'returnMessage': '', 'hasReturn': False, 'isActivation': False, 'technicalDetails': {'protocol': 'HTTPS', 'method': "throw new functions.https.HttpsError('already-exists', 'Organization name is already taken.')", 'parameters': "ErrorCode: 'already-exists', Message: string", 'authentication': 'N/A', 'errorHandling': 'Business rule violation (REQ-3.1.1). Terminates the process.', 'performance': 'N/A'}}
+
+### 2.5.3.0 API Call
+
+#### 2.5.3.1 Source Id
+
+application-services-layer
+
+#### 2.5.3.2 Target Id
+
+security-layer
+
+#### 2.5.3.3 Message
+
+4. [If name unique] Create user account in Firebase Auth.
+
+#### 2.5.3.4 Sequence Number
+
+4
+
+#### 2.5.3.5 Type
+
+🔹 API Call
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+5. Returns `UserRecord` object with new `uid`.
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | auth.createUser({ email, password }) |
+| Parameters | { email: string, password: string } |
+| Authentication | Server-side Admin privileges |
+| Error Handling | Catches exceptions like 'email-already-exists'. If... |
+| Performance | Latency typically < 500ms. |
+
+### 2.5.4.0 Transactional Write
+
+#### 2.5.4.1 Source Id
+
+application-services-layer
+
+#### 2.5.4.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.4.3 Message
+
+6. Start Firestore transaction to create tenant and user documents.
+
+#### 2.5.4.4 Sequence Number
+
+6
+
+#### 2.5.4.5 Type
+
+🔹 Transactional Write
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+7. Transaction commits successfully.
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+❌ No
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | db.runTransaction(async (t) => { ... }) |
+| Parameters | Transaction context 't' |
+| Authentication | Server-side Admin privileges |
+| Error Handling | If transaction fails, it's automatically rolled ba... |
+| Performance | Latency for transaction commit depends on contenti... |
+
+#### 2.5.4.11 Nested Interactions
+
+##### 2.5.4.11.1 Create Operation
+
+###### 2.5.4.11.1.1 Source Id
+
+application-services-layer
+
+###### 2.5.4.11.1.2 Target Id
+
+data-persistence-layer
+
+###### 2.5.4.11.1.3 Message
+
+6a. Create tenant document `/tenants/{tenantId}`.
+
+###### 2.5.4.11.1.4 Sequence Number
+
+6.1
+
+###### 2.5.4.11.1.5 Type
+
+🔹 Create Operation
+
+###### 2.5.4.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.4.11.1.7 Return Message
+
+
+
+###### 2.5.4.11.1.8 Has Return
+
+❌ No
+
+###### 2.5.4.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.4.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK (in transaction) |
+| Method | t.set(tenantRef, { name, region, createdAt, ownerI... |
+| Parameters | tenantRef, tenantData |
+| Authentication | N/A |
+| Error Handling | Handled by parent transaction. |
+| Performance | N/A |
+
+##### 2.5.4.11.2.0 Create Operation
+
+###### 2.5.4.11.2.1 Source Id
+
+application-services-layer
+
+###### 2.5.4.11.2.2 Target Id
+
+data-persistence-layer
+
+###### 2.5.4.11.2.3 Message
+
+6b. Create user document `/users/{uid}`.
+
+###### 2.5.4.11.2.4 Sequence Number
+
+6.2
+
+###### 2.5.4.11.2.5 Type
+
+🔹 Create Operation
+
+###### 2.5.4.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.4.11.2.7 Return Message
+
+
+
+###### 2.5.4.11.2.8 Has Return
+
+❌ No
+
+###### 2.5.4.11.2.9 Is Activation
+
+❌ No
+
+###### 2.5.4.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK (in transaction) |
+| Method | t.set(userRef, { email, role: 'Admin', tenantId, s... |
+| Parameters | userRef, userData |
+| Authentication | N/A |
+| Error Handling | Handled by parent transaction. |
+| Performance | N/A |
+
+##### 2.5.4.11.3.0 Compensation Action (Rollback)
+
+###### 2.5.4.11.3.1 Source Id
+
+application-services-layer
+
+###### 2.5.4.11.3.2 Target Id
+
+security-layer
+
+###### 2.5.4.11.3.3 Message
+
+7a. [If transaction fails] Compensate: Delete user from Firebase Auth.
+
+###### 2.5.4.11.3.4 Sequence Number
+
+7.1
+
+###### 2.5.4.11.3.5 Type
+
+🔹 Compensation Action (Rollback)
+
+###### 2.5.4.11.3.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.4.11.3.7 Return Message
+
+Returns confirmation of user deletion.
+
+###### 2.5.4.11.3.8 Has Return
+
+✅ Yes
+
+###### 2.5.4.11.3.9 Is Activation
+
+❌ No
+
+###### 2.5.4.11.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | auth.deleteUser(uid) |
+| Parameters | uid: string |
+| Authentication | Server-side Admin privileges |
+| Error Handling | Critical failure. Log error extensively. If this f... |
+| Performance | N/A |
+
+### 2.5.5.0.0.0 Security Operation
+
+#### 2.5.5.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.5.2.0.0 Target Id
+
+security-layer
+
+#### 2.5.5.3.0.0 Message
+
+8. Set custom claims on the user's auth token.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+8
+
+#### 2.5.5.5.0.0 Type
+
+🔹 Security Operation
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+9. Claims successfully set.
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | auth.setCustomUserClaims(uid, { tenantId, role: 'A... |
+| Parameters | uid: string, claims: { tenantId: string, role: str... |
+| Authentication | Server-side Admin privileges |
+| Error Handling | Critical. If this fails, trigger full compensation... |
+| Performance | Latency < 300ms. |
+
+#### 2.5.5.11.0.0 Nested Interactions
+
+##### 2.5.5.11.1.0 Compensation Action (Rollback)
+
+###### 2.5.5.11.1.1 Source Id
+
+application-services-layer
+
+###### 2.5.5.11.1.2 Target Id
+
+data-persistence-layer
+
+###### 2.5.5.11.1.3 Message
+
+9a. [If claims fail] Compensate: Delete Firestore documents.
+
+###### 2.5.5.11.1.4 Sequence Number
+
+9.1
+
+###### 2.5.5.11.1.5 Type
+
+🔹 Compensation Action (Rollback)
+
+###### 2.5.5.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.1.7 Return Message
+
+Returns confirmation of deletion.
+
+###### 2.5.5.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.5.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.5.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | db.batch().delete(tenantRef).delete(userRef).commi... |
+| Parameters | N/A |
+| Authentication | Server-side Admin privileges |
+| Error Handling | Critical failure. Log extensively. |
+| Performance | N/A |
+
+##### 2.5.5.11.2.0 Compensation Action (Rollback)
+
+###### 2.5.5.11.2.1 Source Id
+
+application-services-layer
+
+###### 2.5.5.11.2.2 Target Id
+
+security-layer
+
+###### 2.5.5.11.2.3 Message
+
+9b. [If claims fail] Compensate: Delete user from Firebase Auth.
+
+###### 2.5.5.11.2.4 Sequence Number
+
+9.2
+
+###### 2.5.5.11.2.5 Type
+
+🔹 Compensation Action (Rollback)
+
+###### 2.5.5.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.2.7 Return Message
+
+Returns confirmation of deletion.
+
+###### 2.5.5.11.2.8 Has Return
+
+✅ Yes
+
+###### 2.5.5.11.2.9 Is Activation
+
+❌ No
+
+###### 2.5.5.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | auth.deleteUser(uid) |
+| Parameters | uid: string |
+| Authentication | Server-side Admin privileges |
+| Error Handling | Critical failure. Log extensively. |
+| Performance | N/A |
+
+### 2.5.6.0.0.0 Audit Log
+
+#### 2.5.6.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.6.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.6.3.0.0 Message
+
+10. Create audit log entry for 'Tenant Created'.
+
+#### 2.5.6.4.0.0 Sequence Number
+
+10
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Audit Log
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.6.7.0.0 Return Message
+
+
+
+#### 2.5.6.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | db.collection('auditLog').add({ ... }) |
+| Parameters | logData: { actorUserId, actionType: 'TENANT_CREATE... |
+| Authentication | Server-side Admin privileges |
+| Error Handling | Log any write failures. Non-blocking for the main ... |
+| Performance | N/A |
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+The entire server-side process (steps 2-10) must be idempotent. If the function is re-triggered with the same inputs after a partial failure, it should not create duplicate entities. This can be achieved by using the user's UID as a key for idempotency checks if necessary.
+
+#### 2.6.1.2.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0 Sequence Number
+
+*Not specified*
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Client SDK's `auth.onIdTokenChanged` listener will be triggered after a successful registration and login. The new ID token containing the custom claims is automatically received and used for subsequent Firestore requests, enforcing security rules.
+
+#### 2.6.2.2.0.0 Position
+
+top
+
+#### 2.6.2.3.0.0 Participant Id
+
+presentation-layer
+
+#### 2.6.2.4.0.0 Sequence Number
+
+11
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The most critical security step is the successful ... |
+| Performance Targets | The entire registration process from user submissi... |
+| Error Handling Strategy | A comprehensive try-catch block should wrap the en... |
+| Testing Considerations | Unit tests (using Jest and `firebase-functions-tes... |
+| Monitoring Requirements | Log every major step of the process (e.g., 'Unique... |
+| Deployment Considerations | The Cloud Function, Firestore indexes, and securit... |
+

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Molecular Component: App Bar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ------------------------- */
+    /* --- 1. Design System Foundations --- */
+    /* ------------------------- */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-600: #475569;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+      --color-white: #FFFFFF;
+
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-sm: 14px;
+      --font-weight-semibold: 600;
+
+      /* Spacing */
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-48: 48px;
+      
+      /* Transitions */
+      --transition-fast: 150ms ease-in-out;
+    }
+
+    /* ------------------------- */
+    /* --- 2. Base & Showcase Layout --- */
+    /* ------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-neutral-100);
+      color: var(--color-neutral-700);
+      line-height: 1.5;
+      padding: var(--space-24);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+        border-bottom: 1px solid var(--color-neutral-200);
+        padding-bottom: var(--space-24);
+        margin-bottom: var(--space-48);
+        text-align: center;
+    }
+    
+    h1 { font-size: 2.5rem; font-weight: 700; color: var(--color-neutral-900); }
+    h2 { font-size: 1.5rem; font-weight: 700; color: var(--color-neutral-900); margin-top: var(--space-48); margin-bottom: var(--space-24); }
+    h3 { font-size: 1.25rem; font-weight: 600; color: var(--color-neutral-900); margin-bottom: var(--space-16); }
+    p { margin-bottom: var(--space-16); max-width: 65ch; }
+
+    .showcase-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: var(--space-24);
+      justify-items: center;
+    }
+
+    .phone-frame {
+      width: 375px;
+      height: 720px;
+      background-color: var(--color-neutral-50);
+      border: 8px solid var(--color-neutral-900);
+      border-radius: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .phone-frame__content {
+      padding: var(--space-16);
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    /* ------------------------- */
+    /* --- 3. Component CSS --- */
+    /* ------------------------- */
+
+    /* Icon Button Atomic Dependency */
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background-color: transparent;
+      border: none;
+      color: var(--color-neutral-700);
+      cursor: pointer;
+      transition: background-color var(--transition-fast);
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .icon-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .icon-btn:hover {
+      background-color: var(--color-neutral-100);
+    }
+
+    .icon-btn:active {
+      background-color: var(--color-neutral-200);
+    }
+
+    .icon-btn:focus-visible {
+      outline: 2px solid var(--color-primary-500);
+      outline-offset: 2px;
+    }
+    
+    .icon-btn--primary-color {
+        color: var(--color-primary-500);
+    }
+
+    /* App Bar Molecular Component */
+    .app-bar {
+      background-color: var(--color-white);
+      color: var(--color-neutral-900);
+      /* Use env() for notch support on mobile devices */
+      padding: var(--space-8) var(--space-16);
+      padding-top: calc(var(--space-8) + env(safe-area-inset-top, 20px));
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid var(--color-neutral-200);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.06);
+      flex-shrink: 0;
+    }
+
+    .app-bar__main {
+      display: flex;
+      align-items: center;
+      min-height: 48px; /* Standard height */
+      position: relative;
+    }
+
+    .app-bar__leading,
+    .app-bar__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+      flex-shrink: 0;
+    }
+    
+    .app-bar__leading {
+        justify-content: flex-start;
+    }
+
+    .app-bar__actions {
+        justify-content: flex-end;
+    }
+
+    .app-bar__title {
+      font-size: 20px;
+      font-weight: var(--font-weight-semibold);
+      text-align: left;
+      flex-grow: 1;
+      margin: 0 var(--space-16);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* iOS Style Variant */
+    .app-bar--ios-style .app-bar__title {
+      text-align: center;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 60%; /* Approximation */
+      margin: 0;
+    }
+
+    /* App Bar with Tabs */
+    .app-bar__tabs {
+      display: flex;
+      margin-top: var(--space-12);
+      border-bottom: 1px solid var(--color-neutral-200);
+      overflow-x: auto;
+      /* Hide scrollbar */
+      -ms-overflow-style: none; 
+      scrollbar-width: none; 
+    }
+
+    .app-bar__tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .app-bar__tab {
+      padding: var(--space-8) var(--space-12);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-400);
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      transition: color var(--transition-fast), border-color var(--transition-fast);
+      flex-shrink: 0;
+    }
+
+    .app-bar__tab:hover {
+      color: var(--color-neutral-600);
+    }
+
+    .app-bar__tab[aria-current="true"] {
+      color: var(--color-primary-500);
+      border-bottom-color: var(--color-primary-500);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Molecular Component: App Bar</h1>
+      <p>The App Bar is the main header for each screen, providing title, navigation, and actions. It's designed to be mobile-first and adapts to device notches.</p>
+    </header>
+
+    <div class="showcase-container">
+      
+      <!-- Variant 1: Main App Bar (Android Style) -->
+      <div>
+        <h3>Main App Bar (Android Style)</h3>
+        <p>A standard app bar with a left-aligned title and trailing actions.</p>
+        <div class="phone-frame">
+          <header class="app-bar">
+            <div class="app-bar__main">
+              <div class="app-bar__leading">
+                <!-- Empty for this example, or could have a menu icon -->
+              </div>
+              <h1 class="app-bar__title">Dashboard</h1>
+              <div class="app-bar__actions">
+                <button class="icon-btn" aria-label="Notifications">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </header>
+          <div class="phone-frame__content">
+            <!-- Screen content would go here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Variant 2: Contextual App Bar -->
+      <div>
+        <h3>Contextual App Bar</h3>
+        <p>Used for detail screens, featuring a back button and specific actions.</p>
+        <div class="phone-frame">
+          <header class="app-bar">
+            <div class="app-bar__main">
+              <div class="app-bar__leading">
+                <button class="icon-btn icon-btn--primary-color" aria-label="Back">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  </svg>
+                </button>
+              </div>
+              <h1 class="app-bar__title">New Event</h1>
+              <div class="app-bar__actions">
+                <button class="icon-btn icon-btn--primary-color" aria-label="Save Event">
+                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                   </svg>
+                </button>
+              </div>
+            </div>
+          </header>
+          <div class="phone-frame__content">
+            <!-- Screen content would go here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 3: Main App Bar (iOS Style) -->
+      <div>
+        <h3>Main App Bar (iOS Style)</h3>
+        <p>Features a centered title, a common pattern in iOS design.</p>
+        <div class="phone-frame">
+          <header class="app-bar app-bar--ios-style">
+            <div class="app-bar__main">
+              <div class="app-bar__leading">
+                <!-- Empty -->
+              </div>
+              <h1 class="app-bar__title">Schedule</h1>
+              <div class="app-bar__actions">
+                <button class="icon-btn icon-btn--primary-color" aria-label="Add new event">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </header>
+          <div class="phone-frame__content">
+            <!-- Screen content would go here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 4: App Bar with Tabs -->
+      <div>
+        <h3>App Bar with Tabs</h3>
+        <p>Includes a secondary navigation layer with tabs for switching between views.</p>
+        <div class="phone-frame">
+          <header class="app-bar">
+            <div class="app-bar__main">
+              <div class="app-bar__leading">
+                <button class="icon-btn" aria-label="Open Menu">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                  </svg>
+                </button>
+              </div>
+              <h1 class="app-bar__title">Approvals</h1>
+              <div class="app-bar__actions">
+                <button class="icon-btn" aria-label="Search">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <nav class="app-bar__tabs" aria-label="Approval types">
+              <button class="app-bar__tab" aria-current="true">Pending (3)</button>
+              <button class="app-bar__tab">Corrections (1)</button>
+              <button class="app-bar__tab">History</button>
+            </nav>
+          </header>
+          <div class="phone-frame__content">
+            <!-- Screen content would go here -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+    
+    <h2>Component Variations</h2>
+    <div>
+        <h3>Variant Name: main</h3>
+        <p>The standard app bar for a main screen, typically showing a title and primary actions. It can be adapted for platform conventions (e.g., Android's left-aligned title vs. iOS's centered title).</p>
+    </div>
+    <div>
+        <h3>Variant Name: contextual_actions</h3>
+        <p>An app bar used on a detail or edit screen. It includes a leading navigation action (like a 'Back' button) and contextual trailing actions (like 'Save', 'Edit', or 'Delete').</p>
+    </div>
+    <div>
+        <h3>Variant Name: with_tabs</h3>
+        <p>An extended app bar that includes a row of tabs below the main bar. This is used for screens that have secondary, in-page navigation between related views.</p>
+    </div>
+
+  </main>
+</body>
+</html>

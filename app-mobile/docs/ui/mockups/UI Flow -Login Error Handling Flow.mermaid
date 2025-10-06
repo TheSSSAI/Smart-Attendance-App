@@ -1,0 +1,41 @@
+flowchart TD
+    subgraph User Action
+        A[Start: User on Login Screen] --> B{Choose Login Method};
+        B --> |Email & Password| C[Enters Email & Password];
+        B --> |Phone OTP| D[Enters Phone & Receives OTP];
+        C --> E[Submits Credentials];
+        D --> F[Submits OTP];
+    end
+
+    subgraph Backend Validation
+        E --> G{1. Account Locked? (REQ-1-039)};
+        F --> G;
+        G -->|Yes| H[Show 'Account Locked' Error];
+        G -->|No| I{2. Credentials / OTP Valid?};
+        I -->|No| J[Increment Fail Count & Show 'Invalid Credentials/OTP' Error];
+        I -->|Yes| K[Reset Fail Count];
+        K --> L{3. User Status 'active'? (REQ-1-037)};
+        L -->|No| M{Status 'invited'?};
+        M -->|No| N[Show 'Account Deactivated' Error];
+        M -->|Yes| O[Redirect to ToS / Registration Flow];
+        L -->|Yes| P[Success: Redirect to Dashboard];
+    end
+
+    subgraph Endpoints
+        H --- Z[End Flow];
+        J --- Z;
+        N --- Z;
+        O --- Z;
+        P --- Z;
+    end
+
+    %% Styling
+    classDef errorNode fill:#ffebee,stroke:#c62828,color:#c62828,stroke-width:2px;
+    classDef successNode fill:#e8f5e9,stroke:#2e7d32,color:#2e7d32,stroke-width:2px;
+    classDef processNode fill:#e3f2fd,stroke:#1565c0,color:#000;
+    classDef decisionNode fill:#fffde7,stroke:#f9a825,color:#000;
+
+    class H, J, N errorNode;
+    class P successNode;
+    class A, C, D, F, K, O processNode;
+    class B, E, G, I, L, M decisionNode;

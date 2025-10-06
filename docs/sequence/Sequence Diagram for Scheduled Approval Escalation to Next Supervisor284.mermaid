@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant "Google Cloud Scheduler" as GoogleCloudScheduler
+    participant "UsageCheckFunction" as UsageCheckFunction
+    participant "Google BigQuery" as GoogleBigQuery
+    participant "Firestore" as Firestore
+    participant "SendGrid API" as SendGridAPI
+
+    activate UsageCheckFunction
+    GoogleCloudScheduler->>UsageCheckFunction: 1. 1. Trigger(jobId: 'check-tenant-usage')
+    UsageCheckFunction->>Firestore: 2. 2. getActiveTenantsWithTiers()
+    Firestore-->>UsageCheckFunction: List<Tenant>
+    UsageCheckFunction->>UsageCheckFunction: 3. 3. [Loop] For each tenant in List<Tenant>
+    UsageCheckFunction->>GoogleBigQuery: 3.1. 3.1. getAggregatedUsage(tenantId, currentBillingCycle)
+    GoogleBigQuery-->>UsageCheckFunction: UsageMetrics { reads: number, writes: number }
+    UsageCheckFunction->>UsageCheckFunction: 3.2. 3.2. [Alt] If usage > threshold AND alert not yet sent for this cycle
+    UsageCheckFunction->>UsageCheckFunction: 4. 4. Log summary (tenants processed, alerts sent)
+
+    note over UsageCheckFunction: This entire Cloud Function must be idempotent. If it runs twice for the same period, it must not ...
+    note over UsageCheckFunction: Billing cycle logic (start/end dates) must be robust and handle timezones correctly to align with...
+
+    deactivate UsageCheckFunction

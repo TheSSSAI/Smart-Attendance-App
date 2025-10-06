@@ -1,0 +1,51 @@
+flowchart TD
+    subgraph Subordinate Actions
+        A[Views Attendance History] --> B[Selects Record & Taps 'Request Correction'];
+        B --> C(Fill Correction Form<br/>- New Times<br/>- Justification);
+        C --> D{Is Justification Valid?<br/>(e.g., >= 20 chars)};
+        D -- No --> E[Show Validation Error];
+        E --> C;
+        D -- Yes --> F[Submit Request];
+    end
+
+    subgraph System & Backend
+        F --> G((Update Record State:<br/>'correction_pending'));
+        G --> H[Notify Supervisor<br/>(New item in queue)];
+    end
+
+    subgraph Supervisor Actions
+        H --> I[Reviews Correction Details<br/>- Original vs. New Times<br/>- Justification];
+        I --> J{Approve or Reject?};
+    end
+
+    subgraph Approval Path
+        J -- Approve --> K[Approves Request];
+        K --> L((Update Record:<br/>- Apply New Times<br/>- Set Status to 'Approved'));
+        L --> M[/Create 'CorrectionApproved' Audit Log/];
+        M --> N[Notify Subordinate of Approval];
+        N --> Z_END_A([End]);
+    end
+
+    subgraph Rejection Path
+        J -- Reject --> O[Rejects Request];
+        O --> P(Provide Mandatory<br/>Rejection Reason);
+        P --> Q((Revert Record:<br/>- Discard New Times<br/>- Set Status to 'Rejected'));
+        Q --> R[/Create 'CorrectionRejected' Audit Log/];
+        R --> S[Notify Subordinate of Rejection];
+        S --> Z_END_B([End]);
+    end
+
+    %% Styling
+    classDef userAction fill:#e3f2fd,stroke:#1e88e5;
+    classDef systemProcess fill:#fff9c4,stroke:#fbc02d;
+    classDef dbState fill:#c8e6c9,stroke:#388e3c;
+    classDef decision fill:#ffccbc,stroke:#f4511e;
+    classDef errorState fill:#ffcdd2,stroke:#c62828;
+    classDef ioNode stroke-dasharray: 5 5, fill:#f3e5f5,stroke:#8e24aa;
+
+    class A,B,C,F,I,P userAction;
+    class G,L,Q dbState;
+    class D,J decision;
+    class E errorState;
+    class H,N,S,M,R systemProcess;
+    class M,R ioNode;

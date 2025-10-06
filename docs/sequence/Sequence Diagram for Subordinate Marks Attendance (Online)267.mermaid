@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor "Mobile Application (Flutter)" as MobileApplicationFlutter
+    participant "Firestore Database" as FirestoreDatabase
+    participant "Cloud Functions Backend" as CloudFunctionsBackend
+
+    activate MobileApplicationFlutter
+    MobileApplicationFlutter->>MobileApplicationFlutter: 1. User taps 'Check-In' button. UI event handler (onPressed) is invoked.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 2. Update UI state to 'loading'. Display a circular progress indicator to the user.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 3. Request current device location via 'geolocator' package.
+    MobileApplicationFlutter-->>MobileApplicationFlutter: Returns Future<Position> with GPS coordinates (lat, lon) and accuracy.
+    activate FirestoreDatabase
+    MobileApplicationFlutter->>FirestoreDatabase: 4. Invoke AttendanceRepository.createRecord() with location data and client timestamp.
+    FirestoreDatabase-->>MobileApplicationFlutter: Returns Future<void> upon successful write to local cache.
+    FirestoreDatabase->>FirestoreDatabase: 5. Firestore SDK automatically syncs local record to the cloud backend over HTTPS/gRPC.
+    activate CloudFunctionsBackend
+    FirestoreDatabase->>CloudFunctionsBackend: 6. Firestore onWrite trigger invokes 'validateAttendanceRecord' Cloud Function for the new document.
+    CloudFunctionsBackend->>FirestoreDatabase: 7. Update attendance document with serverTimestamp and clock_discrepancy flag if needed.
+    FirestoreDatabase-->>CloudFunctionsBackend: Returns Promise<WriteResult>
+    FirestoreDatabase->>MobileApplicationFlutter: 8. Firestore pushes real-time update of the modified document to subscribed clients.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 9. Riverpod stream provider receives the updated record. Update UI state to 'success', hide indicator, and show confirmation message.
+
+    note over MobileApplicationFlutter: Hardware Interface: Step 3 involves a critical interaction with the device's GPS hardware. The ap...
+    note over CloudFunctionsBackend: Server-Side Validation: The Cloud Function in Step 6-7 is a critical security and data integrity ...
+
+    deactivate CloudFunctionsBackend
+    deactivate FirestoreDatabase
+    deactivate MobileApplicationFlutter

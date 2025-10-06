@@ -1,0 +1,1016 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-016
+
+## 1.2 Name
+
+Admin Deactivates a Supervisor
+
+## 1.3 Description
+
+An Admin deactivates a user who is a Supervisor. The system enforces that all of the Supervisor's subordinates must be reassigned to a new Supervisor before the deactivation can be finalized.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To maintain organizational structure integrity and ensure no users are left without a manager when a Supervisor is deactivated.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- presentation-layer
+- application-services-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- Admin selects a Supervisor user and initiates deactivation.
+- The backend (Cloud Function) checks if the user has any direct subordinates.
+- If subordinates exist, the API returns an error, and the UI prompts the Admin to reassign them.
+- Admin uses the UI to select the subordinates and assign them to a new, active Supervisor.
+- Admin re-initiates the deactivation.
+- The backend confirms no subordinates are assigned to the user.
+- The user's status is set to `deactivated` in their Firestore document.
+
+## 1.11 Triggers
+
+- Admin attempts to deactivate a user with the 'Supervisor' role.
+
+## 1.12 Outcomes
+
+- The Supervisor account is deactivated.
+- All of the former Supervisor's subordinates are now assigned to a new Supervisor.
+
+## 1.13 Business Rules
+
+- A Supervisor with direct reports cannot be deactivated until their reports are reassigned (REQ-2.6.1).
+
+## 1.14 Error Scenarios
+
+- Admin tries to reassign subordinates to an invalid or inactive Supervisor.
+- The process is interrupted after reassigning some but not all subordinates.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-016-IMPLEMENTATION
+
+## 2.2 Name
+
+Admin Deactivates a Supervisor with Subordinate Reassignment
+
+## 2.3 Description
+
+Implementation-ready sequence for an Admin deactivating a Supervisor user. The sequence details the critical business rule enforcement where all of the Supervisor's direct subordinates must be successfully reassigned to a new Supervisor within an atomic transaction before the deactivation can be finalized. It covers the initial failed attempt, the reassignment workflow, and the final successful deactivation.
+
+## 2.4 Participants
+
+### 2.4.1 Actor
+
+#### 2.4.1.1 Repository Id
+
+admin-actor
+
+#### 2.4.1.2 Display Name
+
+Admin User
+
+#### 2.4.1.3 Type
+
+🔹 Actor
+
+#### 2.4.1.4 Technology
+
+Human
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #90A4AE |
+| Stereotype | User |
+
+### 2.4.2.0 Client Application
+
+#### 2.4.2.1 Repository Id
+
+presentation-layer
+
+#### 2.4.2.2 Display Name
+
+Admin Web Dashboard
+
+#### 2.4.2.3 Type
+
+🔹 Client Application
+
+#### 2.4.2.4 Technology
+
+Flutter for Web
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | rectangle |
+| Color | #42A5F5 |
+| Stereotype | UI/UX |
+
+### 2.4.3.0 Serverless Backend
+
+#### 2.4.3.1 Repository Id
+
+application-services-layer
+
+#### 2.4.3.2 Display Name
+
+Application Services
+
+#### 2.4.3.3 Type
+
+🔹 Serverless Backend
+
+#### 2.4.3.4 Technology
+
+Firebase Cloud Functions (TypeScript)
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FFCA28 |
+| Stereotype | Business Logic |
+
+### 2.4.4.0 NoSQL Database
+
+#### 2.4.4.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.4.2 Display Name
+
+Data & Persistence
+
+#### 2.4.4.3 Type
+
+🔹 NoSQL Database
+
+#### 2.4.4.4 Technology
+
+Firestore
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FF7043 |
+| Stereotype | Storage |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+admin-actor
+
+#### 2.5.1.2 Target Id
+
+presentation-layer
+
+#### 2.5.1.3 Message
+
+1. Initiates deactivation for a Supervisor user (supervisorId: 'sup123').
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Has Return
+
+❌ No
+
+#### 2.5.1.8 Is Activation
+
+✅ Yes
+
+#### 2.5.1.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | User Input |
+| Method | onClick() |
+| Parameters | Event object containing target userId |
+| Authentication | N/A |
+| Error Handling | UI displays loading indicator. |
+| Performance | Immediate |
+
+### 2.5.2.0 API Call
+
+#### 2.5.2.1 Source Id
+
+presentation-layer
+
+#### 2.5.2.2 Target Id
+
+application-services-layer
+
+#### 2.5.2.3 Message
+
+2. POST /deactivateUser({ userId: 'sup123' })
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 API Call
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+6. { error: 'SUPERVISOR_HAS_SUBORDINATES', subordinates: [...] }
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (Firebase Callable Function) |
+| Method | deactivateUser |
+| Parameters | { userId: string } |
+| Authentication | Firebase Auth JWT (ID Token) with 'Admin' custom c... |
+| Error Handling | Returns a 400 Bad Request with a specific error co... |
+| Performance | p95 latency < 500ms |
+
+### 2.5.3.0 Database Query
+
+#### 2.5.3.1 Source Id
+
+application-services-layer
+
+#### 2.5.3.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.3.3 Message
+
+3. Checks for direct subordinates: query(users, where('supervisorId', '==', 'sup123'))
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Database Query
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+4. Returns a list of subordinate user documents.
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase SDK |
+| Method | getDocs(query) |
+| Parameters | Query object targeting the 'users' collection with... |
+| Authentication | Function uses Admin SDK with elevated privileges. |
+| Error Handling | Throws an exception if the query fails, which is c... |
+| Performance | p95 latency < 100ms |
+
+### 2.5.4.0 Internal Logic
+
+#### 2.5.4.1 Source Id
+
+application-services-layer
+
+#### 2.5.4.2 Target Id
+
+application-services-layer
+
+#### 2.5.4.3 Message
+
+5. Business Rule Check: Verifies subordinate list is not empty (REQ-2.6.1).
+
+#### 2.5.4.4 Sequence Number
+
+5
+
+#### 2.5.4.5 Type
+
+🔹 Internal Logic
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Has Return
+
+❌ No
+
+#### 2.5.4.8 Is Activation
+
+❌ No
+
+#### 2.5.4.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | N/A |
+| Method | subordinates.length > 0 |
+| Parameters | Array of subordinate documents |
+| Authentication | N/A |
+| Error Handling | If check passes (subordinates exist), constructs a... |
+| Performance | < 1ms |
+
+### 2.5.5.0 UI Feedback
+
+#### 2.5.5.1 Source Id
+
+presentation-layer
+
+#### 2.5.5.2 Target Id
+
+admin-actor
+
+#### 2.5.5.3 Message
+
+7. Displays reassignment modal with subordinate list and prompts for new Supervisor.
+
+#### 2.5.5.4 Sequence Number
+
+7
+
+#### 2.5.5.5 Type
+
+🔹 UI Feedback
+
+#### 2.5.5.6 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7 Has Return
+
+❌ No
+
+#### 2.5.5.8 Is Activation
+
+❌ No
+
+#### 2.5.5.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | UI Render |
+| Method | showReassignmentModal() |
+| Parameters | The 'subordinates' array from the API error respon... |
+| Authentication | N/A |
+| Error Handling | If the error code is not recognized, a generic err... |
+| Performance | Immediate |
+
+### 2.5.6.0 User Interaction
+
+#### 2.5.6.1 Source Id
+
+admin-actor
+
+#### 2.5.6.2 Target Id
+
+presentation-layer
+
+#### 2.5.6.3 Message
+
+8. Selects subordinates and new Supervisor (newSupervisorId: 'sup456'), then submits.
+
+#### 2.5.6.4 Sequence Number
+
+8
+
+#### 2.5.6.5 Type
+
+🔹 User Interaction
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Has Return
+
+❌ No
+
+#### 2.5.6.8 Is Activation
+
+❌ No
+
+#### 2.5.6.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | User Input |
+| Method | onSubmitReassignment() |
+| Parameters | Form data including an array of subordinate user I... |
+| Authentication | N/A |
+| Error Handling | Client-side validation ensures a new supervisor is... |
+| Performance | Immediate |
+
+### 2.5.7.0 API Call
+
+#### 2.5.7.1 Source Id
+
+presentation-layer
+
+#### 2.5.7.2 Target Id
+
+application-services-layer
+
+#### 2.5.7.3 Message
+
+9. POST /reassignSubordinates({ subordinateIds: [...], newSupervisorId: 'sup456' })
+
+#### 2.5.7.4 Sequence Number
+
+9
+
+#### 2.5.7.5 Type
+
+🔹 API Call
+
+#### 2.5.7.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7 Return Message
+
+13. { success: true }
+
+#### 2.5.7.8 Has Return
+
+✅ Yes
+
+#### 2.5.7.9 Is Activation
+
+❌ No
+
+#### 2.5.7.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (Firebase Callable Function) |
+| Method | reassignSubordinates |
+| Parameters | { subordinateIds: string[], newSupervisorId: strin... |
+| Authentication | Firebase Auth JWT (ID Token) with 'Admin' custom c... |
+| Error Handling | Returns 400 error if new supervisor is invalid or ... |
+| Performance | p95 latency < 800ms for up to 500 reassignments. |
+
+### 2.5.8.0 Database Transaction
+
+#### 2.5.8.1 Source Id
+
+application-services-layer
+
+#### 2.5.8.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.8.3 Message
+
+10. Executes atomic batch write to reassign subordinates and log audit events.
+
+#### 2.5.8.4 Sequence Number
+
+10
+
+#### 2.5.8.5 Type
+
+🔹 Database Transaction
+
+#### 2.5.8.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7 Return Message
+
+12. Batch write commits successfully.
+
+#### 2.5.8.8 Has Return
+
+✅ Yes
+
+#### 2.5.8.9 Is Activation
+
+❌ No
+
+#### 2.5.8.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase SDK |
+| Method | firestore.batch() |
+| Parameters | A series of update() and set() operations within a... |
+| Authentication | Admin SDK privileges. |
+| Error Handling | The entire batch fails if any single operation fai... |
+| Performance | Dependent on batch size, typically completes withi... |
+
+#### 2.5.8.11 Nested Interactions
+
+##### 2.5.8.11.1 Database Write
+
+###### 2.5.8.11.1.1 Source Id
+
+application-services-layer
+
+###### 2.5.8.11.1.2 Target Id
+
+data-persistence-layer
+
+###### 2.5.8.11.1.3 Message
+
+10.1. [For each subId]: batch.update(userDoc(subId), { supervisorId: 'sup456' })
+
+###### 2.5.8.11.1.4 Sequence Number
+
+10.1
+
+###### 2.5.8.11.1.5 Type
+
+🔹 Database Write
+
+###### 2.5.8.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.8.11.1.7 Has Return
+
+❌ No
+
+###### 2.5.8.11.1.8 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | N/A |
+| Method | batch.update |
+| Parameters | DocumentReference, { supervisorId: string } |
+| Error Handling | Part of atomic batch. |
+
+##### 2.5.8.11.2.0 Database Write
+
+###### 2.5.8.11.2.1 Source Id
+
+application-services-layer
+
+###### 2.5.8.11.2.2 Target Id
+
+data-persistence-layer
+
+###### 2.5.8.11.2.3 Message
+
+10.2. [For each subId]: batch.set(auditLogDoc(), { action: 'REASSIGN', ... })
+
+###### 2.5.8.11.2.4 Sequence Number
+
+10.2
+
+###### 2.5.8.11.2.5 Type
+
+🔹 Database Write
+
+###### 2.5.8.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.8.11.2.7 Has Return
+
+❌ No
+
+###### 2.5.8.11.2.8 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | N/A |
+| Method | batch.set |
+| Parameters | DocumentReference, AuditLog object payload |
+| Error Handling | Part of atomic batch. |
+
+### 2.5.9.0.0.0 Internal Logic
+
+#### 2.5.9.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.9.2.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.9.3.0.0 Message
+
+11. Audit: Confirms all reassignments are added to the transaction.
+
+#### 2.5.9.4.0.0 Sequence Number
+
+11
+
+#### 2.5.9.5.0.0 Type
+
+🔹 Internal Logic
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.9.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | N/A |
+| Method | batch.commit() |
+| Parameters | N/A |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | N/A |
+
+### 2.5.10.0.0.0 UI Feedback
+
+#### 2.5.10.1.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.10.2.0.0 Target Id
+
+admin-actor
+
+#### 2.5.10.3.0.0 Message
+
+14. Displays 'Reassignment successful' and re-enables deactivation button.
+
+#### 2.5.10.4.0.0 Sequence Number
+
+14
+
+#### 2.5.10.5.0.0 Type
+
+🔹 UI Feedback
+
+#### 2.5.10.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.10.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.10.8.0.0 Is Activation
+
+❌ No
+
+### 2.5.11.0.0.0 User Interaction
+
+#### 2.5.11.1.0.0 Source Id
+
+admin-actor
+
+#### 2.5.11.2.0.0 Target Id
+
+presentation-layer
+
+#### 2.5.11.3.0.0 Message
+
+15. Re-initiates deactivation for Supervisor user ('sup123').
+
+#### 2.5.11.4.0.0 Sequence Number
+
+15
+
+#### 2.5.11.5.0.0 Type
+
+🔹 User Interaction
+
+#### 2.5.11.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.11.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.11.8.0.0 Is Activation
+
+❌ No
+
+### 2.5.12.0.0.0 API Call
+
+#### 2.5.12.1.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.12.2.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.12.3.0.0 Message
+
+16. POST /deactivateUser({ userId: 'sup123' })
+
+#### 2.5.12.4.0.0 Sequence Number
+
+16
+
+#### 2.5.12.5.0.0 Type
+
+🔹 API Call
+
+#### 2.5.12.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.12.7.0.0 Return Message
+
+21. { success: true }
+
+#### 2.5.12.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.12.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.12.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS (Firebase Callable Function) |
+| Method | deactivateUser |
+| Parameters | { userId: string } |
+| Authentication | Firebase Auth JWT (ID Token) with 'Admin' custom c... |
+| Error Handling | Returns error if user not found. |
+| Performance | p95 latency < 500ms |
+
+### 2.5.13.0.0.0 Database Query
+
+#### 2.5.13.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.13.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.13.3.0.0 Message
+
+17. Re-checks for direct subordinates: query(users, where('supervisorId', '==', 'sup123'))
+
+#### 2.5.13.4.0.0 Sequence Number
+
+17
+
+#### 2.5.13.5.0.0 Type
+
+🔹 Database Query
+
+#### 2.5.13.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.13.7.0.0 Return Message
+
+18. Returns an empty list.
+
+#### 2.5.13.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.13.9.0.0 Is Activation
+
+❌ No
+
+### 2.5.14.0.0.0 Database Transaction
+
+#### 2.5.14.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.14.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.14.3.0.0 Message
+
+19. Atomically updates user status and creates audit log entry.
+
+#### 2.5.14.4.0.0 Sequence Number
+
+19
+
+#### 2.5.14.5.0.0 Type
+
+🔹 Database Transaction
+
+#### 2.5.14.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.14.7.0.0 Return Message
+
+20. Transaction commits successfully.
+
+#### 2.5.14.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.14.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.14.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase SDK |
+| Method | firestore.runTransaction() |
+| Parameters | Update and Set operations for User and AuditLog co... |
+| Authentication | Admin SDK privileges. |
+| Error Handling | Entire transaction rolls back on failure. |
+| Performance | p95 latency < 200ms |
+
+### 2.5.15.0.0.0 UI Feedback
+
+#### 2.5.15.1.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.15.2.0.0 Target Id
+
+admin-actor
+
+#### 2.5.15.3.0.0 Message
+
+22. Displays 'User deactivated successfully' and updates user list.
+
+#### 2.5.15.4.0.0 Sequence Number
+
+22
+
+#### 2.5.15.5.0.0 Type
+
+🔹 UI Feedback
+
+#### 2.5.15.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.15.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.15.8.0.0 Is Activation
+
+❌ No
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+The UI must be designed to specifically handle the 'SUPERVISOR_HAS_SUBORDINATES' error code to trigger the reassignment workflow rather than showing a generic error.
+
+#### 2.6.1.2.0.0 Position
+
+top-right
+
+#### 2.6.1.3.0.0 Participant Id
+
+presentation-layer
+
+#### 2.6.1.4.0.0 Sequence Number
+
+7
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+The reassignment of subordinates (Step 10) is a critical atomic operation. Using a Firestore batched write ensures that either all subordinates are reassigned, or none are, preventing an inconsistent state.
+
+#### 2.6.2.2.0.0 Position
+
+bottom-right
+
+#### 2.6.2.3.0.0 Participant Id
+
+application-services-layer
+
+#### 2.6.2.4.0.0 Sequence Number
+
+10
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+All state-changing actions (reassignment, deactivation) must create an immutable record in the 'auditLog' collection for compliance and traceability.
+
+#### 2.6.3.2.0.0 Position
+
+bottom-left
+
+#### 2.6.3.3.0.0 Participant Id
+
+data-persistence-layer
+
+#### 2.6.3.4.0.0 Sequence Number
+
+19
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The `deactivateUser` and `reassignSubordinates` Cl... |
+| Performance Targets | The initial deactivation check (Steps 2-6) must re... |
+| Error Handling Strategy | The backend must use distinct, documented error co... |
+| Testing Considerations | 1. **Unit Test:** The `deactivateUser` function lo... |
+| Monitoring Requirements | Log every invocation of `deactivateUser` and `reas... |
+| Deployment Considerations | The Cloud Functions and associated Firestore secur... |
+

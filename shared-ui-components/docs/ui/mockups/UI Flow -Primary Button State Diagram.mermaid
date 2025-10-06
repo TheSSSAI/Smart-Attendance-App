@@ -1,0 +1,31 @@
+stateDiagram-v2
+    direction LR
+
+    [*] --> Idle
+    
+    state "Idle / Default" as Idle
+    
+    Idle --> Hovered : "Mouse Enter"
+    Hovered --> Idle : "Mouse Leave"
+    
+    Idle --> Focused : "Keyboard Tab"
+    Focused --> Idle : "Tab Away"
+
+    Hovered --> Pressed : "Mouse Down / Tap"
+    Pressed --> Hovered : "Mouse Up / Release"
+
+    Focused --> Pressed : "Key Press (Enter/Space)"
+    Pressed --> Focused : "Key Release"
+
+    Pressed --> Loading : "Action Triggered"
+    Loading --> Idle : "Action Complete"
+    
+    Idle --> Disabled : "System Disables"
+    Hovered --> Disabled : "System Disables"
+    Focused --> Disabled : "System Disables"
+    Disabled --> Idle : "System Enables"
+    
+    note right of Loading
+        During the 'Loading' state,
+        the button is non-interactive.
+    end note

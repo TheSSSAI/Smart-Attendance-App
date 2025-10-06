@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Your Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { line-height: 1.5; font-family: var(--font-family-primary); background-color: var(--color-neutral-50); color: var(--color-neutral-800); -webkit-font-smoothing: antialiased; }
+    img, picture, video, canvas, svg { display: block; max-width: 100%; }
+    input, button, textarea, select { font: inherit; }
+    p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+
+    /* Design System Tokens */
+    :root {
+      --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+      
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-800: #1E293B;
+      --color-neutral-900: #0F172A;
+      --color-white: #FFFFFF;
+      
+      --color-success: #16A34A;
+      --color-error: #DC2626;
+
+      --spacing-4: 4px;
+      --spacing-8: 8px;
+      --spacing-12: 12px;
+      --spacing-16: 16px;
+      --spacing-24: 24px;
+      --spacing-32: 32px;
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+    
+    /* Screen Layout */
+    .screen-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--spacing-24);
+    }
+
+    .registration-card {
+      background-color: var(--color-white);
+      border-radius: 12px;
+      padding: var(--spacing-32);
+      width: 100%;
+      max-width: 480px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--color-neutral-200);
+    }
+    
+    .registration-card__header {
+      text-align: center;
+      margin-bottom: var(--spacing-24);
+    }
+
+    .registration-card__title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-neutral-900);
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .registration-card__subtitle {
+      font-size: 16px;
+      color: var(--color-neutral-400);
+    }
+    .registration-card__subtitle span {
+        font-weight: 600;
+        color: var(--color-neutral-800);
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-24);
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: var(--spacing-8);
+      color: var(--color-neutral-800);
+    }
+    
+    .input-wrapper {
+        position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--spacing-12) var(--spacing-16);
+      border: 1px solid var(--color-neutral-300);
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px rgba(0, 115, 255, 0.2);
+    }
+    
+    .form-input--error {
+        border-color: var(--color-error);
+    }
+
+    .form-input--error:focus {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+    }
+    
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 16px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--color-neutral-400);
+        padding: 4px;
+        display: flex;
+        align-items: center;
+    }
+    .password-toggle:hover {
+        color: var(--color-neutral-800);
+    }
+    .password-toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .error-message {
+      color: var(--color-error);
+      font-size: 14px;
+      margin-top: var(--spacing-8);
+    }
+    
+    /* Password Policy Checklist */
+    .policy-checklist {
+        list-style: none;
+        margin-top: var(--spacing-12);
+        font-size: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-8);
+    }
+    .policy-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-8);
+        color: var(--color-neutral-400);
+        transition: color 200ms ease;
+    }
+    .policy-item.met {
+        color: var(--color-success);
+    }
+    .policy-item.unmet {
+        color: var(--color-error);
+    }
+    .policy-item svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Checkbox */
+    .checkbox-group {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-12);
+        margin-bottom: var(--spacing-24);
+    }
+    .checkbox-input {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--color-neutral-300);
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 2px;
+        flex-shrink: 0;
+        position: relative;
+        transition: background-color 150ms, border-color 150ms;
+    }
+    .checkbox-input:checked {
+        background-color: var(--color-primary-500);
+        border-color: var(--color-primary-500);
+    }
+    .checkbox-input:checked::after {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 1px;
+        left: 5px;
+        width: 6px;
+        height: 12px;
+        border: solid var(--color-white);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+    .checkbox-label {
+        font-size: 14px;
+        color: var(--color-neutral-800);
+    }
+    .checkbox-label a {
+        color: var(--color-primary-500);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .checkbox-label a:hover {
+        text-decoration: underline;
+    }
+
+    /* Primary Button */
+    .btn-primary {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: var(--spacing-12) var(--spacing-24);
+      background-color: var(--color-primary-500);
+      color: var(--color-white);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 150ms ease-in-out;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--color-primary-600);
+    }
+    
+    .btn-primary:active:not(:disabled) {
+      background-color: var(--color-primary-700);
+    }
+
+    .btn-primary:disabled {
+      background-color: var(--color-neutral-200);
+      color: var(--color-neutral-400);
+      cursor: not-allowed;
+    }
+
+    .btn-primary .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: var(--color-white);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Alert Banner */
+    .alert {
+        padding: var(--spacing-16);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-12);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: var(--spacing-24);
+    }
+    .alert--error {
+        background-color: #FEF2F2;
+        color: #991B1B;
+    }
+    .alert svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+    
+    /* Screen Variations */
+    .screen-variations {
+        margin-top: var(--spacing-32);
+        padding: var(--spacing-32);
+        background-color: #f0f4f8;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 1000px;
+    }
+    .screen-variations h2 {
+        font-size: 24px;
+        margin-bottom: var(--spacing-24);
+        text-align: center;
+        color: var(--color-neutral-900);
+    }
+    .variation-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: var(--spacing-32);
+        align-items: start;
+    }
+    .variation-group {
+        border: 1px dashed var(--color-neutral-300);
+        padding: var(--spacing-16);
+        border-radius: 8px;
+    }
+    .variation-group h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: var(--spacing-8);
+    }
+    .variation-group p {
+        font-size: 14px;
+        color: var(--color-neutral-400);
+        margin-bottom: var(--spacing-16);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="screen-container">
+    <div class="registration-card" id="interactive-form">
+      <div class="registration-card__header">
+        <h1 class="registration-card__title">Complete Your Registration</h1>
+        <p class="registration-card__subtitle">for <span>new.user@example.com</span></p>
+      </div>
+      
+      <form onsubmit="event.preventDefault();">
+        <div class="form-group">
+          <label for="password" class="form-label">Create a Password</label>
+          <div class="input-wrapper">
+              <input type="password" id="password" class="form-input" placeholder="Enter a strong password" required>
+              <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <svg class="eye-closed" style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243l-4.243-4.243" /></svg>
+              </button>
+          </div>
+          <ul class="policy-checklist" id="policy-checklist">
+            <li class="policy-item" id="length-req">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>Minimum 8 characters</span>
+            </li>
+            <li class="policy-item" id="upper-req">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>One uppercase letter</span>
+            </li>
+             <li class="policy-item" id="lower-req">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>One lowercase letter</span>
+            </li>
+            <li class="policy-item" id="number-req">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>One number</span>
+            </li>
+            <li class="policy-item" id="special-req">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span>One special character</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirm-password" class="form-label">Confirm Password</label>
+          <div class="input-wrapper">
+              <input type="password" id="confirm-password" class="form-input" placeholder="Re-enter your password" required>
+          </div>
+          <div id="mismatch-error" class="error-message" style="display: none;">Passwords do not match.</div>
+        </div>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" id="terms" class="checkbox-input">
+            <label for="terms" class="checkbox-label">I have read and agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>.</label>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submit-button" disabled>Activate Account</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="screen-variations">
+    <h2>Screen Variations</h2>
+    <div class="variation-container">
+        <!-- Variant 1: Real-time validation -->
+        <div class="variation-group">
+            <h3>Variant: Real-time Validation</h3>
+            <p>The password policy checklist updates as the user types, providing immediate feedback on which rules are met or unmet.</p>
+            <div class="registration-card">
+                <div class="form-group">
+                  <label for="password-v1" class="form-label">Create a Password</label>
+                  <input type="password" id="password-v1" class="form-input" value="StrongP@ss">
+                  <ul class="policy-checklist">
+                    <li class="policy-item met">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>Minimum 8 characters</span></li>
+                    <li class="policy-item met">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>One uppercase letter</span></li>
+                    <li class="policy-item met">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>One lowercase letter</span></li>
+                    <li class="policy-item unmet">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>One number</span></li>
+                    <li class="policy-item met">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <span>One special character</span></li>
+                  </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variant 2: Password Mismatch Error -->
+        <div class="variation-group">
+            <h3>Variant: Password Mismatch Error</h3>
+            <p>Shows an inline error when the 'Confirm Password' field does not match the 'Password' field.</p>
+            <div class="registration-card">
+                 <div class="form-group">
+                    <label for="password-v2" class="form-label">Create a Password</label>
+                    <input type="password" id="password-v2" class="form-input" value="StrongP@ssw0rd">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password-v2" class="form-label">Confirm Password</label>
+                    <input type="password" id="confirm-password-v2" class="form-input form-input--error" value="strongp@ssw0rd">
+                    <div class="error-message">Passwords do not match.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Variant 3: Loading State -->
+        <div class="variation-group">
+            <h3>Variant: Loading State</h3>
+            <p>After submission, the button enters a loading state to provide feedback while the account is being activated.</p>
+            <div class="registration-card">
+                <button type="submit" class="btn-primary" disabled>
+                    <div class="spinner"></div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Variant 4: Submission Error -->
+        <div class="variation-group">
+            <h3>Variant: Submission Error</h3>
+            <p>An alert banner appears at the top of the form if there is a server-side error during activation.</p>
+            <div class="registration-card">
+                <div class="alert alert--error">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                    <span>Account activation failed. Please try again or contact support.</span>
+                </div>
+                <button type="submit" class="btn-primary">Activate Account</button>
+            </div>
+        </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const termsCheckbox = document.getElementById('terms');
+        const submitButton = document.getElementById('submit-button');
+        const mismatchError = document.getElementById('mismatch-error');
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+        
+        const reqs = {
+            length: { el: document.getElementById('length-req'), test: (val) => val.length >= 8 },
+            upper: { el: document.getElementById('upper-req'), test: (val) => /[A-Z]/.test(val) },
+            lower: { el: document.getElementById('lower-req'), test: (val) => /[a-z]/.test(val) },
+            number: { el: document.getElementById('number-req'), test: (val) => /[0-9]/.test(val) },
+            special: { el: document.getElementById('special-req'), test: (val) => /[^A-Za-z0-9]/.test(val) }
+        };
+
+        const checklistIconSVG = {
+            met: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+            unmet: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+            default: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+        };
+
+        const validateForm = () => {
+            const pass = passwordInput.value;
+            const confirmPass = confirmPasswordInput.value;
+            
+            let allReqsMet = true;
+            for (const key in reqs) {
+                if (!reqs[key].test(pass)) {
+                    allReqsMet = false;
+                    break;
+                }
+            }
+            
+            const passwordsMatch = pass && (pass === confirmPass);
+            mismatchError.style.display = (confirmPass && !passwordsMatch) ? 'block' : 'none';
+            confirmPasswordInput.classList.toggle('form-input--error', confirmPass && !passwordsMatch);
+
+            const termsAccepted = termsCheckbox.checked;
+            
+            submitButton.disabled = !(allReqsMet && passwordsMatch && termsAccepted);
+        };
+
+        passwordInput.addEventListener('input', () => {
+            const pass = passwordInput.value;
+            for (const key in reqs) {
+                const item = reqs[key];
+                const isMet = item.test(pass);
+                item.el.classList.remove('met', 'unmet');
+                if (pass.length > 0) {
+                    item.el.classList.add(isMet ? 'met' : 'unmet');
+                    item.el.firstElementChild.innerHTML = isMet ? checklistIconSVG.met : checklistIconSVG.unmet;
+                } else {
+                    item.el.firstElementChild.innerHTML = checklistIconSVG.default;
+                }
+            }
+            validateForm();
+        });
+
+        confirmPasswordInput.addEventListener('input', validateForm);
+        termsCheckbox.addEventListener('change', validateForm);
+        
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const input = toggle.previousElementSibling;
+                const isOpen = input.type === 'text';
+                input.type = isOpen ? 'password' : 'text';
+                toggle.querySelector('.eye-open').style.display = isOpen ? 'block' : 'none';
+                toggle.querySelector('.eye-closed').style.display = isOpen ? 'none' : 'block';
+            });
+        });
+
+    });
+  </script>
+</body>
+</html>

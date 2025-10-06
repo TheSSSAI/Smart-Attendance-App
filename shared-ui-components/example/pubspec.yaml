@@ -1,0 +1,26 @@
+name: shared_ui_components_example
+description: Demonstrates widgets from the shared_ui_components package.
+publish_to: 'none' 
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  shared_ui_components:
+    path: ../
+
+  cupertino_icons: ^1.0.6
+  table_calendar: ^3.0.9 # Required for the CalendarView example
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

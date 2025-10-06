@@ -1,0 +1,54 @@
+flowchart TD
+    subgraph "Frontend: Web Application"
+        A[User arrives on Registration Page] --> B[Fills Registration Form]
+        B -- Org Name --> C{On Blur: Async Validation? (US-002)}
+        C -- Yes --> D[Check Org Name Uniqueness]
+        B -- Password --> E{Real-time Validation (US-027)}
+        E -- Yes --> F[Display Password Complexity Checklist]
+        B -- Data Region --> G[Selects Data Residency Region (US-003)]
+        B --> H[User clicks 'Register']
+        H --> I{Final Client-Side Validation}
+        I -- Invalid --> J[Display Inline Errors]
+        J --> B
+        I -- Valid --> K[Show Loading State & Submit to Backend]
+    end
+
+    subgraph "Backend: Cloud Function (US-001)"
+        L[Receives Registration Data] --> M{1. Validate Inputs (Region, Password, etc.)}
+        M -- Invalid --> N[Return 400 Bad Request]
+        M -- Valid --> O{2. Check Org Name Uniqueness (Transactional)}
+        O -- Name Taken --> P[Return 'name-already-taken' Error]
+        O -- Name Available --> Q[3. Start Atomic Transaction]
+        Q --> R[Create Firebase Auth User]
+        R --> S[Create Tenant Document in Firestore <br><i>(with selected region)</i>]
+        S --> T[Create User Document in Firestore]
+        T --> U[Set Custom Claims on Auth User <br><i>(role: 'Admin', tenantId)</i>]
+        U --> V{Commit Transaction}
+        V -- Success --> W[Return Success (200 OK)]
+        V -- Failure --> X[Rollback Transaction <br><i>(e.g., delete Auth user)</i>]
+        X --> Y[Log Critical Error & Return 500 Server Error]
+    end
+
+    subgraph "Frontend: Response Handling"
+        Z[Handle Backend Response]
+        N --> Z
+        P --> Z
+        Y --> Z
+        Z -- Error --> AA[Display Specific Error Message]
+        AA --> B
+        W --> BB[Auto-login User]
+        BB --> CC[Redirect to Admin Dashboard]
+    end
+
+    K --> L
+
+    %% Styling
+    classDef process fill:#e3f2fd,stroke:#2196f3,color:#000
+    classDef decision fill:#fff9c4,stroke:#fbc02d,color:#000
+    classDef error fill:#ffebee,stroke:#d32f2f,color:#000
+    classDef success fill:#e8f5e9,stroke:#4caf50,color:#000
+
+    class B,F,G,H,K,L,Q,R,S,T,U process
+    class C,E,I,M,O,V decision
+    class J,N,P,X,Y,AA error
+    class D,W,BB,CC success

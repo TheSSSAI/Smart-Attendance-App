@@ -1,0 +1,42 @@
+sequenceDiagram
+    actor "Admin User" as AdminUser
+    participant "Presentation Layer" as PresentationLayer
+    participant "Application Services" as ApplicationServices
+    participant "Data & Persistence" as DataPersistence
+    participant "SendGrid API" as SendGridAPI
+    actor "Invited User" as InvitedUser
+    participant "Authentication Service" as AuthenticationService
+
+    activate PresentationLayer
+    AdminUser->>PresentationLayer: 1. Submits 'Invite User' form with { email, role }
+    activate ApplicationServices
+    PresentationLayer->>ApplicationServices: 2. invokeCallableFunction('inviteUser', { email, role })
+    ApplicationServices-->>PresentationLayer: Success or Error object
+    ApplicationServices->>DataPersistence: 2.1. query(users).where('email', '==', email).where('tenantId', '==', tenantId).limit(1)
+    DataPersistence-->>ApplicationServices: QuerySnapshot (0 or 1 document)
+    ApplicationServices->>DataPersistence: 2.2. ALT [User Does Not Exist]: createDoc('users', userData)
+    DataPersistence-->>ApplicationServices: WriteResult
+    ApplicationServices->>SendGridAPI: 2.3. POST /v3/mail/send with invitation link
+    SendGridAPI-->>ApplicationServices: 202 Accepted or Error
+    PresentationLayer->>AdminUser: 3. Displays 'Invitation sent successfully' toast/message
+    InvitedUser->>PresentationLayer: 4. Clicks registration link in email: GET /register?token=...
+    PresentationLayer-->>InvitedUser: Registration Page HTML/JS
+    InvitedUser->>PresentationLayer: 5. Submits registration form with { password }
+    PresentationLayer->>ApplicationServices: 6. invokeCallableFunction('completeRegistration', { token, password })
+    ApplicationServices-->>PresentationLayer: Success or Error object
+    ApplicationServices->>DataPersistence: 6.1. query(users).where('invitationToken', '==', token).limit(1)
+    DataPersistence-->>ApplicationServices: QuerySnapshot with user document
+    ApplicationServices->>AuthenticationService: 6.2. ALT [Token is Valid]: admin.auth().createUser({ email, password })
+    AuthenticationService-->>ApplicationServices: UserRecord (with new uid)
+    ApplicationServices->>AuthenticationService: 6.3. admin.auth().setCustomUserClaims(uid, { tenantId, role })
+    AuthenticationService-->>ApplicationServices: void
+    ApplicationServices->>DataPersistence: 6.4. updateDoc('users/{userId}', { status: 'active', uid, ... })
+    DataPersistence-->>ApplicationServices: WriteResult
+    PresentationLayer->>InvitedUser: 7. Redirects to login page with success message
+
+    note over DataPersistence: A composite index on users(tenantId, email) is required for the initial existence check to be per...
+    note over DataPersistence: A single-field index on users(invitationToken) is required for the registration completion lookup.
+    note over ApplicationServices: The entire completeRegistration function (steps 6.1 to 6.4) MUST be atomic. A Firestore Transacti...
+
+    deactivate ApplicationServices
+    deactivate PresentationLayer

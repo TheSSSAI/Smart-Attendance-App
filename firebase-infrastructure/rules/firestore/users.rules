@@ -1,0 +1,60 @@
+// This module contains security rules for the 'users' collection.
+// It enforces RBAC for reading and writing user profile data,
+// ensuring users can only access appropriate information based on their role and position in the hierarchy.
+
+// Helper function to check if the requesting user is the supervisor of the target user.
+// This requires a cross-document read, which has performance and cost implications.
+function isSupervisorOf(userId) {
+    return isSupervisor() && get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(userId)).data.supervisorId == request.auth.uid;
+}
+
+// Helper function to validate the data being written for a user document.
+function isValidUserData(userData) {
+    return userData.email is string
+        && userData.tenantId is string
+        && userData.role in ['Admin', 'Supervisor', 'Subordinate']
+        && userData.status in ['invited', 'active', 'deactivated']
+        && ('supervisorId' in userData ? userData.supervisorId is string || userData.supervisorId == null : true)
+        && ('teamIds' in userData ? userData.teamIds is list : true)
+        && userData.keys().hasOnly(['email', 'tenantId', 'role', 'status', 'supervisorId', 'teamIds', 'firstName', 'lastName', 'createdAt', 'updatedAt', 'fcmTokens', 'phone', 'deactivatedTimestamp']);
+}
+
+match /users/{userId} {
+    // READ:
+    // - Admins can read any user profile in their tenant.
+    // - Supervisors can read the profiles of their direct subordinates.
+    // - Any user can read their own profile.
+    allow read: if isTenantMember(tenantId) && (
+                    isAdmin() || 
+                    isOwner(userId) ||
+                    isSupervisorOf(userId)
+                );
+
+    // CREATE:
+    // - Only Admins can create new user documents (as part of the invitation flow).
+    allow create: if isTenantMember(tenantId) && isAdmin()
+                  && isValidUserData(request.resource.data)
+                  && request.resource.data.tenantId == tenantId; // Ensure user is created in the correct tenant
+
+    // UPDATE:
+    // - Admins can update any field on any user profile.
+    // - Supervisors can update the 'supervisorId' of their subordinates (reassignment). This is a complex operation better handled by a Cloud Function, but the rule allows it.
+    // - Users can update a limited set of their own profile fields. They CANNOT change their role, tenantId, status, or supervisorId.
+    allow update: if isTenantMember(tenantId) && (
+        // Admin rule: can update anything as long as the data is valid
+        (isAdmin() && isValidUserData(request.resource.data)) ||
+        
+        // Self-service rule: User can update their own non-critical info
+        (isOwner(userId)
+            && request.resource.data.email == resource.data.email // Cannot change email
+            && request.resource.data.tenantId == resource.data.tenantId // Cannot change tenant
+            && request.resource.data.role == resource.data.role // Cannot change role
+            && request.resource.data.status == resource.data.status // Cannot change status
+            && request.resource.data.supervisorId == resource.data.supervisorId // Cannot change supervisor
+        )
+    );
+
+    // DELETE:
+    // - No client is allowed to delete user documents directly. This must be handled by a secure server process (Cloud Function).
+    allow delete: if false;
+}

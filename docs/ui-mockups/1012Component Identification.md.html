@@ -1,0 +1,409 @@
+
+{
+  "component_inventory": {
+    "atomic_components": [
+      {
+        "component_name": "Primary Button",
+        "category": "form_controls",
+        "variants": ["default", "secondary", "destructive", "text_link"],
+        "states": ["default", "hover", "active", "focus", "disabled", "loading"],
+        "responsive_needs": "Maintains clear touch/click targets on all screen sizes.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2-4 hours"
+      },
+      {
+        "component_name": "Text Input",
+        "category": "form_controls",
+        "variants": ["default", "password", "multiline", "search"],
+        "states": ["default", "focused", "error", "disabled", "with_icon"],
+        "responsive_needs": "Full width on smaller viewports, max-width on larger ones.",
+        "dependencies": ["Icon"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "3-5 hours"
+      },
+      {
+        "component_name": "Checkbox",
+        "category": "form_controls",
+        "variants": ["default", "table_select"],
+        "states": ["checked", "unchecked", "disabled"],
+        "responsive_needs": "Sufficient touch target for tablet use.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "2-3 hours"
+      },
+      {
+        "component_name": "Toggle Switch",
+        "category": "form_controls",
+        "variants": ["default"],
+        "states": ["on", "off", "disabled"],
+        "responsive_needs": "Standard size, consistent across viewports.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "2-3 hours"
+      },
+      {
+        "component_name": "Alert Banner",
+        "category": "feedback",
+        "variants": ["info", "success", "warning", "error", "maintenance"],
+        "states": ["visible", "dismissible"],
+        "responsive_needs": "Adapts to screen width, text wrapping.",
+        "dependencies": ["Icon", "Button"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Loading Indicator",
+        "category": "feedback",
+        "variants": ["circular_spinner", "linear_progress", "skeleton_loader"],
+        "states": ["indeterminate"],
+        "responsive_needs": "Scalable for different contexts (e.g., button vs. full page).",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2-4 hours"
+      },
+      {
+        "component_name": "Tooltip",
+        "category": "feedback",
+        "variants": ["default"],
+        "states": ["visible_on_hover"],
+        "responsive_needs": "Positioning logic to avoid viewport edges.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "2-3 hours"
+      },
+      {
+        "component_name": "Badge/Tag",
+        "category": "data_display",
+        "variants": ["user_status", "exception_flag", "filter_tag"],
+        "states": ["default"],
+        "responsive_needs": "Adapts to text length.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "3-4 hours"
+      }
+    ],
+    "molecular_components": [
+      {
+        "component_name": "Form Field Group",
+        "category": "forms",
+        "variants": ["default"],
+        "states": ["default", "error", "disabled"],
+        "responsive_needs": "Handles responsive label positioning.",
+        "dependencies": ["Text Input", "Label", "Validation Message"],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "2-4 hours"
+      },
+      {
+        "component_name": "Searchable Dropdown",
+        "category": "form_controls",
+        "variants": ["single_select", "multi_select"],
+        "states": ["default", "focused", "loading_options", "error"],
+        "responsive_needs": "Dropdown menu positioning must be smart on smaller viewports.",
+        "dependencies": ["Text Input", "Dropdown Menu", "List Item"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "6-10 hours"
+      },
+      {
+        "component_name": "Date Range Picker",
+        "category": "form_controls",
+        "variants": ["default"],
+        "states": ["default", "focused"],
+        "responsive_needs": "Should use a mobile-friendly picker style on smaller screens.",
+        "dependencies": ["Text Input", "Calendar View (popup)"],
+        "complexity_level": "medium",
+        "implementation_priority": 4,
+        "estimated_effort": "5-8 hours"
+      },
+      {
+        "component_name": "Data Table Row",
+        "category": "data_display",
+        "variants": ["user_row", "team_row", "report_row"],
+        "states": ["default", "hover", "selected"],
+        "responsive_needs": "May need to hide less critical columns on smaller viewports.",
+        "dependencies": ["Checkbox", "Badge/Tag", "Icon Button"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Confirmation Dialog",
+        "category": "feedback",
+        "variants": ["standard", "destructive", "with_input"],
+        "states": ["visible"],
+        "responsive_needs": "Centered overlay, scales with viewport width.",
+        "dependencies": ["Primary Button", "Text Input"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Page Header",
+        "category": "layout",
+        "variants": ["with_actions", "simple"],
+        "states": ["default"],
+        "responsive_needs": "Actions may wrap or move to a menu on smaller screens.",
+        "dependencies": ["Primary Button"],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "3-5 hours"
+      },
+      {
+        "component_name": "Metric Card",
+        "category": "data_display",
+        "variants": ["default"],
+        "states": ["loading", "with_data"],
+        "responsive_needs": "Scales to fit grid columns.",
+        "dependencies": ["Loading Indicator"],
+        "complexity_level": "low",
+        "implementation_priority": 4,
+        "estimated_effort": "2-4 hours"
+      }
+    ],
+    "organism_components": [
+      {
+        "component_name": "Main Layout",
+        "category": "layout",
+        "variants": ["default"],
+        "states": ["sidebar_open", "sidebar_collapsed"],
+        "responsive_needs": "Sidebar becomes a collapsible drawer on smaller screens.",
+        "dependencies": ["Sidebar Navigation", "Top Bar"],
+        "complexity_level": "high",
+        "implementation_priority": 1,
+        "estimated_effort": "12-16 hours"
+      },
+      {
+        "component_name": "Data Table",
+        "category": "data_display",
+        "variants": ["users", "teams", "reports"],
+        "states": ["loading", "empty", "with_data", "error"],
+        "responsive_needs": "Horizontal scrolling on smaller viewports or card-based transformation.",
+        "dependencies": ["Data Table Row", "Pagination Controls", "Loading Indicator"],
+        "complexity_level": "high",
+        "implementation_priority": 3,
+        "estimated_effort": "12-18 hours"
+      },
+      {
+        "component_name": "Report Filters Bar",
+        "category": "forms",
+        "variants": ["attendance_summary", "exception_report"],
+        "states": ["default"],
+        "responsive_needs": "Filters stack vertically on smaller screens.",
+        "dependencies": ["Date Range Picker", "Searchable Dropdown", "Primary Button"],
+        "complexity_level": "medium",
+        "implementation_priority": 4,
+        "estimated_effort": "8-12 hours"
+      },
+      {
+        "component_name": "Chart Component",
+        "category": "data_display",
+        "variants": ["bar_chart", "line_chart"],
+        "states": ["loading", "with_data", "empty"],
+        "responsive_needs": "SVG-based and responsive to container size.",
+        "dependencies": ["Tooltip"],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "10-16 hours"
+      },
+      {
+        "component_name": "Settings Form Section",
+        "category": "forms",
+        "variants": ["timezone", "password_policy", "data_retention", "danger_zone"],
+        "states": ["default", "editing", "saving"],
+        "responsive_needs": "Standard responsive form layout.",
+        "dependencies": ["Form Field Group", "Primary Button", "Toggle Switch"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "6-8 hours"
+      },
+      {
+        "component_name": "CSV Import Module",
+        "category": "forms",
+        "variants": ["default"],
+        "states": ["idle", "uploading", "processing", "complete"],
+        "responsive_needs": "File drop zone needs to be clear on all screen sizes.",
+        "dependencies": ["File Upload Component", "Primary Button", "Import Summary Report"],
+        "complexity_level": "high",
+        "implementation_priority": 5,
+        "estimated_effort": "10-14 hours"
+      },
+      {
+        "component_name": "Public Page Layout",
+        "category": "layout",
+        "variants": ["default"],
+        "states": ["default"],
+        "responsive_needs": "Centered content, responsive to all screen sizes from mobile to desktop.",
+        "dependencies": ["Card"],
+        "complexity_level": "medium",
+        "implementation_priority": 1,
+        "estimated_effort": "4-6 hours"
+      }
+    ]
+  },
+  "screen_inventory": [
+    {
+      "screen_name": "Public Registration Screen",
+      "screen_type": "authentication",
+      "variants": ["default"],
+      "states": ["loading", "default", "error"],
+      "required_components": ["Public Page Layout", "Form Field Group", "Primary Button"],
+      "platform_optimizations": "Web-only. Responsive for mobile browsers.",
+      "implementation_priority": 2,
+      "estimated_effort": "8-12 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Login Screen",
+      "screen_type": "authentication",
+      "variants": ["default"],
+      "states": ["loading", "default", "error"],
+      "required_components": ["Public Page Layout", "Form Field Group", "Primary Button", "Text Link"],
+      "platform_optimizations": "Web-only. Responsive for mobile browsers.",
+      "implementation_priority": 2,
+      "estimated_effort": "6-8 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Admin Dashboard",
+      "screen_type": "dashboard",
+      "variants": ["default"],
+      "states": ["loading", "loaded", "error"],
+      "required_components": ["Main Layout", "Metric Card", "Chart Component", "Alert Banner"],
+      "platform_optimizations": "Grid-based layout for desktop, stacking on tablet.",
+      "implementation_priority": 3,
+      "estimated_effort": "12-20 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "User Management Screen",
+      "screen_type": "crud_list",
+      "variants": ["default"],
+      "states": ["loading", "with_data", "empty", "error"],
+      "required_components": ["Main Layout", "Page Header", "Data Table", "Confirmation Dialog"],
+      "platform_optimizations": "Table optimized for desktop/tablet viewports.",
+      "implementation_priority": 4,
+      "estimated_effort": "10-16 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Team Management Screen",
+      "screen_type": "crud_list",
+      "variants": ["default", "member_view"],
+      "states": ["loading", "with_data", "empty", "error"],
+      "required_components": ["Main Layout", "Page Header", "Data Table", "Confirmation Dialog"],
+      "platform_optimizations": "Table optimized for desktop/tablet viewports.",
+      "implementation_priority": 4,
+      "estimated_effort": "10-16 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Reports Hub Screen",
+      "screen_type": "dashboard",
+      "variants": ["summary", "late_early", "exception", "audit_log"],
+      "states": ["loading", "with_data", "empty", "error"],
+      "required_components": ["Main Layout", "Report Filters Bar", "Data Table", "Chart Component", "Primary Button"],
+      "platform_optimizations": "Complex data visualization and filtering designed for larger screens.",
+      "implementation_priority": 5,
+      "estimated_effort": "24-32 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Tenant Settings Screen",
+      "screen_type": "settings",
+      "variants": ["default"],
+      "states": ["loading", "loaded", "saving", "error"],
+      "required_components": ["Main Layout", "Settings Form Section", "Confirmation Dialog"],
+      "platform_optimizations": "Tabbed or sectioned layout for clarity on desktop.",
+      "implementation_priority": 4,
+      "estimated_effort": "12-18 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Integrations Screen",
+      "screen_type": "settings",
+      "variants": ["google_sheets"],
+      "states": ["not_connected", "connected", "error"],
+      "required_components": ["Main Layout", "Primary Button", "Alert Banner"],
+      "platform_optimizations": "Handles OAuth redirection flow specific to web.",
+      "implementation_priority": 5,
+      "estimated_effort": "8-12 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Data Migration Screen",
+      "screen_type": "utility",
+      "variants": ["default"],
+      "states": ["idle", "processing", "report_ready"],
+      "required_components": ["Main Layout", "CSV Import Module", "Text Link"],
+      "platform_optimizations": "Optimized for desktop file management workflows.",
+      "implementation_priority": 6,
+      "estimated_effort": "10-14 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Help & Support Screen",
+      "screen_type": "content",
+      "variants": ["default"],
+      "states": ["loading", "loaded"],
+      "required_components": ["Main Layout", "ListItem"],
+      "platform_optimizations": "Simple content layout.",
+      "implementation_priority": 6,
+      "estimated_effort": "4-6 hours",
+      "user_flow_criticality": "low"
+    }
+  ],
+  "implementation_plan": {
+    "phase_1_foundation": {
+      "components": ["Primary Button", "Text Input", "Loading Indicator", "Main Layout", "Public Page Layout"],
+      "rationale": "Establishes the core UI atoms and the main application shells for both authenticated and unauthenticated experiences. This is the absolute minimum needed to start building screens.",
+      "estimated_duration": "5-7 days"
+    },
+    "phase_2_authentication_flow": {
+      "screens": ["Public Registration Screen", "Login Screen", "Forgot Password Screen"],
+      "rationale": "Builds the complete, unauthenticated user journey. This allows the creation of the first Admin user, which is a prerequisite for accessing the main application.",
+      "estimated_duration": "4-6 days"
+    },
+    "phase_3_core_management": {
+      "components": ["Data Table", "Confirmation Dialog", "Page Header"],
+      "screens": ["Admin Dashboard (Skeleton)", "User Management Screen", "Team Management Screen"],
+      "rationale": "Implements the core Create, Read, Update, Delete (CRUD) functionalities for users and teams. This is the foundational administrative work that enables all other features.",
+      "estimated_duration": "8-12 days"
+    },
+    "phase_4_settings_and_reports": {
+      "components": ["Settings Form Section", "Report Filters Bar", "Chart Component"],
+      "screens": ["Tenant Settings Screen", "Reports Hub Screen"],
+      "rationale": "Builds out the main configuration and reporting capabilities. These are high-value features for the Admin persona that rely on the data structures established in Phase 3.",
+      "estimated_duration": "10-15 days"
+    },
+    "phase_5_integrations_and_advanced": {
+      "screens": ["Integrations Screen", "Data Migration Screen", "Help & Support Screen"],
+      "rationale": "Adds advanced features and third-party integrations, completing the full feature set for the Admin dashboard.",
+      "estimated_duration": "8-10 days"
+    }
+  },
+  "platform_implementation_strategy": {
+    "target_platform": "Flutter for Web",
+    "implementation_approach": "desktop_first",
+    "responsive_strategy": "The application will be designed for desktop and tablet viewports primarily. A 12-column grid system will be used. On smaller tablet sizes or portrait orientations, sidebars will collapse and grids may reflow to a 2-column or stacked layout. Mobile browser support is for usability, not a primary target.",
+    "progressive_enhancement": "Core CRUD and reporting functionality will be built first, followed by enhanced UI interactions, real-time updates, and third-party integrations.",
+    "browser_support": "Latest stable versions of Google Chrome, Mozilla Firefox, Apple Safari, and Microsoft Edge.",
+    "accessibility_integration": "WCAG 2.1 AA compliance will be a core requirement for all components and screens from the outset, integrated into the Definition of Done for all UI tickets."
+  },
+  "quality_assurance_plan": {
+    "component_testing": "All Flutter widgets will be accompanied by widget tests to validate rendering, states, and basic interactions in isolation.",
+    "integration_testing": "Widget tests will be used to test interactions between multiple components and their state management providers (Riverpod). Firebase Emulator Suite will be used for testing interactions with backend services.",
+    "responsive_testing": "Testing will be performed using browser developer tools to simulate tablet and desktop breakpoints. Manual testing on physical tablets (e.g., iPad) is required before release.",
+    "accessibility_testing": "Automated checks using browser-based tools (e.g., Lighthouse, Axe) will be part of the CI pipeline. Manual testing with keyboard navigation and screen readers (e.g., NVDA, VoiceOver) is mandatory for all user flows.",
+    "performance_testing": "Flutter DevTools will be used to profile widget build times, screen load times, and memory usage to ensure a smooth user experience. Web performance metrics (LCP, FID) will be monitored."
+  }
+}

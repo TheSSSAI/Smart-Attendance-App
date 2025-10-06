@@ -1,0 +1,4 @@
+"sprint_number","story_ids","total_points","sprint_goal","dependencies_resolved"
+"1","[""US-UI-001"",""US-UI-002"",""US-UI-009"",""US-UI-003""]","11","Establish the foundational design system, theming, and CI pipeline. Implement the first and most critical atomic component (PrimaryButton).","true"
+"2","[""US-UI-004"",""US-UI-005"",""US-UI-007"",""US-UI-010""]","14","Build out the core atomic and molecular components for forms and feedback. Create the runnable example app to serve as a living style guide.","true"
+"3","[""US-UI-006"",""US-UI-008""]","13","Implement the most complex and critical components: the performant `AttendanceListItem` and the reusable `AuthenticationForm`.","true"

@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "attendance-app-dev",
+    "dev": "attendance-app-dev",
+    "staging": "attendance-app-staging",
+    "prod": "attendance-app-prod"
+  }
+}

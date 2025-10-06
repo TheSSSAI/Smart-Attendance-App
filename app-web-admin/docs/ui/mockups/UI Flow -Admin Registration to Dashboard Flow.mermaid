@@ -1,0 +1,45 @@
+flowchart TD
+    subgraph Frontend Web App
+        A[User fills Registration Form on /register page] --> B{Client-Side Validation OK?}
+        B -- No --> C[Show inline validation errors]
+        C --> A
+        B -- Yes --> D[User Clicks 'Register']
+        D --> E[Show Loading Spinner]
+        E --> F[Invoke 'registerOrganization' Cloud Function]
+    end
+
+    subgraph Backend Cloud Function
+        F --> G{1. Validate Input & Org Name Uniqueness}
+        G -- "Name Taken" --> H[Return 'already-exists' error]
+        G -- "Valid" --> I[Start Atomic Transaction]
+        I --> J[2. Create Firebase Auth User]
+        J --> K[3. Create Tenant Document in Firestore]
+        K --> L[4. Create User Document in Firestore]
+        I -- "On Failure" --> M[Rollback: Delete Auth User if created]
+        M --> H
+        I -- "On Success" --> N[5. Set Custom Claims on Auth User (role: 'Admin', tenantId)]
+        N -- "On Failure" --> O[Rollback: Delete all created data]
+        O --> H
+        N -- "On Success" --> P[6. Create Audit Log for Tenant Creation]
+        P --> Q[Return Success to Client]
+    end
+
+    subgraph Frontend Web App
+        H --> R[Display 'Organization Name Taken' error]
+        R --> A
+        Q --> S[Firebase SDK automatically logs in user]
+        S --> T[Read 'role' and 'tenantId' from new Auth Token]
+        T --> U{Role is 'Admin'?}
+        U -- "Yes" --> V[Redirect to /admin/dashboard]
+        U -- "No/Error" --> W[Redirect to Error Page/Logout]
+        V --> X([Admin Dashboard Displayed])
+    end
+
+    %% Styling
+    classDef errorNode fill:#ffebee,stroke:#d32f2f,color:#000
+    classDef successNode fill:#e8f5e8,stroke:#4caf50,color:#000
+    classDef processNode fill:#e3f2fd,stroke:#2196f3,color:#000
+
+    class C,H,R,M,O,W errorNode
+    class V,X,Q,S,T,P,N successNode
+    class A,D,E,F,G,I,J,K,L processNode

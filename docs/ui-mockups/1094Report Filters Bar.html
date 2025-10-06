@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component: Report Filters Bar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--color-neutral-gray-50);
+      color: var(--color-neutral-gray-800);
+      padding: var(--spacing-6);
+    }
+    h1, h2, h3 {
+        margin-bottom: var(--spacing-4);
+        font-weight: 700;
+        color: var(--color-neutral-gray-900);
+    }
+    h1 { font-size: 36px; }
+    h2 { font-size: 28px; margin-top: var(--spacing-7); }
+    h3 { font-size: 20px; margin-top: var(--spacing-5); color: var(--color-neutral-gray-700); }
+    p { font-size: 14px; color: var(--color-neutral-gray-600); margin-bottom: var(--spacing-4); max-width: 70ch; }
+    hr { border: none; border-top: 1px solid var(--color-neutral-gray-200); margin: var(--spacing-7) 0; }
+
+    /* Design System Tokens */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-primary-focus-ring: rgba(0, 115, 255, 0.3);
+
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-gray-50: #F8FAFC;
+      --color-neutral-gray-100: #F1F5F9;
+      --color-neutral-gray-200: #E2E8F0;
+      --color-neutral-gray-300: #CBD5E1;
+      --color-neutral-gray-500: #64748B;
+      --color-neutral-gray-600: #475569;
+      --color-neutral-gray-700: #334155;
+      --color-neutral-gray-800: #1E293B;
+      --color-neutral-gray-900: #0F172A;
+
+      --color-semantic-error: #DC2626;
+
+      /* Spacing */
+      --spacing-1: 4px;
+      --spacing-2: 8px;
+      --spacing-3: 12px;
+      --spacing-4: 16px;
+      --spacing-5: 24px;
+      --spacing-6: 32px;
+      --spacing-7: 48px;
+
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-weight-regular: 400;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Borders */
+      --border-radius-md: 8px;
+    }
+    
+    /* Screen Showcase Layout */
+    .showcase-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-6);
+      background-color: var(--color-neutral-white);
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    }
+
+    /* Report Filters Bar Component */
+    .report-filters-bar {
+      background-color: var(--color-neutral-white);
+      padding: var(--spacing-4);
+      border: 1px solid var(--color-neutral-gray-200);
+      border-radius: var(--border-radius-md);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-4);
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-2);
+      flex-grow: 1;
+      min-width: 180px; /* Prevent filters from getting too small */
+    }
+
+    .filter-group label {
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-gray-700);
+    }
+    
+    .filter-control {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 44px; /* Consistent height for touch targets */
+      padding: 0 var(--spacing-3);
+      border: 1px solid var(--color-neutral-gray-300);
+      border-radius: var(--border-radius-md);
+      background-color: var(--color-neutral-white);
+      font-size: var(--font-size-body);
+      transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+    }
+    
+    .filter-control:focus-within {
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-focus-ring);
+    }
+
+    .filter-control select {
+        width: 100%;
+        border: none;
+        outline: none;
+        background-color: transparent;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .filter-control .icon {
+        flex-shrink: 0;
+        margin-right: var(--spacing-2);
+        color: var(--color-neutral-gray-500);
+        width: 20px;
+        height: 20px;
+    }
+
+    .filter-control span {
+      flex-grow: 1;
+      color: var(--color-neutral-gray-800);
+    }
+
+    .filter-control-dropdown-icon {
+        flex-shrink: 0;
+        color: var(--color-neutral-gray-500);
+        width: 20px;
+        height: 20px;
+    }
+    
+    .filter-actions {
+      display: flex;
+      gap: var(--spacing-3);
+      align-items: center;
+      flex-shrink: 0;
+      margin-left: auto; /* Push actions to the right on wide screens */
+    }
+    
+    /* Button Component Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 var(--spacing-4);
+      height: 44px;
+      font-family: var(--font-primary);
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+      border-radius: var(--border-radius-md);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 150ms ease-in-out, transform 100ms ease-in-out;
+      white-space: nowrap;
+    }
+    
+    .btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--primary:active {
+      background-color: var(--color-primary-700);
+      transform: scale(0.98);
+    }
+
+    .btn--secondary {
+        background-color: transparent;
+        color: var(--color-neutral-gray-600);
+    }
+    .btn--secondary:hover {
+        background-color: var(--color-neutral-gray-100);
+        color: var(--color-neutral-gray-800);
+    }
+    .btn--secondary:active {
+        background-color: var(--color-neutral-gray-200);
+    }
+
+    /* Responsive Stacking */
+    @media (max-width: 900px) {
+      .report-filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-group {
+        min-width: 100%;
+      }
+      .filter-actions {
+        margin-left: 0;
+        flex-direction: column-reverse; /* Put primary action on bottom */
+        width: 100%;
+      }
+      .filter-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="showcase-container">
+    <h1>Component: Report Filters Bar</h1>
+    <p>A collection of user-configurable controls for filtering report data. The component is responsive, stacking vertically on smaller screens. The specific filters shown change depending on the report context.</p>
+
+    <!-- Variants Section -->
+    <div class="screen-variations">
+      
+      <!-- Variant 1: Attendance Summary -->
+      <div class="variation-group">
+        <h3>Variant: "Attendance Summary"</h3>
+        <p>Provides filters for Date Range, Team, specific Users, and attendance Status. This is the most common filter set.</p>
+        
+        <form class="report-filters-bar" aria-labelledby="attendance-summary-label">
+          <h2 id="attendance-summary-label" style="display: none;">Attendance Summary Filters</h2>
+
+          <!-- Date Range Picker (Mock) -->
+          <div class="filter-group">
+            <label for="date-range-1">Date Range</label>
+            <div id="date-range-1" class="filter-control" tabindex="0" role="button" aria-label="Select Date Range, current value is Nov 01, 2024 to Nov 30, 2024">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18" /></svg>
+              <span>Nov 01, 2024 - Nov 30, 2024</span>
+            </div>
+          </div>
+          
+          <!-- Searchable Dropdown - Team (Mock) -->
+          <div class="filter-group">
+            <label for="team-filter-1">Team</label>
+            <div id="team-filter-1" class="filter-control" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Select Team, current value is All Teams">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.962c.55-.139 1.123-.25 1.718-.344a9.043 9.043 0 0 1 5.836 5.836m-7.5-2.962a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm10.29.175a4.502 4.502 0 1 1-8.48-3.483 4.5 4.5 0 0 1 8.48 3.483Z" /></svg>
+              <span>All Teams</span>
+              <svg class="filter-control-dropdown-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            </div>
+          </div>
+          
+          <!-- Searchable Dropdown - User (Mock) -->
+          <div class="filter-group">
+            <label for="user-filter-1">User</label>
+            <div id="user-filter-1" class="filter-control" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Select User, current value is All Users">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                <span>All Users</span>
+                <svg class="filter-control-dropdown-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            </div>
+          </div>
+          
+          <!-- Regular Select - Status -->
+          <div class="filter-group">
+            <label for="status-filter-1">Status</label>
+            <div class="filter-control">
+              <select id="status-filter-1" aria-label="Select Status">
+                <option>All Statuses</option>
+                <option>Approved</option>
+                <option>Pending</option>
+                <option>Rejected</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="filter-actions">
+            <button class="btn btn--secondary" type="reset">Reset</button>
+            <button class="btn btn--primary" type="submit">Apply Filters</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Variant 2: Exception Report -->
+      <div class="variation-group">
+        <h3>Variant: "Exception Report"</h3>
+        <p>Includes all standard filters plus a multi-select filter for specific exception types (e.g., Offline Entry, Clock Discrepancy).</p>
+        
+        <form class="report-filters-bar" aria-labelledby="exception-report-label">
+          <h2 id="exception-report-label" style="display: none;">Exception Report Filters</h2>
+        
+          <!-- Date Range Picker (Mock) -->
+          <div class="filter-group">
+            <label for="date-range-2">Date Range</label>
+            <div id="date-range-2" class="filter-control" tabindex="0" role="button" aria-label="Select Date Range">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18" /></svg>
+              <span>Select date range...</span>
+            </div>
+          </div>
+          
+          <!-- Searchable Dropdown - Exception Type (Mock) -->
+          <div class="filter-group">
+            <label for="exception-filter-1">Exception Type</label>
+            <div id="exception-filter-1" class="filter-control" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Select Exception Type, current value is All Exceptions">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+              <span>All Exceptions</span>
+              <svg class="filter-control-dropdown-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            </div>
+          </div>
+          
+          <!-- Searchable Dropdown - Team (Mock) -->
+          <div class="filter-group">
+            <label for="team-filter-2">Team</label>
+            <div id="team-filter-2" class="filter-control" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Select Team">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m-7.5-2.962c.55-.139 1.123-.25 1.718-.344a9.043 9.043 0 0 1 5.836 5.836m-7.5-2.962a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Zm10.29.175a4.502 4.502 0 1 1-8.48-3.483 4.5 4.5 0 0 1 8.48 3.483Z" /></svg>
+              <span>All Teams</span>
+              <svg class="filter-control-dropdown-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn btn--secondary" type="reset">Reset</button>
+            <button class="btn btn--primary" type="submit">Apply Filters</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Variant 3: Audit Log -->
+      <div class="variation-group">
+        <h3>Variant: "Audit Log"</h3>
+        <p>A simpler filter set for compliance purposes, focusing on Date Range, the Actor (user) who performed the action, and the Action Type.</p>
+        
+        <form class="report-filters-bar" aria-labelledby="audit-log-label">
+          <h2 id="audit-log-label" style="display: none;">Audit Log Filters</h2>
+        
+          <!-- Date Range Picker (Mock) -->
+          <div class="filter-group">
+            <label for="date-range-3">Date Range</label>
+            <div id="date-range-3" class="filter-control" tabindex="0" role="button" aria-label="Select Date Range, current value is Last 7 Days">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18" /></svg>
+              <span>Last 7 Days</span>
+            </div>
+          </div>
+          
+          <!-- Searchable Dropdown - Actor (Mock) -->
+          <div class="filter-group">
+            <label for="actor-filter-1">Actor</label>
+            <div id="actor-filter-1" class="filter-control" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-label="Select Actor (User), current value is All Actors">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+              <span>All Actors</span>
+              <svg class="filter-control-dropdown-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+            </div>
+          </div>
+
+          <!-- Regular Select - Action Type -->
+          <div class="filter-group">
+            <label for="action-filter-1">Action Type</label>
+            <div class="filter-control">
+              <select id="action-filter-1" aria-label="Select Action Type">
+                <option>All Actions</option>
+                <option>Direct Data Edit</option>
+                <option>User Deactivated</option>
+                <option>Team Created</option>
+                <option>Correction Approved</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn btn--secondary" type="reset">Reset</button>
+            <button class="btn btn--primary" type="submit">Apply Filters</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

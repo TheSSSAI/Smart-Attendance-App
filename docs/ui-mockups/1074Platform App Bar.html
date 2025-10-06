@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Component: Platform App Bar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM TOKENS & BASE STYLES --- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-700: #334155;
+            --color-gray-800: #1E293B;
+            --color-gray-900: #0F172A;
+
+            /* Typography */
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-h4: 20px;
+            --font-size-body: 16px;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            /* Spacing */
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+            /* Component Specific */
+            --app-bar-height-mobile: 56px;
+            --app-bar-height-web: 64px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-800);
+        }
+
+        .showcase-container {
+            padding: var(--spacing-xl);
+        }
+
+        .showcase-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .showcase-section h2 {
+            font-size: 24px;
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-md);
+            color: var(--color-gray-900);
+        }
+
+        .showcase-section h3 {
+            font-size: 18px;
+            font-weight: var(--font-weight-semibold);
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-gray-700);
+        }
+
+        .mock-device {
+            position: relative;
+            background-color: var(--color-gray-50);
+            border: 1px solid var(--color-gray-200);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-top: var(--spacing-md);
+        }
+        
+        .mock-device-mobile {
+            max-width: 400px;
+            height: 150px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mock-device-web {
+            height: 180px;
+        }
+        
+        .mock-content {
+            padding: var(--spacing-md);
+            font-size: 14px;
+            color: var(--color-gray-500);
+        }
+        
+        .mock-device-mobile .mock-content {
+             padding-top: calc(var(--app-bar-height-mobile) + var(--spacing-md));
+        }
+
+        .mock-device-web .mock-content {
+             padding-top: calc(var(--app-bar-height-web) + var(--spacing-md));
+        }
+
+        /* --- COMPONENT IMPLEMENTATION --- */
+
+        /* Block: .app-bar */
+        .app-bar {
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-md);
+            background-color: var(--color-white);
+            color: var(--color-gray-900);
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+            width: 100%;
+        }
+
+        /* Elements */
+        .app-bar__leading,
+        .app-bar__actions {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .app-bar__title {
+            flex-grow: 1;
+            font-family: var(--font-family-primary);
+            font-weight: var(--font-weight-semibold);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .app-bar__default-content,
+        .app-bar__contextual-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Modifier: Variants */
+        .app-bar--mobile {
+            height: var(--app-bar-height-mobile);
+            /* In a real app, padding-top: env(safe-area-inset-top); would be used */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .app-bar--mobile .app-bar__title {
+            font-size: var(--font-size-h4);
+            text-align: left;
+            padding-left: var(--spacing-md);
+        }
+
+        .app-bar--web {
+            height: var(--app-bar-height-web);
+            border-bottom: 1px solid var(--color-gray-200);
+            background-color: var(--color-white);
+            padding: 0 var(--spacing-lg);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .app-bar--web .app-bar__title {
+            font-size: var(--font-size-h4);
+            font-weight: var(--font-weight-bold);
+            text-align: left;
+        }
+
+        /* Modifier: States */
+        .app-bar--contextual {
+            background-color: var(--color-primary-500);
+            color: var(--color-white);
+        }
+        
+        .app-bar--contextual .icon-btn {
+           color: var(--color-white);
+        }
+
+        .app-bar--contextual .app-bar__default-content {
+            display: none;
+        }
+
+        .app-bar__contextual-content {
+            display: none;
+        }
+        
+        .app-bar--contextual .app-bar__contextual-content {
+            display: flex;
+        }
+
+        /* --- DEPENDENCY IMPLEMENTATION --- */
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--color-gray-700);
+            transition: background-color 0.2s ease;
+            padding: 0;
+        }
+
+        .icon-btn:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .icon-btn:focus-visible {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: 1px;
+        }
+
+        .icon-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="showcase-container">
+        <h1>Molecular Component: Platform App Bar</h1>
+
+        <div class="showcase-section">
+            <h2>Mobile Variant</h2>
+            <p>Standard top app bar for mobile devices. Height is 56px and padding respects device safe areas.</p>
+
+            <h3>Default State</h3>
+            <div class="mock-device mock-device-mobile">
+                <header class="app-bar app-bar--mobile" role="banner">
+                    <div class="app-bar__default-content">
+                        <div class="app-bar__leading">
+                            <button class="icon-btn" aria-label="Open navigation menu">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                            </button>
+                        </div>
+                        <h2 class="app-bar__title">Dashboard</h2>
+                        <div class="app-bar__actions">
+                            <button class="icon-btn" aria-label="Search">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                 <div class="mock-content">Content for the dashboard screen...</div>
+            </div>
+
+            <h3>Contextual Actions State</h3>
+            <div class="mock-device mock-device-mobile">
+                <header class="app-bar app-bar--mobile app-bar--contextual" role="banner">
+                    <div class="app-bar__contextual-content">
+                        <div class="app-bar__leading">
+                            <button class="icon-btn" aria-label="Close contextual menu">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <h2 class="app-bar__title">2 Selected</h2>
+                        <div class="app-bar__actions">
+                            <button class="icon-btn" aria-label="Share selected items">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.186 2.25 2.25 0 0 0-3.933 2.186Z" /></svg>
+                            </button>
+                             <button class="icon-btn" aria-label="Delete selected items">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.134H8.09a2.09 2.09 0 0 0-2.09 2.134v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                 <div class="mock-content">Content with items selected...</div>
+            </div>
+        </div>
+
+        <div class="showcase-section">
+            <h2>Web Variant</h2>
+            <p>Used in the Admin web dashboard. Height is 64px and integrates with a larger page layout, often with a sidebar.</p>
+
+            <h3>Default State</h3>
+            <div class="mock-device mock-device-web">
+                 <header class="app-bar app-bar--web" role="banner">
+                    <div class="app-bar__default-content">
+                        <div class="app-bar__leading">
+                           <!-- Empty on web if there's a sidebar -->
+                        </div>
+                        <h2 class="app-bar__title">Team Management</h2>
+                        <div class="app-bar__actions">
+                             <button class="icon-btn" aria-label="Notifications">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" /></svg>
+                            </button>
+                            <button class="icon-btn" aria-label="User Profile">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                <div class="mock-content">Main content area for the web dashboard...</div>
+            </div>
+        </div>
+
+    </div>
+	
+	<div> 
+		<h2> Component Variations</h2>
+		<div>
+			<h3>Variant Name : "Mobile"</h3>
+			<normal> Standard top app bar for mobile devices. Height is 56px and padding respects device safe areas. </normal>
+			<header class="app-bar app-bar--mobile" role="banner">
+                    <div class="app-bar__default-content">
+                        <div class="app-bar__leading">
+                            <button class="icon-btn" aria-label="Open navigation menu">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                            </button>
+                        </div>
+                        <h2 class="app-bar__title">Dashboard</h2>
+                        <div class="app-bar__actions">
+                            <button class="icon-btn" aria-label="Search">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+		</div>
+		<div>
+			<h3>Variant Name : "Web"</h3>
+			<normal> Used in the Admin web dashboard. Height is 64px and integrates with a larger page layout, often with a sidebar. </normal>
+			<header class="app-bar app-bar--web" role="banner">
+                    <div class="app-bar__default-content">
+                        <div class="app-bar__leading">
+                           <!-- Empty on web if there's a sidebar -->
+                        </div>
+                        <h2 class="app-bar__title">Team Management</h2>
+                        <div class="app-bar__actions">
+                             <button class="icon-btn" aria-label="Notifications">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" /></svg>
+                            </button>
+                            <button class="icon-btn" aria-label="User Profile">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+		</div>
+	</div>
+</body>
+</html>

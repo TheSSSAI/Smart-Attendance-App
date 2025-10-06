@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Molecular Component: Form Field Group</title>
+  <style>
+    /* 1. FOUNDATION & DESIGN TOKENS */
+    :root {
+      /* Colors */
+      --color-primary-50: #E6F0FF;
+      --color-primary-500: #0073FF;
+      --color-error-50: #FEF2F2;
+      --color-error-500: #DC2626;
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+
+      /* Typography */
+      --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --line-height-body: 1.5;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+
+      /* Borders */
+      --border-radius-md: 8px;
+      --border-width-1: 1px;
+      --border-width-2: 2px;
+
+      /* Shadows */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* 2. BASE & LAYOUT STYLES */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-family-sans);
+      font-size: var(--font-size-md);
+      line-height: var(--line-height-body);
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-700);
+      margin: 0;
+      padding: var(--space-8);
+    }
+
+    .showcase {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .showcase__header {
+      margin-bottom: var(--space-8);
+      padding-bottom: var(--space-4);
+      border-bottom: var(--border-width-1) solid var(--color-neutral-300);
+      text-align: center;
+    }
+
+    .showcase__header h1 {
+      font-size: 28px;
+      color: var(--color-neutral-900);
+      margin-bottom: var(--space-2);
+    }
+
+    .component-group {
+      background-color: var(--color-neutral-white);
+      border-radius: var(--border-radius-md);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+      box-shadow: var(--shadow-md);
+    }
+
+    .component-group > h2 {
+      font-size: 20px;
+      color: var(--color-neutral-900);
+      margin-bottom: var(--space-6);
+    }
+
+    /* 3. COMPONENT IMPLEMENTATION */
+
+    /* Component Name: Form Field Group */
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      width: 100%;
+    }
+
+    .form-field__label {
+      font-weight: var(--font-weight-medium);
+      color: var(--color-neutral-700);
+      cursor: pointer;
+    }
+
+    .form-field__input {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--font-size-md);
+      font-family: var(--font-family-sans);
+      color: var(--color-neutral-700);
+      border: var(--border-width-1) solid var(--color-neutral-300);
+      border-radius: var(--border-radius-md);
+      background-color: var(--color-neutral-white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      min-height: 48px; /* Touch Target Size */
+    }
+
+    .form-field__input::placeholder {
+      color: var(--color-neutral-400);
+    }
+
+    .form-field__helper-text,
+    .form-field__error-message {
+      font-size: var(--font-size-sm);
+      margin-top: calc(var(--space-1) * -1); /* Pulls text slightly closer to the input */
+    }
+
+    .form-field__helper-text {
+      color: var(--color-neutral-500);
+    }
+
+    .form-field__error-message {
+      color: var(--color-error-500);
+      display: none; /* Hidden by default */
+    }
+
+    /* Component States */
+    .form-field__input:focus-visible {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 var(--border-width-2) var(--color-primary-50);
+    }
+
+    .form-field--error .form-field__input {
+      border-color: var(--color-error-500);
+    }
+
+    .form-field--error .form-field__input:focus-visible {
+      border-color: var(--color-primary-500); /* Keep focus style consistent even in error state */
+      box-shadow: 0 0 0 var(--border-width-2) var(--color-error-50);
+    }
+
+    .form-field--error .form-field__error-message {
+      display: block; /* Shown in error state */
+    }
+
+    .form-field--error .form-field__helper-text {
+      display: none; /* Hide helper text when error is shown */
+    }
+
+    .form-field--disabled .form-field__label {
+      color: var(--color-neutral-400);
+      cursor: not-allowed;
+    }
+
+    .form-field--disabled .form-field__input {
+      background-color: var(--color-neutral-100);
+      cursor: not-allowed;
+      border-color: var(--color-neutral-300);
+      color: var(--color-neutral-500);
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      .form-field__input {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="showcase">
+    <header class="showcase__header">
+      <h1>Form Field Group</h1>
+      <p>Groups a label, input, and helper/error text.</p>
+    </header>
+
+    <main>
+      <div class="component-group">
+        <h2>Default State</h2>
+        <div class="form-field">
+          <label for="default-input" class="form-field__label">Organization Name</label>
+          <input
+            type="text"
+            id="default-input"
+            class="form-field__input"
+            placeholder="e.g., Vandelay Industries"
+            aria-describedby="default-helper"
+          >
+          <p id="default-helper" class="form-field__helper-text">
+            Choose a unique name for your organization.
+          </p>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h2>Error State</h2>
+        <div class="form-field form-field--error">
+          <label for="error-input" class="form-field__label">Team Name</label>
+          <input
+            type="text"
+            id="error-input"
+            class="form-field__input"
+            value="Field"
+            aria-describedby="error-message"
+            aria-invalid="true"
+          >
+          <p id="error-message" class="form-field__error-message">
+            Team name must be at least 8 characters long.
+          </p>
+        </div>
+      </div>
+
+      <div class="component-group">
+        <h2>Disabled State</h2>
+        <div class="form-field form-field--disabled">
+          <label for="disabled-input" class="form-field__label">Tenant ID</label>
+          <input
+            type="text"
+            id="disabled-input"
+            class="form-field__input"
+            value="org_a1b2c3d4e5f6"
+            disabled
+            aria-describedby="disabled-helper"
+          >
+          <p id="disabled-helper" class="form-field__helper-text">
+            This value is system-generated and cannot be changed.
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : default<h3>
+		<!--description--><normal>Handles responsive label positioning.</normal>
+		<!-- vrient 1 html -->
+        
+      <div>
+	 </div>
+	 </div>
+</body>
+</html>

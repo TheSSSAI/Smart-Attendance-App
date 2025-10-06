@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    input, button, textarea, select {
+      font: inherit;
+    }
+    img, picture, video, canvas, svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    /* Design System Tokens */
+    :root {
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --fs-h3: 28px;
+      --fw-semibold: 600;
+      --fs-body: 16px;
+      --fw-regular: 400;
+      --fs-caption: 14px;
+
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-800: #1E293B;
+      --color-neutral-900: #0F172A;
+      --color-white: #FFFFFF;
+      --color-success-500: #16A34A;
+      --color-error-500: #DC2626;
+
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+
+      /* Borders */
+      --border-radius-lg: 12px;
+      --border-radius-md: 8px;
+    }
+
+    /* Base Styles */
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-800);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--space-16);
+    }
+    
+    /* Main Layout */
+    .screen-container {
+      width: 100%;
+      max-width: 450px;
+    }
+    
+    .card {
+      background-color: var(--color-white);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-32);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      border: 1px solid var(--color-neutral-100);
+    }
+    
+    /* Typography */
+    .card-header {
+      text-align: center;
+      margin-bottom: var(--space-32);
+    }
+    .card-title {
+      font-size: var(--fs-h3);
+      font-weight: var(--fw-semibold);
+      color: var(--color-neutral-900);
+      margin-bottom: var(--space-8);
+    }
+    .card-subtitle {
+      font-size: var(--fs-body);
+      color: var(--color-neutral-500);
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: var(--space-24);
+    }
+    .form-label {
+      display: block;
+      font-size: var(--fs-caption);
+      font-weight: var(--fw-semibold);
+      color: var(--color-neutral-700);
+      margin-bottom: var(--space-8);
+    }
+    
+    .input-wrapper {
+        position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--space-12) var(--space-16);
+      border: 1px solid var(--color-neutral-300);
+      border-radius: var(--border-radius-md);
+      font-size: var(--fs-body);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px rgba(0, 115, 255, 0.2);
+    }
+    .form-input[aria-invalid="true"] {
+        border-color: var(--color-error-500);
+    }
+    .form-input[aria-invalid="true"]:focus {
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+    }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--color-neutral-500);
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .password-toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Password Policy Checklist */
+    .password-policy {
+        list-style: none;
+        padding: 0;
+        margin-top: var(--space-12);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-8);
+        font-size: 13px;
+    }
+    .policy-item {
+        display: flex;
+        align-items: center;
+        color: var(--color-neutral-500);
+        transition: color 0.2s;
+    }
+    .policy-item svg {
+        width: 16px;
+        height: 16px;
+        margin-right: var(--space-8);
+        transition: color 0.2s;
+    }
+    .policy-item.met {
+        color: var(--color-success-500);
+    }
+    
+    .error-message {
+      font-size: var(--fs-caption);
+      color: var(--color-error-500);
+      margin-top: var(--space-8);
+      display: none; /* Hidden by default */
+    }
+    .form-input[aria-invalid="true"] + .error-message {
+        display: block;
+    }
+
+    /* Checkbox Styles */
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-12);
+      margin-bottom: var(--space-24);
+    }
+    .checkbox-input {
+      margin-top: 3px;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--color-primary-500);
+    }
+    .checkbox-label {
+      font-size: var(--fs-caption);
+      color: var(--color-neutral-500);
+    }
+    .checkbox-label a {
+      color: var(--color-primary-500);
+      text-decoration: none;
+      font-weight: var(--fw-semibold);
+    }
+    .checkbox-label a:hover {
+      text-decoration: underline;
+    }
+
+    /* Button Styles */
+    .btn {
+      width: 100%;
+      padding: var(--space-12) var(--space-24);
+      border: none;
+      border-radius: var(--border-radius-md);
+      font-weight: var(--fw-semibold);
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-8);
+    }
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--primary:active {
+      background-color: var(--color-primary-700);
+      transform: scale(0.98);
+    }
+    .btn:disabled {
+      background-color: var(--color-neutral-100);
+      color: var(--color-neutral-300);
+      cursor: not-allowed;
+    }
+    .btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+
+    /* Loader */
+    .loader {
+        width: 20px;
+        height: 20px;
+        border: 2px solid currentColor;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        animation: rotation 1s linear infinite;
+    }
+    @keyframes rotation {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Alert Banner */
+    .alert-banner {
+      padding: var(--space-16);
+      border-radius: var(--border-radius-md);
+      margin-bottom: var(--space-24);
+      display: flex;
+      align-items: start;
+      gap: var(--space-12);
+    }
+    .alert-banner--error {
+      background-color: #FEF2F2;
+      color: #991B1B;
+    }
+    .alert-banner svg {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+    }
+    .alert-banner__content {
+      font-size: var(--fs-caption);
+      font-weight: var(--fw-semibold);
+    }
+
+    /* Variations Styling */
+    .screen-variations {
+      margin-top: var(--space-32);
+      width: 100%;
+      max-width: 900px;
+      border-top: 1px solid var(--color-neutral-300);
+      padding-top: var(--space-32);
+    }
+    .screen-variations h2 {
+      text-align: center;
+      margin-bottom: var(--space-32);
+      color: var(--color-neutral-700);
+    }
+    .variation-group {
+      margin-bottom: var(--space-32);
+    }
+    .variation-group h3 {
+      margin-bottom: var(--space-8);
+      color: var(--color-neutral-800);
+    }
+    .variation-group p {
+      color: var(--color-neutral-500);
+      font-size: var(--fs-caption);
+      margin-bottom: var(--space-16);
+    }
+    
+    @media (max-width: 480px) {
+      .card {
+        padding: var(--space-24);
+      }
+      body {
+        padding: 0;
+        background-color: var(--color-white);
+      }
+      .screen-container {
+        padding: var(--space-16);
+      }
+      .password-policy {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="screen-container" id="default-state">
+    <div class="card">
+      <header class="card-header">
+        <h1 class="card-title">Complete Your Registration</h1>
+        <p class="card-subtitle">Welcome to Vandelay Industries! Set your password to get started.</p>
+      </header>
+      
+      <form id="registrationForm" onsubmit="event.preventDefault(); handleFormSubmit();">
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" name="password" class="form-input" placeholder="Enter a strong password" required>
+            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password')" aria-label="Toggle password visibility">
+              <svg id="password-eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+          <ul class="password-policy">
+            <li class="policy-item" id="policy-length">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                <span>Minimum 8 characters</span>
+            </li>
+            <li class="policy-item" id="policy-uppercase">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                <span>One uppercase letter</span>
+            </li>
+            <li class="policy-item" id="policy-lowercase">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                <span>One lowercase letter</span>
+            </li>
+            <li class="policy-item" id="policy-number">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                <span>One number</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
+           <div class="input-wrapper">
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Re-enter your password" required>
+             <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirmPassword')" aria-label="Toggle confirm password visibility">
+                 <svg id="confirmPassword-eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+          <p class="error-message" id="confirmPasswordError">Passwords do not match.</p>
+        </div>
+        
+        <div class="checkbox-group">
+          <input type="checkbox" id="tos" name="tos" class="checkbox-input" required>
+          <label for="tos" class="checkbox-label">I have read and agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>.</label>
+        </div>
+        
+        <button type="submit" id="submitButton" class="btn btn--primary" disabled>Activate Account</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Screen Variations Section -->
+  <div class="screen-variations">
+    <h2>Screen Variations</h2>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Loading State"</h3>
+      <p>This state appears after the user clicks 'Activate Account'. The button is disabled and shows a loading spinner, preventing multiple submissions while the backend processes the request.</p>
+       <div class="screen-container">
+        <div class="card">
+          <header class="card-header">
+            <h1 class="card-title">Complete Your Registration</h1>
+            <p class="card-subtitle">Welcome to Vandelay Industries! Set your password to get started.</p>
+          </header>
+          <form>
+            <div class="form-group">
+              <label for="p1" class="form-label">Password</label>
+              <input type="password" id="p1" class="form-input" value="StrongP@ssw0rd" disabled>
+            </div>
+            <div class="form-group">
+              <label for="p2" class="form-label">Confirm Password</label>
+              <input type="password" id="p2" class="form-input" value="StrongP@ssw0rd" disabled>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="tos2" checked disabled>
+              <label for="tos2" class="checkbox-label">I have read and agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>.</label>
+            </div>
+            <button type="button" class="btn btn--primary" disabled>
+              <span class="loader"></span>
+              <span>Activating...</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Error State - Invalid/Expired Link"</h3>
+      <p>This state is shown if the user navigates to the registration URL with an invalid, used, or expired token. The form is replaced with a clear error message and guidance.</p>
+      <div class="screen-container">
+        <div class="card">
+          <header class="card-header">
+            <h1 class="card-title">Link Expired</h1>
+            <p class="card-subtitle">This invitation link has expired for security reasons.</p>
+          </header>
+          <div class="alert-banner alert-banner--error">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <div class="alert-banner__content">
+                  Please contact your administrator to request a new invitation. Invitation links are valid for 24 hours.
+              </div>
+          </div>
+          <a href="#" class="btn btn--primary" style="text-decoration: none;">Return to Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const tosCheckbox = document.getElementById('tos');
+    const submitButton = document.getElementById('submitButton');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+    const policyItems = {
+      length: document.getElementById('policy-length'),
+      uppercase: document.getElementById('policy-uppercase'),
+      lowercase: document.getElementById('policy-lowercase'),
+      number: document.getElementById('policy-number'),
+    };
+    
+    const metIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+    const unmetIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>`;
+
+    const validators = {
+      length: (val) => val.length >= 8,
+      uppercase: (val) => /[A-Z]/.test(val),
+      lowercase: (val) => /[a-z]/.test(val),
+      number: (val) => /[0-9]/.test(val),
+    };
+
+    let passwordIsValid = false;
+    let passwordsMatch = false;
+
+    function validatePassword() {
+      const password = passwordInput.value;
+      let allMet = true;
+      for (const rule in validators) {
+        const isMet = validators[rule](password);
+        const item = policyItems[rule];
+        if (isMet) {
+          item.classList.add('met');
+          item.querySelector('svg').outerHTML = metIcon;
+        } else {
+          item.classList.remove('met');
+          item.querySelector('svg').outerHTML = unmetIcon;
+          allMet = false;
+        }
+      }
+      passwordIsValid = allMet;
+      validateForm();
+    }
+
+    function validateConfirmPassword() {
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+      if (confirmPassword.length > 0 && password !== confirmPassword) {
+        confirmPasswordInput.setAttribute('aria-invalid', 'true');
+        passwordsMatch = false;
+      } else {
+        confirmPasswordInput.setAttribute('aria-invalid', 'false');
+        confirmPasswordError.style.display = 'none';
+        passwordsMatch = (confirmPassword.length > 0);
+      }
+       validateForm();
+    }
+    
+    function validateForm() {
+        const tosIsChecked = tosCheckbox.checked;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        passwordsMatch = (password === confirmPassword) && confirmPassword.length > 0;
+
+        if (confirmPassword.length > 0 && !passwordsMatch) {
+            confirmPasswordInput.setAttribute('aria-invalid', 'true');
+            confirmPasswordError.style.display = 'block';
+        } else {
+            confirmPasswordInput.setAttribute('aria-invalid', 'false');
+            confirmPasswordError.style.display = 'none';
+        }
+
+        if (passwordIsValid && passwordsMatch && tosIsChecked) {
+            submitButton.disabled = false;
+        } else {
+            submitButton.disabled = true;
+        }
+    }
+
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(`${inputId}-eye-icon`);
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        icon.outerHTML = isPassword
+            ? `<svg id="${inputId}-eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>`
+            : `<svg id="${inputId}-eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    }
+    
+    function handleFormSubmit() {
+        // Simulate a form submission for demonstration
+        submitButton.disabled = true;
+        submitButton.innerHTML = `<span class="loader"></span> Activating...`;
+        setTimeout(() => {
+            alert('Account Activated Successfully! You will now be redirected.');
+            // In a real app, this would redirect to the dashboard.
+            submitButton.innerHTML = `Activate Account`;
+            validateForm(); // Re-check form state
+        }, 2000);
+    }
+
+    passwordInput.addEventListener('input', validatePassword);
+    confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+    passwordInput.addEventListener('input', validateConfirmPassword); // Re-check match when main pass changes
+    tosCheckbox.addEventListener('change', validateForm);
+
+    // Initial validation check
+    validateForm();
+  </script>
+</body>
+</html>

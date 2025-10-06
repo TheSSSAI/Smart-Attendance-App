@@ -1,0 +1,5 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Firestore Security Rules","Critical","High","Medium","[""Unit"",""Integration"",""Security""]","98","95","","100","","80","60","0.99","High","Medium","Excellent","Good"
+"Core Attendance Workflow (Mobile)","Critical","High","Medium","[""Unit"",""Widget"",""Integration"",""System/E2E"",""Accessibility""]","85","90","75","90","24","120","55","0.95","High","Medium","Excellent","Excellent"
+"Admin Web Dashboard & Reporting","High","Medium","High","[""Unit"",""Widget"",""Integration"",""System/E2E"",""Performance"",""Accessibility""]","80","70","60","80","40","150","80","0.88","Medium","High","Good","Excellent"
+"Backend Cloud Functions","Critical","High","Medium","[""Unit"",""Integration"",""Performance"",""Security""]","90","85","","95","5","160","90","0.97","High","Low","Excellent","Excellent"

@@ -1,0 +1,3 @@
+"environment_name","environment_type","deployment_frequency","data_refresh_frequency","infrastructure_stack","service_dependencies","monitoring_tools","access_control","backup_strategy","disaster_recovery","cost_optimization","maintenance_window"
+"Local Development","Local","On-demand","N/A","Node.js, Jest","None. All tests are self-contained unit tests.","N/A","Developer","Git version control","N/A","N/A","N/A"
+"CI/CD Pipeline","Ephemeral","On every commit","N/A","Docker Container (e.g., GitHub Actions runner)","NPM Registry","GitHub Actions logs","Automated","N/A","N/A","Managed by CI/CD provider.","Managed by CI/CD provider."

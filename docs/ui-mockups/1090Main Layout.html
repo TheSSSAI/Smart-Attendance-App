@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Main Application Layout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* 1. CSS Reset & Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Color Palette */
+      --color-primary-50: #E6F0FF;
+      --color-primary-100: #B9D7FF;
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-primary-900: #003166;
+
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-600: #475569;
+      --color-neutral-700: #334155;
+      --color-neutral-800: #1E293B;
+      --color-neutral-900: #0F172A;
+      
+      --color-semantic-success: #16A34A;
+      --color-semantic-warning: #F59E0B;
+      --color-semantic-error: #DC2626;
+
+      /* Typography */
+      --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-h3: 28px;
+      --font-size-h4: 20px;
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-weight-regular: 400;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+
+      /* Layout Dimensions */
+      --sidebar-width-open: 260px;
+      --sidebar-width-collapsed: 80px;
+      --app-bar-height: 64px;
+      --bottom-nav-height: 72px;
+
+      /* Effects */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font-family-primary);
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-700);
+      font-size: var(--font-size-body);
+      line-height: 1.5;
+    }
+
+    /* 2. Main Layout Structure */
+    .app-layout {
+      display: grid;
+      height: 100vh;
+      grid-template-columns: var(--sidebar-width-open) 1fr;
+      grid-template-rows: var(--app-bar-height) 1fr;
+      grid-template-areas:
+        "sidebar appbar"
+        "sidebar content";
+      transition: grid-template-columns 0.3s ease-in-out;
+    }
+
+    .app-layout.sidebar--collapsed {
+      grid-template-columns: var(--sidebar-width-collapsed) 1fr;
+    }
+
+    /* 3. Component Styling: Sidebar */
+    .sidebar {
+      grid-area: sidebar;
+      background-color: var(--color-neutral-900);
+      color: var(--color-neutral-300);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-24) 0;
+      transition: width 0.3s ease-in-out;
+      overflow: hidden;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: var(--sidebar-width-open);
+    }
+    
+    .app-layout.sidebar--collapsed .sidebar {
+        width: var(--sidebar-width-collapsed);
+    }
+    
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-12);
+      padding: 0 var(--space-24);
+      height: 40px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header .logo-icon {
+      width: 32px;
+      height: 32px;
+      background-color: var(--color-primary-500);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .sidebar-header .logo-text {
+      font-size: var(--font-size-h4);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-neutral-white);
+      white-space: nowrap;
+      opacity: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+    
+    .app-layout.sidebar--collapsed .sidebar-header .logo-text {
+      opacity: 0;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      margin-top: var(--space-32);
+      flex-grow: 1;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-16);
+      padding: var(--space-12) var(--space-24);
+      text-decoration: none;
+      color: var(--color-neutral-300);
+      font-weight: var(--font-weight-semibold);
+      white-space: nowrap;
+      border-left: 4px solid transparent;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .nav-link svg {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .nav-link:hover {
+      background-color: var(--color-neutral-800);
+      color: var(--color-neutral-white);
+    }
+    
+    .nav-link.active {
+      background-color: rgba(0, 115, 255, 0.1);
+      color: var(--color-neutral-white);
+      border-left-color: var(--color-primary-500);
+    }
+
+    .nav-link .link-text {
+      opacity: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .app-layout.sidebar--collapsed .nav-link .link-text {
+      opacity: 0;
+      width: 0;
+    }
+    
+    .app-layout.sidebar--collapsed .nav-link {
+        justify-content: center;
+        padding: var(--space-16) var(--space-24);
+    }
+
+    .sidebar-footer {
+      padding: 0 var(--space-24);
+      border-top: 1px solid var(--color-neutral-700);
+      padding-top: var(--space-16);
+      margin-top: var(--space-16);
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: var(--space-12);
+    }
+
+    .user-profile .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--color-primary-700);
+      color: var(--color-neutral-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: var(--font-weight-bold);
+      flex-shrink: 0;
+    }
+
+    .user-profile-info {
+      white-space: nowrap;
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .user-profile-info .name {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-white);
+    }
+
+    .user-profile-info .email {
+      font-size: var(--font-size-caption);
+      color: var(--color-neutral-400);
+    }
+
+    .app-layout.sidebar--collapsed .user-profile-info {
+      opacity: 0;
+      width: 0;
+    }
+
+    /* 4. Component Styling: App Bar */
+    .app-bar {
+      grid-area: appbar;
+      background-color: var(--color-neutral-white);
+      border-bottom: 1px solid var(--color-neutral-200);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-24);
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .app-bar-left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-16);
+    }
+
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: var(--space-8);
+      border-radius: 8px;
+    }
+    
+    .sidebar-toggle:hover {
+        background-color: var(--color-neutral-100);
+    }
+
+    .screen-title {
+      font-size: var(--font-size-h4);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-neutral-900);
+    }
+    
+    .app-bar-right {
+        display: flex;
+        align-items: center;
+        gap: var(--space-16);
+    }
+    
+    .icon-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: var(--space-8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-neutral-600);
+    }
+    
+    .icon-button:hover {
+        background-color: var(--color-neutral-100);
+        color: var(--color-neutral-800);
+    }
+
+
+    /* 5. Main Content Area */
+    .main-content-wrapper {
+        grid-area: 1 / 2 / 3 / 3;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .screen-content {
+      grid-area: content;
+      padding: var(--space-32);
+      overflow-y: auto;
+    }
+    
+    /* 6. Component Styling: Bottom Navigation (Mobile) */
+    .bottom-nav {
+      display: none; /* Hidden by default */
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bottom-nav-height);
+      background-color: var(--color-neutral-white);
+      border-top: 1px solid var(--color-neutral-200);
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+      z-index: 100;
+    }
+    
+    .bottom-nav-list {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      list-style: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .bottom-nav-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: var(--color-neutral-600);
+      font-size: 12px;
+      font-weight: var(--font-weight-semibold);
+      flex-grow: 1;
+      height: 100%;
+    }
+
+    .bottom-nav-link svg {
+      width: 24px;
+      height: 24px;
+      margin-bottom: var(--space-4);
+    }
+    
+    .bottom-nav-link.active {
+      color: var(--color-primary-500);
+    }
+
+    /* 7. Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .app-layout:not(.sidebar--force-open) {
+        grid-template-columns: var(--sidebar-width-collapsed) 1fr;
+      }
+      .app-layout:not(.sidebar--force-open) .sidebar {
+        width: var(--sidebar-width-collapsed);
+      }
+      .app-layout:not(.sidebar--force-open) .sidebar .link-text,
+      .app-layout:not(.sidebar--force-open) .sidebar .logo-text,
+      .app-layout:not(.sidebar--force-open) .sidebar .user-profile-info {
+        opacity: 0;
+        width: 0;
+      }
+      .app-layout:not(.sidebar--force-open) .sidebar .nav-link {
+        justify-content: center;
+        padding: var(--space-16) var(--space-24);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: var(--app-bar-height) 1fr var(--bottom-nav-height);
+        grid-template-areas:
+          "appbar"
+          "content"
+          "bottomnav";
+      }
+      .sidebar {
+        display: none;
+      }
+      .main-content-wrapper {
+        grid-area: 1 / 1 / 3 / 2;
+      }
+      .app-bar .sidebar-toggle {
+        display: none; /* Or repurposed for a drawer menu */
+      }
+      .bottom-nav {
+        display: block;
+      }
+      .screen-content {
+          padding-bottom: calc(var(--bottom-nav-height) + var(--space-32));
+      }
+    }
+
+    /* Placeholder content for demonstration */
+    .placeholder-card {
+        background: var(--color-neutral-white);
+        border: 1px solid var(--color-neutral-200);
+        border-radius: 12px;
+        padding: var(--space-24);
+        box-shadow: var(--shadow-sm);
+    }
+    .placeholder-card h2 {
+        font-size: var(--font-size-h3);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-neutral-800);
+        margin-bottom: var(--space-16);
+    }
+    .placeholder-card p {
+        margin-bottom: var(--space-16);
+        line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-layout" id="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-square" style="color: white;"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        </div>
+        <span class="logo-text">Attendly</span>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li>
+          <a href="#" class="nav-link active" aria-current="page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span class="link-text">Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span class="link-text">Teams</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <span class="link-text">Reports</span>
+          </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span class="link-text">Settings</span>
+            </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+            <div class="avatar">AD</div>
+            <div class="user-profile-info">
+                <div class="name">Admin User</div>
+                <div class="email">admin@example.com</div>
+            </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content-wrapper">
+        <header class="app-bar">
+            <div class="app-bar-left">
+                 <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                 </button>
+                 <h1 class="screen-title">Dashboard</h1>
+            </div>
+            <div class="app-bar-right">
+                <button class="icon-button" aria-label="Notifications">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </button>
+                <button class="icon-button" aria-label="Help">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="screen-content">
+            <div class="placeholder-card">
+                <h2>Welcome to your Dashboard</h2>
+                <p>This is the main content area where screen-specific components and data will be displayed. The layout is responsive and adapts based on the screen size.</p>
+                <p>On larger screens, you'll see a persistent sidebar on the left. On smaller screens (like tablets), the sidebar will be collapsed by default. On mobile devices, the sidebar is replaced by a bottom navigation bar for a more native mobile experience.</p>
+            </div>
+        </main>
+    </div>
+
+    <nav class="bottom-nav">
+      <ul class="bottom-nav-list">
+        <li>
+          <a href="#" class="bottom-nav-link active" aria-current="page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="bottom-nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Teams</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="bottom-nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <span>Reports</span>
+          </a>
+        </li>
+        <li>
+            <a href="#" class="bottom-nav-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Settings</span>
+            </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  
+  <div class="screen-variations" style="padding: 32px; font-family: var(--font-family-primary);">
+      <h2 style="font-size: var(--font-size-h2); font-weight: var(--font-weight-bold); margin-bottom: 24px;">Screen Variations</h2>
+      <div class="variation-group" style="margin-bottom: 32px;">
+        <h3 style="font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold); margin-bottom: 8px;">Variant Name: "Default (Sidebar Open)"</h3>
+        <p style="margin-bottom: 16px;">
+          <!--description--><normal>This is the standard layout for desktop screens, featuring the full-width sidebar for easy navigation. The main content area adjusts accordingly.</normal>
+        </p>
+        <div style="border: 2px solid var(--color-neutral-200); padding: 16px; border-radius: 8px;">
+            <p>Demonstrated by the main interactive mockup above.</p>
+        </div>
+      </div>
+       <div class="variation-group" style="margin-bottom: 32px;">
+        <h3 style="font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold); margin-bottom: 8px;">Variant Name: "Sidebar Collapsed"</h3>
+        <p style="margin-bottom: 16px;">
+          <!--description--><normal>On smaller desktop or tablet screens, the sidebar collapses to an icon-only view to maximize content space. It can be toggled open using the hamburger menu in the app bar. The main mockup above is interactive and can demonstrate this state.</normal>
+        </p>
+        <div style="border: 2px solid var(--color-neutral-200); padding: 16px; border-radius: 8px;">
+            <p>Click the hamburger icon in the main mockup to see this state.</p>
+        </div>
+      </div>
+      <div class="variation-group" style="margin-bottom: 32px;">
+        <h3 style="font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold); margin-bottom: 8px;">Variant Name: "Mobile Layout"</h3>
+        <p style="margin-bottom: 16px;">
+          <!--description--><normal>On mobile viewports (<= 768px), the sidebar is hidden entirely and replaced by a bottom navigation bar for a native mobile feel. The main mockup above will automatically switch to this layout if you resize your browser window to be narrow.</normal>
+        </p>
+        <div style="border: 2px solid var(--color-neutral-200); padding: 16px; border-radius: 8px;">
+            <p>Resize your browser window to a mobile width to see this layout.</p>
+        </div>
+      </div>
+  </div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleButton = document.getElementById('sidebar-toggle');
+      const appLayout = document.getElementById('app-layout');
+
+      if (toggleButton && appLayout) {
+        // Set initial state based on viewport width
+        if (window.innerWidth <= 1024) {
+            appLayout.classList.add('sidebar--collapsed');
+            toggleButton.setAttribute('aria-expanded', 'false');
+        } else {
+            appLayout.classList.remove('sidebar--collapsed');
+            toggleButton.setAttribute('aria-expanded', 'true');
+        }
+
+
+        toggleButton.addEventListener('click', () => {
+          appLayout.classList.toggle('sidebar--collapsed');
+          
+          // For tablet, also toggle a force-open class
+          if (window.innerWidth <= 1024 && window.innerWidth > 768) {
+              appLayout.classList.toggle('sidebar--force-open');
+          }
+
+          const isExpanded = !appLayout.classList.contains('sidebar--collapsed');
+          toggleButton.setAttribute('aria-expanded', isExpanded.toString());
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+// Module: attendance.rules
+//
+// Governs access to the `attendance` collection, which stores all check-in/out records.
+// This ruleset is critical for enforcing the core business logic of the application,
+// including user self-service, supervisor approvals, and administrative oversight.
+//
+// Requirements Covered:
+// - REQ-1-002: Multi-tenancy (via isTenantMember check)
+// - REQ-1-003: RBAC for Subordinate, Supervisor, Admin roles
+// - REQ-1-005, REQ-1-039, REQ-1-040: Supervisor approval/rejection workflow
+// - REQ-1-006, REQ-1-045, REQ-1-047, REQ-1-048: Attendance correction workflow
+// - REQ-1-016, REQ-1-050: Admin direct edit capabilities
+// - REQ-1-028, REQ-1-051: Logging changes via audit log (enforced by Cloud Functions, allowed by rules)
+// - REQ-1-068: Comprehensive data access logic for all roles
+// - REQ-1-027: Business rule for same-day check-in/out (validated on write)
+
+// Helper Functions specific to Attendance Records
+
+// Checks if the incoming data for a new attendance record (check-in) is valid.
+function isValidNewAttendanceRecord(record) {
+  let requiredKeys = ['userId', 'tenantId', 'supervisorId', 'checkInTime', 'checkInGps', 'status', 'flags'];
+  let optionalKeys = ['eventId', 'isOfflineEntry', 'clientTimestamp'];
+  return record.keys().hasAll(requiredKeys) &&
+         record.keys().hasOnly(requiredKeys.concat(optionalKeys)) &&
+         record.userId == request.auth.uid &&
+         record.tenantId == request.auth.token.tenantId &&
+         // supervisorId must be a string (can be validated further in a Cloud Function if needed)
+         record.supervisorId is string &&
+         record.checkInTime is timestamp &&
+         record.checkInGps is latlng &&
+         record.status == 'pending' &&
+         // Flags must be an array, can be empty
+         record.flags is list;
+}
+
+// Checks if an update corresponds to a valid check-out action by the record owner.
+function isValidCheckoutUpdate(requestData, existingData) {
+  let allowedToChange = ['checkOutTime', 'checkOutGps', 'flags', 'clientTimestamp'];
+  return existingData.checkOutTime == null &&
+         requestData.checkOutTime is timestamp &&
+         requestData.checkOutTime > existingData.checkInTime &&
+         requestData.checkOutGps is latlng &&
+         // Ensure no other core fields are modified
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedToChange);
+}
+
+// Checks if an update corresponds to a valid correction request by the record owner.
+function isValidCorrectionRequestUpdate(requestData, existingData) {
+  let allowedToChange = ['status', 'statusBeforeCorrection', 'requestedCheckInTime', 'requestedCheckOutTime', 'correctionJustification', 'clientTimestamp'];
+  let previousStatusIsValid = existingData.status in ['approved', 'rejected'];
+  return previousStatusIsValid &&
+         requestData.status == 'correction_pending' &&
+         requestData.statusBeforeCorrection == existingData.status &&
+         requestData.correctionJustification is string &&
+         requestData.correctionJustification.size() >= 20 &&
+         // Allow either or both times to be requested for correction
+         (!('requestedCheckInTime' in requestData) || requestData.requestedCheckInTime is timestamp) &&
+         (!('requestedCheckOutTime' in requestData) || requestData.requestedCheckOutTime is timestamp) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedToChange);
+}
+
+// Checks if an update corresponds to a valid approval/rejection by a Supervisor.
+function isValidSupervisorAction(requestData, existingData) {
+    let allowedToChange = ['status', 'rejectionReason', 'checkInTime', 'checkOutTime', 'flags'];
+
+    // Supervisor is approving/rejecting a standard pending record
+    let isStandardApprovalOrRejection = existingData.status == 'pending' &&
+        (requestData.status == 'approved' ||
+         (requestData.status == 'rejected' && requestData.rejectionReason is string && requestData.rejectionReason.size() > 0));
+
+    // Supervisor is approving/rejecting a pending correction
+    let isCorrectionApprovalOrRejection = existingData.status == 'correction_pending' &&
+        ((requestData.status == 'approved' && request.resource.data.diff(resource.data).affectedKeys().hasAny(['checkInTime', 'checkOutTime', 'flags'])) ||
+         (requestData.status == existingData.statusBeforeCorrection && requestData.rejectionReason is string && requestData.rejectionReason.size() > 0));
+
+    return (isStandardApprovalOrRejection || isCorrectionApprovalOrRejection) &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedToChange);
+}
+
+
+// Rules for the `attendance` collection
+match /attendance/{recordId} {
+    // CREATE:
+    // A Subordinate can create their own attendance record (check-in).
+    allow create: if isSignedIn() &&
+                     isTenantMember(tenantId) &&
+                     isSubordinate() &&
+                     isValidNewAttendanceRecord(request.resource.data);
+
+    // READ:
+    // Admins can read any record in their tenant.
+    // Supervisors can read records of their direct subordinates.
+    // Subordinates can read their own records.
+    allow read: if isSignedIn() &&
+                   isTenantMember(tenantId) &&
+                   (isAdmin() ||
+                    isOwner(resource.data.userId) ||
+                    (isSupervisor() && isSupervisorOf(resource.data.userId)));
+
+    // UPDATE:
+    // This is the most complex rule, covering multiple scenarios based on user role and record state.
+    allow update: if isSignedIn() && isTenantMember(tenantId) &&
+        // SCENARIO 1: Subordinate is checking out.
+        (isOwner(resource.data.userId) && isValidCheckoutUpdate(request.resource.data, resource.data)) ||
+
+        // SCENARIO 2: Subordinate is requesting a correction.
+        (isOwner(resource.data.userId) && isValidCorrectionRequestUpdate(request.resource.data, resource.data)) ||
+
+        // SCENARIO 3: Supervisor is approving or rejecting.
+        (isSupervisor() && isSupervisorOf(resource.data.userId) && isValidSupervisorAction(request.resource.data, resource.data)) ||
+
+        // SCENARIO 4: Admin is performing a direct edit.
+        // Admins can change time, status, and flags. They cannot change ownership or tenant association.
+        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checkInTime', 'checkOutTime', 'status', 'flags', 'rejectionReason']));
+
+    // DELETE:
+    // No user can delete attendance records from the client. Deletion is handled by
+    // a server-side data retention policy function.
+    allow delete: if false;
+}

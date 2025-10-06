@@ -1,0 +1,19 @@
+// This module contains security rules for various tenant-level configuration collections.
+// It ensures that only Admins can read or modify these settings.
+
+// Match all documents in the 'config' subcollection for a tenant.
+// This is used for general settings like timezone, password policy, etc.
+// (US-069, US-070, US-071, US-072, US-073, US-074)
+match /config/{configDocId} {
+    // READ & WRITE:
+    // - Only Admins of the tenant can read and write configuration settings.
+    allow read, write: if isTenantMember(tenantId) && isAdmin();
+}
+
+// Match all documents in the 'linkedSheets' subcollection.
+// This is used for the Google Sheets integration configuration. (US-065)
+match /linkedSheets/{sheetConfigId} {
+    // READ & WRITE:
+    // - Only Admins of the tenant can manage the Google Sheets integration settings.
+    allow read, write: if isTenantMember(tenantId) && isAdmin();
+}

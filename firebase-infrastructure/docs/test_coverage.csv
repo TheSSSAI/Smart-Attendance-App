@@ -1,0 +1,5 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Authentication & RBAC","Critical","High","Low","[""Unit"",""Integration"",""Security"",""E2E""]","95","98","90","95","8","80","75","0.98","High","Low","Excellent","Good"
+"Core Attendance Module (inc. Offline)","Critical","High","Medium","[""Unit"",""Integration"",""E2E"",""Performance"",""Accessibility""]","85","90","95","80","24","120","150","0.95","High","Medium","Good","Excellent"
+"Admin Reporting & Integrations","High","High","High","[""Unit"",""Integration"",""E2E"",""Performance""]","90","85","70","80","32","150","200","0.9","Medium","Medium","Excellent","Good"
+"Supervisor Approval Workflow","High","Medium","Medium","[""Unit"",""Integration"",""E2E""]","88","92","85","90","10","90","110","0.92","High","Low","Excellent","Excellent"

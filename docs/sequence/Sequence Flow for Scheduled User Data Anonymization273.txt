@@ -1,0 +1,698 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-CF-009
+
+## 1.2 Name
+
+Scheduled User Data Anonymization
+
+## 1.3 Description
+
+A daily scheduled Cloud Function identifies user accounts that have been deactivated for over 90 days. It then anonymizes their Personal Identifiable Information (PII) and replaces their user ID in historical records to comply with data retention policies.
+
+## 1.4 Type
+
+🔹 ComplianceFlow
+
+## 1.5 Purpose
+
+To meet data privacy requirements (e.g., GDPR's 'Right to be Forgotten') by automatically removing PII from deactivated accounts after a grace period.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+Daily
+
+## 1.9 Participants
+
+- application-services-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- A scheduled Cloud Function runs daily via Google Cloud Scheduler.
+- The function queries the `users` collection for documents where `status` is 'deactivated' and `deactivatedAt` is older than 90 days.
+- For each identified user, the function executes a series of batched writes:
+- 1. It updates the user document, clearing PII fields like `name`, `email`, etc.
+- 2. It queries collections like `auditLog` and `attendance` where `userId` matches.
+- 3. It updates those related documents to replace the real `userId` with a non-reversible, anonymized identifier (e.g., 'DeletedUser-XYZ').
+- The process completion or any failures are logged for auditing.
+
+## 1.11 Triggers
+
+- A time-based trigger from Google Cloud Scheduler.
+
+## 1.12 Outcomes
+
+- PII is removed from the system for long-deactivated users.
+- The integrity of historical records is maintained by using an anonymized identifier.
+- The system complies with the defined data retention policy.
+
+## 1.13 Business Rules
+
+- Anonymization occurs 90 days after deactivation (REQ-Data Retention Policy).
+- User ID references in other collections must be replaced, not deleted, to maintain data integrity.
+
+## 1.14 Error Scenarios
+
+- The query to find all references to a userId is complex and times out, requiring a more robust batching or queuing strategy.
+- The function fails mid-process, requiring idempotent design to handle reruns correctly.
+
+## 1.15 Integration Points
+
+- Google Cloud Scheduler
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-ADM-003
+
+## 2.2 Name
+
+Tenant Usage Alerting for Cost Management
+
+## 2.3 Description
+
+A scheduled Cloud Function that processes exported GCP billing data from BigQuery, compares it against tenant subscription limits stored in Firestore, and sends email alerts to Admins when usage thresholds (e.g., 80%, 95%) are crossed. The process is designed to be idempotent and provides transparent cost management for tenants.
+
+## 2.4 Participants
+
+### 2.4.1 External Actor
+
+#### 2.4.1.1 Repository Id
+
+actor-gcp-scheduler
+
+#### 2.4.1.2 Display Name
+
+Google Cloud Scheduler
+
+#### 2.4.1.3 Type
+
+🔹 External Actor
+
+#### 2.4.1.4 Technology
+
+GCP
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #BDBDBD |
+| Stereotype | System |
+
+### 2.4.2.0 Cloud Function (Scheduled)
+
+#### 2.4.2.1 Repository Id
+
+application-services-layer
+
+#### 2.4.2.2 Display Name
+
+Usage Monitoring Function
+
+#### 2.4.2.3 Type
+
+🔹 Cloud Function (Scheduled)
+
+#### 2.4.2.4 Technology
+
+TypeScript, Node.js
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #66BB6A |
+| Stereotype | Serverless |
+
+### 2.4.3.0 External Database
+
+#### 2.4.3.1 Repository Id
+
+ext-gcp-bigquery
+
+#### 2.4.3.2 Display Name
+
+GCP Billing Data (BigQuery)
+
+#### 2.4.3.3 Type
+
+🔹 External Database
+
+#### 2.4.3.4 Technology
+
+BigQuery
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #42A5F5 |
+| Stereotype | Data Warehouse |
+
+### 2.4.4.0 Database
+
+#### 2.4.4.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.4.2 Display Name
+
+Firestore Database
+
+#### 2.4.4.3 Type
+
+🔹 Database
+
+#### 2.4.4.4 Technology
+
+Firestore
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFA726 |
+| Stereotype | NoSQL |
+
+### 2.4.5.0 Integration Service
+
+#### 2.4.5.1 Repository Id
+
+integration-layer
+
+#### 2.4.5.2 Display Name
+
+Email Service (SendGrid)
+
+#### 2.4.5.3 Type
+
+🔹 Integration Service
+
+#### 2.4.5.4 Technology
+
+SendGrid API
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #29B6F6 |
+| Stereotype | API |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Scheduled Trigger
+
+#### 2.5.1.1 Source Id
+
+actor-gcp-scheduler
+
+#### 2.5.1.2 Target Id
+
+application-services-layer
+
+#### 2.5.1.3 Message
+
+1. Trigger Job(topic: 'run-usage-check')
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Scheduled Trigger
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Has Return
+
+❌ No
+
+#### 2.5.1.8 Is Activation
+
+✅ Yes
+
+#### 2.5.1.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Pub/Sub |
+| Method | POST |
+| Parameters | Pub/Sub message with base64 encoded payload |
+| Authentication | GCP Service Account |
+| Error Handling | GCP Scheduler handles retry on failure to publish. |
+| Performance | N/A |
+
+### 2.5.2.0 Data Retrieval
+
+#### 2.5.2.1 Source Id
+
+application-services-layer
+
+#### 2.5.2.2 Target Id
+
+ext-gcp-bigquery
+
+#### 2.5.2.3 Message
+
+2. GetUsageForAllTenants(query: 'SELECT ...')
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Data Retrieval
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+Returns: Row[] (usage data grouped by tenant)
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Google Cloud SDK |
+| Method | bigquery.query() |
+| Parameters | SQL query to aggregate usage from exported billing... |
+| Authentication | Function's Service Account with 'BigQuery Data Vie... |
+| Error Handling | Retry on transient errors. Log and terminate on pe... |
+| Performance | Query must be optimized for cost and performance. ... |
+
+### 2.5.3.0 Data Retrieval
+
+#### 2.5.3.1 Source Id
+
+application-services-layer
+
+#### 2.5.3.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.3.3 Message
+
+3. GetActiveTenantsAndTiers()
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Data Retrieval
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+Returns: Tenant[], Tier[]
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | firestore.collection('tenants').get() |
+| Parameters | Query to fetch all active tenant documents and the... |
+| Authentication | Function's Service Account with 'Cloud Datastore U... |
+| Error Handling | Retry on transient errors. Log and terminate on fa... |
+| Performance | Requires efficient indexing if the number of tenan... |
+
+### 2.5.4.0 Internal Logic
+
+#### 2.5.4.1 Source Id
+
+application-services-layer
+
+#### 2.5.4.2 Target Id
+
+application-services-layer
+
+#### 2.5.4.3 Message
+
+4. [LOOP] For each Tenant
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 Internal Logic
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Has Return
+
+❌ No
+
+### 2.5.5.0 Business Rule Evaluation
+
+#### 2.5.5.1 Source Id
+
+application-services-layer
+
+#### 2.5.5.2 Target Id
+
+application-services-layer
+
+#### 2.5.5.3 Message
+
+5. Compare usage against tier limits (80%, 95%)
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 Business Rule Evaluation
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Has Return
+
+❌ No
+
+#### 2.5.5.8 Nested Interactions
+
+*No items available*
+
+### 2.5.6.0 Data Retrieval
+
+#### 2.5.6.1 Source Id
+
+application-services-layer
+
+#### 2.5.6.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.6.3 Message
+
+6. [IF Threshold Crossed] CheckAlertStatus(tenantId, metric, threshold, cycle)
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 Data Retrieval
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Return Message
+
+Returns: Alert document or null
+
+#### 2.5.6.8 Has Return
+
+✅ Yes
+
+#### 2.5.6.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | firestore.doc('tenants/{tenantId}/alerts/{alertId}... |
+| Parameters | Checks if an alert for the specific metric/thresho... |
+| Authentication | Inherited Service Account |
+| Error Handling | Assume no alert sent if read fails, log error. |
+| Performance | Direct document read, very fast. |
+
+### 2.5.7.0 Data Retrieval
+
+#### 2.5.7.1 Source Id
+
+application-services-layer
+
+#### 2.5.7.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.7.3 Message
+
+7. [IF Alert Not Sent] GetTenantAdmins(tenantId)
+
+#### 2.5.7.4 Sequence Number
+
+7
+
+#### 2.5.7.5 Type
+
+🔹 Data Retrieval
+
+#### 2.5.7.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7 Return Message
+
+Returns: AdminUser[]
+
+#### 2.5.7.8 Has Return
+
+✅ Yes
+
+#### 2.5.7.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | firestore.collection('users').where('tenantId', '=... |
+| Authentication | Inherited Service Account |
+| Error Handling | If query fails, log error and skip notifications f... |
+| Performance | Requires a composite index on `tenantId` and `role... |
+
+### 2.5.8.0 API Call
+
+#### 2.5.8.1 Source Id
+
+application-services-layer
+
+#### 2.5.8.2 Target Id
+
+integration-layer
+
+#### 2.5.8.3 Message
+
+8. [LOOP Admins] SendUsageAlertEmail(to, subject, body)
+
+#### 2.5.8.4 Sequence Number
+
+8
+
+#### 2.5.8.5 Type
+
+🔹 API Call
+
+#### 2.5.8.6 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7 Has Return
+
+❌ No
+
+#### 2.5.8.8 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/REST |
+| Method | POST /v3/mail/send |
+| Parameters | Formatted email payload with tenant name, usage me... |
+| Authentication | SendGrid API Key (from Secret Manager) |
+| Error Handling | Log individual email delivery failures (e.g., boun... |
+| Performance | N/A |
+
+### 2.5.9.0 Data Persistence
+
+#### 2.5.9.1 Source Id
+
+application-services-layer
+
+#### 2.5.9.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.9.3 Message
+
+9. RecordAlertSent(tenantId, metric, threshold, cycle)
+
+#### 2.5.9.4 Sequence Number
+
+9
+
+#### 2.5.9.5 Type
+
+🔹 Data Persistence
+
+#### 2.5.9.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7 Return Message
+
+Returns: WriteResult
+
+#### 2.5.9.8 Has Return
+
+✅ Yes
+
+#### 2.5.9.9 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firebase Admin SDK |
+| Method | firestore.doc('tenants/{tenantId}/alerts/{alertId}... |
+| Parameters | Creates a document to flag that the alert has been... |
+| Authentication | Inherited Service Account |
+| Error Handling | Crucial for idempotency. If this write fails, the ... |
+| Performance | Direct document write, very fast. |
+
+### 2.5.10.0 Logging
+
+#### 2.5.10.1 Source Id
+
+application-services-layer
+
+#### 2.5.10.2 Target Id
+
+application-services-layer
+
+#### 2.5.10.3 Message
+
+10. Log summary (tenants processed, alerts sent, errors)
+
+#### 2.5.10.4 Sequence Number
+
+10
+
+#### 2.5.10.5 Type
+
+🔹 Logging
+
+#### 2.5.10.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.10.7 Has Return
+
+❌ No
+
+#### 2.5.10.8 Is Activation
+
+❌ No
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+The core logic from step 4 to 9 is executed within a loop for each tenant whose usage data was retrieved from BigQuery. The process must handle a large number of tenants efficiently.
+
+#### 2.6.1.2 Position
+
+right
+
+#### 2.6.1.3 Participant Id
+
+application-services-layer
+
+#### 2.6.1.4 Sequence Number
+
+4
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+This conditional block (steps 6-9) ensures an alert is only triggered if a usage threshold is newly crossed and a notification for that specific event hasn't already been dispatched in the current billing cycle. This implements Business Rule BR-002.
+
+#### 2.6.2.2 Position
+
+right
+
+#### 2.6.2.3 Participant Id
+
+application-services-layer
+
+#### 2.6.2.4 Sequence Number
+
+6
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The Cloud Function's Service Account must have the... |
+| Performance Targets | The entire function execution for all tenants shou... |
+| Error Handling Strategy | The function must be idempotent. If it fails and r... |
+| Testing Considerations | Unit test the threshold comparison logic. For inte... |
+| Monitoring Requirements | Monitor the Cloud Function for execution count, du... |
+| Deployment Considerations | The BigQuery table schema (from GCP Billing Export... |
+

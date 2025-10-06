@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload Component</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      background-color: var(--color-neutral-gray-50);
+      color: var(--color-neutral-gray-800);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Design System Tokens */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-primary-50: #E6F0FF;
+
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-gray-50: #F8FAFC;
+      --color-neutral-gray-100: #F1F5F9;
+      --color-neutral-gray-200: #E2E8F0;
+      --color-neutral-gray-300: #CBD5E1;
+      --color-neutral-gray-400: #94A3B8;
+      --color-neutral-gray-500: #64748B;
+      --color-neutral-gray-800: #1E293B;
+      --color-neutral-gray-900: #0F172A;
+
+      --color-semantic-success: #16A34A;
+      --color-semantic-error: #DC2626;
+      --color-semantic-error-light: #FEF2F2;
+      --color-semantic-success-light: #F0FDF4;
+
+      /* Typography */
+      --font-body: 16px;
+      --font-caption: 14px;
+      --font-h3: 28px;
+      --font-weight-normal: 400;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+
+      /* Borders */
+      --border-radius-lg: 12px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+    
+    /* Screen Layout */
+    .screen-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-32);
+      width: 100%;
+      min-height: 100vh;
+    }
+    
+    .screen-header {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: var(--space-32);
+      text-align: center;
+    }
+
+    .screen-header h1 {
+        font-size: var(--font-h3);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-neutral-gray-900);
+    }
+
+    .screen-variations {
+      width: 100%;
+      max-width: 800px;
+      margin-top: 64px;
+    }
+
+    .variation-group {
+      background-color: var(--color-neutral-white);
+      border-radius: var(--border-radius-lg);
+      padding: var(--space-24);
+      margin-bottom: var(--space-24);
+      box-shadow: var(--shadow-md);
+    }
+
+    .variation-group h3 {
+      font-size: 20px;
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-8);
+      color: var(--color-neutral-gray-800);
+    }
+    
+    .variation-group .description {
+      font-size: var(--font-caption);
+      color: var(--color-neutral-gray-500);
+      margin-bottom: var(--space-24);
+    }
+    
+    /* Button Component */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-12) var(--space-24);
+      font-size: var(--font-body);
+      font-weight: var(--font-weight-semibold);
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+      text-decoration: none;
+    }
+    .btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+    .btn:active {
+        transform: scale(0.98);
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--secondary {
+      background-color: var(--color-neutral-white);
+      color: var(--color-neutral-gray-800);
+      border-color: var(--color-neutral-gray-300);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn--secondary:hover {
+      background-color: var(--color-neutral-gray-50);
+    }
+    .btn--destructive {
+        background-color: var(--color-semantic-error-light);
+        color: var(--color-semantic-error);
+    }
+    .btn--destructive:hover {
+        background-color: #FEE2E2;
+    }
+
+
+    /* File Upload Component */
+    .file-upload-component {
+        width: 100%;
+        background-color: var(--color-neutral-white);
+        border-radius: var(--border-radius-lg);
+        position: relative;
+    }
+
+    .file-upload-component__input {
+        /* Visually hide the input but keep it accessible */
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0; left: 0;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    .file-upload-component__dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-32);
+        border: 2px dashed var(--color-neutral-gray-300);
+        border-radius: var(--border-radius-lg);
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    
+    .file-upload-component.drag-over .file-upload-component__dropzone {
+        border-color: var(--color-primary-500);
+        background-color: var(--color-primary-50);
+    }
+
+    .file-upload-component__icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: var(--space-16);
+        color: var(--color-neutral-gray-400);
+    }
+
+    .file-upload-component__text {
+        font-size: var(--font-body);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-neutral-gray-800);
+        margin-bottom: var(--space-4);
+    }
+
+    .file-upload-component__text--secondary {
+        font-size: var(--font-caption);
+        font-weight: var(--font-weight-normal);
+        color: var(--color-neutral-gray-500);
+        margin-bottom: var(--space-16);
+    }
+
+    /* State Management */
+    .file-upload-component__state { display: none; }
+    .file-upload-component--idle .file-upload-component__state--idle { display: flex; flex-direction: column; align-items: center; }
+    .file-upload-component--uploading .file-upload-component__state--uploading { display: block; width: 100%; }
+    .file-upload-component--complete .file-upload-component__state--complete { display: flex; align-items: center; width: 100%; }
+    .file-upload-component--error .file-upload-component__state--error { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+    /* Uploading State */
+    .upload-progress {
+        display: flex;
+        align-items: center;
+        gap: var(--space-16);
+    }
+    .upload-progress__icon {
+        width: 40px;
+        height: 40px;
+        color: var(--color-primary-500);
+        flex-shrink: 0;
+    }
+    .upload-progress__details {
+        flex-grow: 1;
+    }
+    .upload-progress__filename {
+        font-size: var(--font-body);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-neutral-gray-800);
+        margin-bottom: var(--space-8);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background-color: var(--color-neutral-gray-200);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .progress-bar__indicator {
+        height: 100%;
+        background-color: var(--color-primary-500);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    /* Complete State */
+    .upload-complete {
+      padding: var(--space-16);
+      background-color: var(--color-semantic-success-light);
+      border: 1px solid var(--color-semantic-success);
+      border-radius: var(--border-radius-lg);
+    }
+    .upload-complete__icon {
+        width: 24px; height: 24px; color: var(--color-semantic-success); flex-shrink: 0;
+    }
+    .upload-complete__filename {
+        font-weight: var(--font-weight-semibold); margin: 0 var(--space-16); flex-grow: 1;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .upload-complete__remove-btn {
+        width: 24px; height: 24px; color: var(--color-neutral-gray-500); cursor: pointer; flex-shrink: 0; border: none; background: none;
+    }
+     .upload-complete__remove-btn:hover { color: var(--color-neutral-gray-800); }
+
+
+    /* Error State */
+    .upload-error {
+        padding: var(--space-24);
+        background-color: var(--color-semantic-error-light);
+        border: 1px solid var(--color-semantic-error);
+        border-radius: var(--border-radius-lg);
+    }
+    .upload-error__icon {
+        width: 48px; height: 48px; color: var(--color-semantic-error); margin-bottom: var(--space-12);
+    }
+    .upload-error__message {
+        font-weight: var(--font-weight-semibold); color: var(--color-neutral-gray-900);
+        margin-bottom: var(--space-4);
+    }
+    .upload-error__subtext {
+        color: var(--color-neutral-gray-500); font-size: var(--font-caption);
+        margin-bottom: var(--space-16);
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="screen-container">
+    <header class="screen-header">
+      <h1>File Upload Component</h1>
+    </header>
+    
+    <div class="screen-variations">
+      
+      <!-- Variant 1: Idle State -->
+      <div class="variation-group">
+        <h3>Variant Name: "Idle"</h3>
+        <p class="description">The default state, waiting for user interaction via drag-and-drop or file selection.</p>
+        <div class="file-upload-component file-upload-component--idle" id="idle-uploader">
+          <input class="file-upload-component__input" type="file" id="file-input-idle" aria-label="Upload file">
+          <label for="file-input-idle" class="file-upload-component__dropzone">
+            <div class="file-upload-component__state file-upload-component__state--idle">
+              <svg class="file-upload-component__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3.75 3.75M12 9.75l3.75 3.75M3 17.25V21h18v-3.75M3 12.75h18" />
+              </svg>
+              <p class="file-upload-component__text">Drag & drop your file here</p>
+              <p class="file-upload-component__text--secondary">or</p>
+              <button type="button" class="btn btn--secondary" onclick="document.getElementById('file-input-idle').click();">Browse Files</button>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Variant 2: Uploading State -->
+      <div class="variation-group">
+        <h3>Variant Name: "Uploading"</h3>
+        <p class="description">State shown while a file is actively being uploaded, providing progress feedback.</p>
+        <div class="file-upload-component file-upload-component--uploading">
+          <div class="file-upload-component__dropzone">
+            <div class="file-upload-component__state file-upload-component__state--uploading" role="status" aria-live="polite">
+              <div class="upload-progress">
+                <svg class="upload-progress__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+                <div class="upload-progress__details">
+                  <p class="upload-progress__filename">quarterly_report_final_v2.csv</p>
+                  <div class="progress-bar">
+                    <div class="progress-bar__indicator" style="width: 65%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 3: Complete State -->
+      <div class="variation-group">
+        <h3>Variant Name: "Complete"</h3>
+        <p class="description">State shown after a successful upload, confirming the file and allowing removal.</p>
+        <div class="file-upload-component file-upload-component--complete">
+          <div class="file-upload-component__state file-upload-component__state--complete upload-complete" role="status" aria-live="polite">
+            <svg class="upload-complete__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="upload-complete__filename">quarterly_report_final_v2.csv</p>
+            <button class="upload-complete__remove-btn" aria-label="Remove file">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 4: Error State -->
+      <div class="variation-group">
+        <h3>Variant Name: "Error"</h3>
+        <p class="description">State shown when an upload fails, providing a clear message and a path to retry.</p>
+        <div class="file-upload-component file-upload-component--error">
+          <div class="file-upload-component__state file-upload-component__state--error upload-error" role="alert">
+            <svg class="upload-error__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <p class="upload-error__message">Upload Failed</p>
+            <p class="upload-error__subtext">Invalid file format. Please upload a .CSV file.</p>
+            <button type="button" class="btn btn--destructive">Try Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const uploader = document.getElementById('idle-uploader');
+    if (uploader) {
+      uploader.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploader.classList.add('drag-over');
+      });
+      uploader.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploader.classList.remove('drag-over');
+      });
+      uploader.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploader.classList.remove('drag-over');
+        // In a real app, you would handle the dropped files here
+      });
+    }
+  </script>
+</body>
+</html>

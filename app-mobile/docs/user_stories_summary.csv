@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"8","52","5","3","0","[""Platform Architecture & Tenant Provisioning"",""User Authentication & Lifecycle Management"",""Core Attendance Workflow"",""Advanced Features and Integrations""]","3","[""Firebase Project Setup"",""SendGrid Integration"",""Google Cloud APIs (Sheets, Maps)""]"

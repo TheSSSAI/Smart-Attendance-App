@@ -1,0 +1,476 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-SF-010
+
+## 1.2 Name
+
+Multi-Tenant Data Access Enforcement
+
+## 1.3 Description
+
+A user attempts to query data. Firestore Security Rules intercept the request and dynamically inject an additional `WHERE` clause to ensure the query only returns documents matching the `tenantId` from the user's JWT, thus enforcing strict data isolation.
+
+## 1.4 Type
+
+🔹 SecurityFlow
+
+## 1.5 Purpose
+
+To enforce strict data isolation between tenants at the database level, which is the cornerstone of the multi-tenant architecture.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- REPO-APP-MOBILE-010
+- data-persistence-layer
+- security-layer
+
+## 1.10 Key Interactions
+
+- A user is logged in, and the client holds a valid JWT with a `tenantId` claim.
+- The app issues a query to Firestore, e.g., `db.collection('attendance').where('supervisorId', '==', 'someId').get()`.
+- Before executing, the Firestore backend evaluates the security rules for the `attendance` collection.
+- The rule `allow read: if request.auth.token.tenantId == resource.data.tenantId;` is evaluated.
+- Firestore transparently combines the client query with the security rule, effectively executing a query equivalent to `...where('supervisorId', '==', 'someId') AND where('tenantId', '==', 'userTenantIdFromToken')`.
+- Only documents matching both conditions are returned to the client.
+
+## 1.11 Triggers
+
+- Any data read or write request is sent from the client to Firestore.
+
+## 1.12 Outcomes
+
+- A user can never access data from another tenant, even with a compromised or modified client application.
+- Data segregation is enforced automatically and securely on the backend for every operation.
+- The multi-tenancy requirement (REQ-SCP-001) is fulfilled.
+
+## 1.13 Business Rules
+
+- All data collections intended for tenant data must be secured with a rule that matches `request.auth.token.tenantId` (REQ-CON-001).
+
+## 1.14 Error Scenarios
+
+- A client-side query is written without the necessary filters that the security rules depend on, causing the entire query to be rejected by Firestore as insecure.
+- A misconfigured security rule accidentally denies access to legitimate users or allows cross-tenant access.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-SF-010-IMPL
+
+## 2.2 Name
+
+Implementation: Multi-Tenant Data Access Enforcement via Firestore Security Rules
+
+## 2.3 Description
+
+This sequence details the server-side enforcement of multi-tenant data isolation. A Flutter client, holding a user's JWT with a `tenantId` custom claim, issues a standard Firestore query. The Firestore backend intercepts this request and defers to the Security Rules Engine for authorization. The engine evaluates the configured security rules, which mandate that the `tenantId` in the user's token must match the `tenantId` on the requested data resource. This rule dynamically and transparently appends a non-bypassable `WHERE` clause to the original query before execution. This ensures that, regardless of the client-side logic, only data belonging to the authenticated user's tenant is ever returned, fulfilling the core tenet of the Zero Trust architecture.
+
+## 2.4 Participants
+
+### 2.4.1 Client Application
+
+#### 2.4.1.1 Repository Id
+
+REPO-APP-MOBILE-010
+
+#### 2.4.1.2 Display Name
+
+Flutter Mobile Application
+
+#### 2.4.1.3 Type
+
+🔹 Client Application
+
+#### 2.4.1.4 Technology
+
+Flutter 3.x, Dart, Firebase SDK
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4285F4 |
+| Stereotype | Client |
+
+### 2.4.2.0 Managed Database Service
+
+#### 2.4.2.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.2.2 Display Name
+
+Firestore Database Service
+
+#### 2.4.2.3 Type
+
+🔹 Managed Database Service
+
+#### 2.4.2.4 Technology
+
+Google Firestore
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #DB4437 |
+| Stereotype | Backend |
+
+### 2.4.3.0 Security Policy Enforcement Point
+
+#### 2.4.3.1 Repository Id
+
+security-layer
+
+#### 2.4.3.2 Display Name
+
+Firestore Security Rules Engine
+
+#### 2.4.3.3 Type
+
+🔹 Security Policy Enforcement Point
+
+#### 2.4.3.4 Technology
+
+Firestore Security Rules Language
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #0F9D58 |
+| Stereotype | Security |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Data Read Request
+
+#### 2.5.1.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.1.3 Message
+
+Executes Firestore query via SDK: `db.collection('attendance').where('supervisorId', '==', 'xyz').get()`
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Data Read Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+Returns either `QuerySnapshot` with filtered data or a `FirebaseException`.
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK (gRPC over HTTPS) |
+| Method | get() |
+| Parameters | collectionPath: 'attendance', query: [{field: 'sup... |
+| Authentication | Firebase Auth JWT with `tenantId` custom claim is ... |
+| Error Handling | Client-side `try-catch` block to handle potential ... |
+| Performance | Client-side query construction must align with def... |
+
+### 2.5.2.0 Authorization Check
+
+#### 2.5.2.1 Source Id
+
+data-persistence-layer
+
+#### 2.5.2.2 Target Id
+
+security-layer
+
+#### 2.5.2.3 Message
+
+Intercepts read request and invokes Rules Engine for authorization check on path '/attendance/{docId}'.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Authorization Check
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+Returns evaluation result: `ALLOW` or `DENY`.
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal GCP Communication |
+| Method | Rule Evaluation |
+| Parameters | Request context including `request.auth`, `request... |
+| Authentication | N/A (Internal trusted call within GCP). |
+| Error Handling | Misconfigured rules result in a `DENY` evaluation. |
+| Performance | Rule evaluation is a high-performance, blocking op... |
+
+#### 2.5.2.11 Nested Interactions
+
+##### 2.5.2.11.1 Claim Extraction
+
+###### 2.5.2.11.1.1 Source Id
+
+security-layer
+
+###### 2.5.2.11.1.2 Target Id
+
+security-layer
+
+###### 2.5.2.11.1.3 Message
+
+1. Validates JWT and extracts custom claim `tenantId` from `request.auth.token`.
+
+###### 2.5.2.11.1.4 Sequence Number
+
+2.1
+
+###### 2.5.2.11.1.5 Type
+
+🔹 Claim Extraction
+
+###### 2.5.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.1.7 Return Message
+
+
+
+###### 2.5.2.11.1.8 Has Return
+
+❌ No
+
+###### 2.5.2.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.2.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Logic |
+| Method | Token Parsing |
+| Parameters | `request.auth` object. |
+| Authentication | Implicit trust in the `request.auth` object provid... |
+| Error Handling | If `tenantId` claim is missing, `request.auth.toke... |
+| Performance | Sub-millisecond operation. |
+
+##### 2.5.2.11.2.0 Policy Enforcement
+
+###### 2.5.2.11.2.1 Source Id
+
+security-layer
+
+###### 2.5.2.11.2.2 Target Id
+
+security-layer
+
+###### 2.5.2.11.2.3 Message
+
+2. Applies rule `allow read: if request.auth.token.tenantId == resource.data.tenantId;`.
+
+###### 2.5.2.11.2.4 Sequence Number
+
+2.2
+
+###### 2.5.2.11.2.5 Type
+
+🔹 Policy Enforcement
+
+###### 2.5.2.11.2.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.2.7 Return Message
+
+
+
+###### 2.5.2.11.2.8 Has Return
+
+❌ No
+
+###### 2.5.2.11.2.9 Is Activation
+
+❌ No
+
+###### 2.5.2.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Logic |
+| Method | Rule Matching |
+| Parameters | `request` context, `resource` context. |
+| Authentication | N/A |
+| Error Handling | The outcome is binary: `ALLOW` (true) or `DENY` (f... |
+| Performance | Optimized for high-speed evaluation. Avoids multip... |
+
+### 2.5.3.0.0.0 Data Retrieval
+
+#### 2.5.3.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.3.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.3.3.0.0 Message
+
+Executes final, combined query against physical storage.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Data Retrieval
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+Raw document data.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Database Query |
+| Method | Internal Read Operation |
+| Parameters | Effective Query: `...WHERE supervisorId == 'xyz' A... |
+| Authentication | N/A |
+| Error Handling | Standard database I/O errors. |
+| Performance | Query performance is dependent on proper Firestore... |
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+This entire sequence is an implementation of the 'Zero Trust' security pattern. The client is never trusted to correctly filter data. Verification is performed on every request at the backend by a non-bypassable security layer.
+
+#### 2.6.1.2.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0 Sequence Number
+
+*Not specified*
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+If the security rule evaluation at step 2.2 returns `DENY`, the sequence immediately jumps to returning a `FirebaseException` with code 'permission-denied' to the client. The query is never executed.
+
+#### 2.6.2.2.0.0 Position
+
+right
+
+#### 2.6.2.3.0.0 Participant Id
+
+security-layer
+
+#### 2.6.2.4.0.0 Sequence Number
+
+2
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Zero Trust Principle: The client is never trusted.... |
+| Performance Targets | Security rule evaluation should add negligible lat... |
+| Error Handling Strategy | Client applications MUST implement `try-catch` blo... |
+| Testing Considerations | Use the Firebase Local Emulator Suite to test secu... |
+| Monitoring Requirements | Monitor for spikes in 'permission-denied' errors i... |
+| Deployment Considerations | Firestore Security Rules are deployed as code (`fi... |
+

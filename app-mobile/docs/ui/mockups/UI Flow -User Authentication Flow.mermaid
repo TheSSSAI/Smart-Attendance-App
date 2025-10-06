@@ -1,0 +1,55 @@
+flowchart TD
+    subgraph "Start: Login Screen"
+        A[User on Login Screen] --> B{Choose Login Method}
+        B --> C[Email & Password]
+        B --> D[Phone Number (OTP)]
+    end
+
+    subgraph "Path 1: Email & Password Login (US-017)"
+        C --> E[Enter Credentials & Submit]
+        E --> F{Validate Credentials}
+        F -->|Incorrect| G{Brute-force Check <br/> (5 failed attempts?)}
+        G -->|Yes| H["Show Error: <br/> 'Account Locked' (US-019)"]
+        G -->|No| I["Show Error: <br/> 'Invalid email or password' (US-017)"]
+        H --> A
+        I --> A
+    end
+
+    subgraph "Path 2: Phone OTP Login (US-018)"
+        D --> J[Enter Phone Number & Submit]
+        J --> K{Phone # Registered?}
+        K -->|No| L["Show Error: <br/> 'Number not registered' (US-018)"]
+        L --> A
+        K -->|Yes| M[Send OTP SMS]
+        M --> N[User Enters OTP & Submits]
+        N --> O{OTP Valid & Not Expired?}
+        O -->|No| P["Show Error: <br/> 'Invalid or expired code' (US-018)"]
+        P --> N
+    end
+
+    F -->|Correct| Q[Check User Status]
+    O -->|Yes| Q
+
+    subgraph "Post-Authentication Status & Role Checks"
+        Q --> R{User Status Check}
+        R -->|'active'| S[Read Role from Auth Token]
+        R -->|'deactivated'| T["Show Error: <br/> 'Account deactivated' (US-010)"]
+        R -->|'invited'| U[Redirect to <br/> ToS Acceptance / Password Setup (US-026)]
+        T --> A
+
+        S --> V{Role & Platform Check (US-021)}
+        V -->|"Admin on Web"| W[Redirect to Admin Web Dashboard]
+        V -->|"Supervisor on Mobile"| X[Redirect to Supervisor Mobile Dashboard]
+        V -->|"Subordinate on Mobile"| Y[Redirect to Subordinate Mobile Dashboard]
+        V -->|"Non-Admin on Web"| Z["Show Message: <br/> 'Use Mobile App'"]
+        V -->|"Invalid/Missing Role"| AA["Show Error: <br/> 'Account Misconfigured' & Logout"]
+    end
+
+    %% Styling
+    classDef errorNode fill:#ffebee,stroke:#d32f2f,color:#000
+    classDef successNode fill:#e8f5e8,stroke:#4caf50,color:#000
+    classDef processNode fill:#e3f2fd,stroke:#2196f3,color:#000
+
+    class H,I,L,P,T,Z,AA errorNode
+    class W,X,Y successNode
+    class E,J,N,Q,S,U processNode

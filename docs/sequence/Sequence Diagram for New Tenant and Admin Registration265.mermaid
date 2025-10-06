@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant "Admin Web Dashboard" as AdminWebDashboard
+    participant "Callable Cloud Function" as CallableCloudFunction
+    participant "Firestore Database" as FirestoreDatabase
+    participant "Firebase Authentication" as FirebaseAuthentication
+
+    activate CallableCloudFunction
+    AdminWebDashboard->>CallableCloudFunction: 1. 1. User submits registration form, invoking registerOrganization function.
+    CallableCloudFunction-->>AdminWebDashboard: 11. Returns success or error object to client. On success, client SDK handles login and token refresh.
+    CallableCloudFunction->>FirestoreDatabase: 2. 2. Query /tenants to check for organization name uniqueness.
+    FirestoreDatabase-->>CallableCloudFunction: 3. Returns query result (empty or existing document).
+    CallableCloudFunction->>AdminWebDashboard: 3.1. 3a. [If name exists] Return error 'already-exists'.
+    CallableCloudFunction->>FirebaseAuthentication: 4. 4. [If name unique] Create user account in Firebase Auth.
+    FirebaseAuthentication-->>CallableCloudFunction: 5. Returns UserRecord object with new uid.
+    CallableCloudFunction->>FirestoreDatabase: 6. 6. Start Firestore transaction to create tenant and user documents.
+    FirestoreDatabase-->>CallableCloudFunction: 7. Transaction commits successfully.
+    CallableCloudFunction->>FirestoreDatabase: 6.1. 6a. Create tenant document /tenants/{tenantId}.
+    CallableCloudFunction->>FirestoreDatabase: 6.2. 6b. Create user document /users/{uid}.
+    CallableCloudFunction->>FirebaseAuthentication: 7.1. 7a. [If transaction fails] Compensate: Delete user from Firebase Auth.
+    FirebaseAuthentication-->>CallableCloudFunction: Returns confirmation of user deletion.
+    CallableCloudFunction->>FirebaseAuthentication: 8. 8. Set custom claims on the user's auth token.
+    FirebaseAuthentication-->>CallableCloudFunction: 9. Claims successfully set.
+    CallableCloudFunction->>FirestoreDatabase: 9.1. 9a. [If claims fail] Compensate: Delete Firestore documents.
+    FirestoreDatabase-->>CallableCloudFunction: Returns confirmation of deletion.
+    CallableCloudFunction->>FirebaseAuthentication: 9.2. 9b. [If claims fail] Compensate: Delete user from Firebase Auth.
+    FirebaseAuthentication-->>CallableCloudFunction: Returns confirmation of deletion.
+    CallableCloudFunction->>FirestoreDatabase: 10. 10. Create audit log entry for 'Tenant Created'.
+
+    note over AdminWebDashboard: Client SDK's auth.onIdTokenChanged listener will be triggered after a successful registration and...
+
+    deactivate CallableCloudFunction

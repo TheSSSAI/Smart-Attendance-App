@@ -1,0 +1,25 @@
+flowchart TD
+    A[User Action e.g., Applies Filters] --> B{Is Input Valid? e.g., Date Range};
+    
+    B -->|No| C[Show 'Invalid Input' Error on UI];
+    B -->|Yes| D[Initiate Data Fetch API Call];
+    
+    D --> E{API Call Successful?};
+    E -->|No| F[Show 'Data Fetch Failure' Error on UI];
+    E -->|Yes| G{Response Contains Data?};
+    
+    G -->|No| H[Show 'No Results Found' Message on UI];
+    G -->|Yes| I[Render Data in UI];
+
+    %% Styling
+    classDef startNode fill:#E3F2FD,stroke:#2196F3,color:#000
+    classDef decisionNode fill:#FFF8E1,stroke:#FFC107,color:#000
+    classDef processNode fill:#E8F5E9,stroke:#4CAF50,color:#000
+    classDef errorNode fill:#FFEBEE,stroke:#D32F2F,color:#000
+    classDef infoNode fill:#F1F5F9,stroke:#64748B,color:#000
+    
+    class A startNode;
+    class B,E,G decisionNode;
+    class I,D processNode;
+    class C,F errorNode;
+    class H infoNode;

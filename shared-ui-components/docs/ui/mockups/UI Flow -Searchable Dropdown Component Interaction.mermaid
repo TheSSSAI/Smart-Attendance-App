@@ -1,0 +1,26 @@
+sequenceDiagram
+    actor User
+    participant SearchableDropdown_UI as "Searchable Dropdown (UI)"
+    participant DataSource_StateManager as "Data Source / State Manager"
+
+    User->>SearchableDropdown_UI: 1. User types search query
+    activate SearchableDropdown_UI
+
+    note over SearchableDropdown_UI: Debounce input to avoid excessive requests
+
+    SearchableDropdown_UI->>DataSource_StateManager: 2. Fetches filtered data with query
+    activate DataSource_StateManager
+
+    DataSource_StateManager-->>SearchableDropdown_UI: 3. Returns filtered list of items
+    deactivate DataSource_StateManager
+
+    note over SearchableDropdown_UI: Alt [No Results]: Display 'No results found' message
+    note over SearchableDropdown_UI: Alt [Error]: Display 'Failed to load data' message
+
+    SearchableDropdown_UI-->>User: 4. Displays filtered options in a dropdown menu
+
+    User->>SearchableDropdown_UI: 5. User selects single/multiple items
+    SearchableDropdown_UI->>SearchableDropdown_UI: 6. Updates internal state with selection
+
+    SearchableDropdown_UI-->>User: 7. Emits selected value(s) to parent component
+    deactivate SearchableDropdown_UI

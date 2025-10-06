@@ -1,0 +1,29 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.associations": {
+    "*.rules": "firestore"
+  },
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "firebase.json"
+      ],
+      "url": "https://firebase.google.com/static/schema/firebase-json.json"
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "eamodio.gitlens",
+    "ms-azuretools.vscode-docker",
+    "toba.vsfire"
+  ]
+}

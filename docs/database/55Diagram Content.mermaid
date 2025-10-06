@@ -1,0 +1,11 @@
+erDiagram
+    AttendanceMeasurement {
+        Timestamp time PK "The primary time index for the record"
+        String tenantId "Tag for filtering"
+        String userId "Tag for filtering"
+        String supervisorId "Tag for filtering"
+        String eventType "Tag: 'checkIn' or 'checkOut'"
+        Float latitude "Field"
+        Float longitude "Field"
+        String attendanceRecordId "Field: Correlates check-in with check-out"
+    }

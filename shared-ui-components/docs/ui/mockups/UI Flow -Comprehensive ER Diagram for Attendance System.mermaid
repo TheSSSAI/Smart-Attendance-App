@@ -1,0 +1,102 @@
+erDiagram
+    SubscriptionPlan {
+        Guid subscriptionPlanId PK
+        VARCHAR name
+    }
+
+    Tenant {
+        Guid tenantId PK
+        VARCHAR name
+        Guid subscriptionPlanId FK
+    }
+
+    TenantConfiguration {
+        Guid tenantId PK
+    }
+
+    GoogleSheetIntegration {
+        Guid googleSheetIntegrationId PK
+        Guid tenantId FK
+    }
+
+    User {
+        Guid userId PK
+        Guid tenantId FK
+        VARCHAR email
+        Guid supervisorId FK
+    }
+
+    Team {
+        Guid teamId PK
+        Guid tenantId FK
+        VARCHAR name
+        Guid supervisorId FK
+    }
+
+    UserTeamMembership {
+        Guid userTeamMembershipId PK
+        Guid userId FK
+        Guid teamId FK
+    }
+
+    Event {
+        Guid eventId PK
+        Guid tenantId FK
+        VARCHAR title
+        Guid createdByUserId FK
+    }
+
+    EventAssignment {
+        Guid eventAssignmentId PK
+        Guid eventId FK
+        Guid assigneeId
+        VARCHAR assigneeType
+    }
+
+    AttendanceRecord {
+        Guid attendanceRecordId PK
+        Guid userId FK
+        Guid tenantId FK
+        Guid supervisorId FK
+        Guid eventId FK
+    }
+
+    DailyUserSummary {
+        Date summaryDate PK
+        Guid userId PK
+        Guid tenantId FK
+    }
+
+    AuditLog {
+        Guid auditLogId PK
+        Guid tenantId FK
+        Guid actingUserId FK
+        Guid targetEntityId
+    }
+
+    SubscriptionPlan ||--o{ Tenant : Provides
+    Tenant ||--|| TenantConfiguration : Configures
+    Tenant ||--o| GoogleSheetIntegration : Integrates
+    Tenant o{--|| User : Owns
+    Tenant o{--|| Team : Owns
+    Tenant o{--|| Event : Owns
+    Tenant o{--|| AuditLog : Owns
+    Tenant o{--|| AttendanceRecord : Owns
+    Tenant o{--|| DailyUserSummary : Owns
+
+    User o|--o{ User : Supervises
+    User o{--|| Team : Supervises
+    User o{--|| Event : Creates
+    User o{--|| AuditLog : Performs
+    User o{--|| AttendanceRecord : Has
+    User o{--|| AttendanceRecord : Reviews
+    User o{--|| DailyUserSummary : Has
+
+    Team o{--|| UserTeamMembership : has
+    User o{--|| UserTeamMembership : isMemberOf
+
+    Event o{--|| EventAssignment : assignedVia
+    User o{--|| EventAssignment : isAssignee
+    Team o{--|| EventAssignment : isAssignee
+
+    Event o{--|| AttendanceRecord : linkedTo

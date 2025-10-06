@@ -1,0 +1,760 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-EV-020
+
+## 1.2 Name
+
+Scheduled Approval Escalation to Next Supervisor
+
+## 1.3 Description
+
+A scheduled job runs periodically to find pending attendance records that have exceeded their approval deadline. These requests are automatically reassigned to the next supervisor in the reporting hierarchy.
+
+## 1.4 Type
+
+🔹 EventProcessing
+
+## 1.5 Purpose
+
+To ensure timely processing of attendance records and prevent bottlenecks caused by unresponsive or unavailable supervisors.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+Daily
+
+## 1.9 Participants
+
+- application-services-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- A scheduled Cloud Function is triggered.
+- The function queries for attendance records with `status: pending` and a `creationTimestamp` older than the configured deadline (e.g., 3 days).
+- For each overdue record, it reads the original supervisor's user document to find their `supervisorId` (the escalation target).
+- The function updates the attendance record, changing its `supervisorId` to the new escalation target.
+- An entry is written to the `auditLog` to record the escalation event.
+
+## 1.11 Triggers
+
+- A time-based trigger from Google Cloud Scheduler.
+
+## 1.12 Outcomes
+
+- Overdue attendance requests are reassigned to the next level of management.
+- The approval process is unblocked.
+
+## 1.13 Business Rules
+
+- Escalation follows the `supervisorId` chain defined in the user hierarchy.
+- Circular reporting structures must be prevented to avoid infinite escalation loops (REQ-2.6.1).
+
+## 1.14 Error Scenarios
+
+- The original supervisor has no supervisor, making escalation impossible (requires a policy for handling this).
+- The function fails to update a record, requiring idempotent design.
+
+## 1.15 Integration Points
+
+- Google Cloud Scheduler
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-ADM-005
+
+## 2.2 Name
+
+Scheduled Tenant Usage Alerting Process
+
+## 2.3 Description
+
+A comprehensive, implementation-ready sequence diagram detailing the automated backend process for monitoring tenant resource consumption. A scheduled Cloud Function is triggered, queries usage data from BigQuery, compares it against subscription limits stored in Firestore, and dispatches email alerts via SendGrid to tenant administrators when predefined thresholds (e.g., 80%, 95%) are breached. The system updates the tenant's state in Firestore to ensure alerts are idempotent within a single billing cycle.
+
+## 2.4 Participants
+
+### 2.4.1 Scheduler
+
+#### 2.4.1.1 Repository Id
+
+gcp-cloud-scheduler
+
+#### 2.4.1.2 Display Name
+
+Google Cloud Scheduler
+
+#### 2.4.1.3 Type
+
+🔹 Scheduler
+
+#### 2.4.1.4 Technology
+
+Google Cloud Scheduler
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #D3D3D3 |
+| Stereotype | System |
+
+### 2.4.2.0 CloudFunction
+
+#### 2.4.2.1 Repository Id
+
+application-services-layer
+
+#### 2.4.2.2 Display Name
+
+UsageCheckFunction
+
+#### 2.4.2.3 Type
+
+🔹 CloudFunction
+
+#### 2.4.2.4 Technology
+
+TypeScript, Node.js 20
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #82b1ff |
+| Stereotype | Serverless |
+
+### 2.4.3.0 Database
+
+#### 2.4.3.1 Repository Id
+
+gcp-bigquery
+
+#### 2.4.3.2 Display Name
+
+Google BigQuery
+
+#### 2.4.3.3 Type
+
+🔹 Database
+
+#### 2.4.3.4 Technology
+
+Google BigQuery
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #4285F4 |
+| Stereotype | DataWarehouse |
+
+### 2.4.4.0 Database
+
+#### 2.4.4.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.4.2 Display Name
+
+Firestore
+
+#### 2.4.4.3 Type
+
+🔹 Database
+
+#### 2.4.4.4 Technology
+
+Firestore
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFCA28 |
+| Stereotype | NoSQL |
+
+### 2.4.5.0 ExternalService
+
+#### 2.4.5.1 Repository Id
+
+ext-sendgrid-api
+
+#### 2.4.5.2 Display Name
+
+SendGrid API
+
+#### 2.4.5.3 Type
+
+🔹 ExternalService
+
+#### 2.4.5.4 Technology
+
+REST API
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #94E8B4 |
+| Stereotype | API |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Scheduled Trigger
+
+#### 2.5.1.1 Source Id
+
+gcp-cloud-scheduler
+
+#### 2.5.1.2 Target Id
+
+application-services-layer
+
+#### 2.5.1.3 Message
+
+1. Trigger(jobId: 'check-tenant-usage')
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Scheduled Trigger
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Pub/Sub |
+| Method | POST |
+| Parameters | Pub/Sub message with base64 encoded payload, if an... |
+| Authentication | Implicit via GCP Service Account permissions. |
+| Error Handling | GCP Scheduler handles retries on failure. |
+| Performance | N/A |
+
+#### 2.5.1.11 Nested Interactions
+
+*No items available*
+
+### 2.5.2.0 Query
+
+#### 2.5.2.1 Source Id
+
+application-services-layer
+
+#### 2.5.2.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.2.3 Message
+
+2. getActiveTenantsWithTiers()
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Query
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+List<Tenant>
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+❌ No
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | db.collection('tenants').where('status', '==', 'ac... |
+| Parameters | Firestore query object. |
+| Authentication | Authenticated via Function's service account. |
+| Error Handling | Function terminates with error if Firestore is una... |
+| Performance | Query should be backed by a composite index on `st... |
+
+#### 2.5.2.11 Nested Interactions
+
+*No items available*
+
+### 2.5.3.0 Loop Fragment
+
+#### 2.5.3.1 Source Id
+
+application-services-layer
+
+#### 2.5.3.2 Target Id
+
+application-services-layer
+
+#### 2.5.3.3 Message
+
+3. [Loop] For each tenant in List<Tenant>
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Loop Fragment
+
+#### 2.5.3.6 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7 Return Message
+
+
+
+#### 2.5.3.8 Has Return
+
+❌ No
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | N/A |
+| Method | N/A |
+| Parameters | Iteration over the tenant list. |
+| Authentication | N/A |
+| Error Handling | An error for one tenant should be logged and not h... |
+| Performance | N/A |
+
+#### 2.5.3.11 Nested Interactions
+
+##### 2.5.3.11.1 Query
+
+###### 2.5.3.11.1.1 Source Id
+
+application-services-layer
+
+###### 2.5.3.11.1.2 Target Id
+
+gcp-bigquery
+
+###### 2.5.3.11.1.3 Message
+
+3.1. getAggregatedUsage(tenantId, currentBillingCycle)
+
+###### 2.5.3.11.1.4 Sequence Number
+
+3.1
+
+###### 2.5.3.11.1.5 Type
+
+🔹 Query
+
+###### 2.5.3.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.3.11.1.7 Return Message
+
+UsageMetrics { reads: number, writes: number }
+
+###### 2.5.3.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.3.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.3.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | BigQuery Node.js SDK |
+| Method | bigquery.query(sqlQuery) |
+| Parameters | SQL query with `tenantId` and date range for curre... |
+| Authentication | Authenticated via Function's service account with ... |
+| Error Handling | Catch exceptions, log error with tenantId, and con... |
+| Performance | Query must be optimized to minimize data scanned. ... |
+
+###### 2.5.3.11.1.11 Nested Interactions
+
+*No items available*
+
+##### 2.5.3.11.2.0 Alternative Fragment
+
+###### 2.5.3.11.2.1 Source Id
+
+application-services-layer
+
+###### 2.5.3.11.2.2 Target Id
+
+application-services-layer
+
+###### 2.5.3.11.2.3 Message
+
+3.2. [Alt] If usage > threshold AND alert not yet sent for this cycle
+
+###### 2.5.3.11.2.4 Sequence Number
+
+3.2
+
+###### 2.5.3.11.2.5 Type
+
+🔹 Alternative Fragment
+
+###### 2.5.3.11.2.6 Is Synchronous
+
+❌ No
+
+###### 2.5.3.11.2.7 Return Message
+
+
+
+###### 2.5.3.11.2.8 Has Return
+
+❌ No
+
+###### 2.5.3.11.2.9 Is Activation
+
+❌ No
+
+###### 2.5.3.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | N/A |
+| Method | Internal Logic Check |
+| Parameters | Compares `UsageMetrics` against `tenant.tier.limit... |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | N/A |
+
+###### 2.5.3.11.2.11 Nested Interactions
+
+####### 2.5.3.11.2.11.1 Query
+
+######## 2.5.3.11.2.11.1.1 Source Id
+
+application-services-layer
+
+######## 2.5.3.11.2.11.1.2 Target Id
+
+data-persistence-layer
+
+######## 2.5.3.11.2.11.1.3 Message
+
+3.2.1. getTenantAdmins(tenantId)
+
+######## 2.5.3.11.2.11.1.4 Sequence Number
+
+3.21
+
+######## 2.5.3.11.2.11.1.5 Type
+
+🔹 Query
+
+######## 2.5.3.11.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.11.2.11.1.7 Return Message
+
+List<AdminUser>
+
+######## 2.5.3.11.2.11.1.8 Has Return
+
+✅ Yes
+
+######## 2.5.3.11.2.11.1.9 Is Activation
+
+❌ No
+
+######## 2.5.3.11.2.11.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | db.collection('users').where('tenantId', '==', ten... |
+| Parameters | Firestore query object. |
+| Authentication | Authenticated via Function's service account. |
+| Error Handling | If query fails, log error and skip notifications f... |
+| Performance | Requires composite index on `tenantId` and `role`. |
+
+######## 2.5.3.11.2.11.1.11 Nested Interactions
+
+*No items available*
+
+####### 2.5.3.11.2.11.2.0 API Call
+
+######## 2.5.3.11.2.11.2.1 Source Id
+
+application-services-layer
+
+######## 2.5.3.11.2.11.2.2 Target Id
+
+ext-sendgrid-api
+
+######## 2.5.3.11.2.11.2.3 Message
+
+3.2.2. [Loop] For each AdminUser: sendAlertEmail(to, subject, body)
+
+######## 2.5.3.11.2.11.2.4 Sequence Number
+
+3.22
+
+######## 2.5.3.11.2.11.2.5 Type
+
+🔹 API Call
+
+######## 2.5.3.11.2.11.2.6 Is Synchronous
+
+❌ No
+
+######## 2.5.3.11.2.11.2.7 Return Message
+
+202 Accepted
+
+######## 2.5.3.11.2.11.2.8 Has Return
+
+✅ Yes
+
+######## 2.5.3.11.2.11.2.9 Is Activation
+
+❌ No
+
+######## 2.5.3.11.2.11.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS |
+| Method | POST /v3/mail/send |
+| Parameters | SendGrid mail payload with admin email and formatt... |
+| Authentication | Bearer token (SendGrid API Key from Secret Manager... |
+| Error Handling | Log individual send failures (e.g., invalid email)... |
+| Performance | API call latency ~100-500ms. |
+
+######## 2.5.3.11.2.11.2.11 Nested Interactions
+
+*No items available*
+
+####### 2.5.3.11.2.11.3.0 Write
+
+######## 2.5.3.11.2.11.3.1 Source Id
+
+application-services-layer
+
+######## 2.5.3.11.2.11.3.2 Target Id
+
+data-persistence-layer
+
+######## 2.5.3.11.2.11.3.3 Message
+
+3.2.3. updateAlertStatus(tenantId, alertType, currentBillingCycle)
+
+######## 2.5.3.11.2.11.3.4 Sequence Number
+
+3.23
+
+######## 2.5.3.11.2.11.3.5 Type
+
+🔹 Write
+
+######## 2.5.3.11.2.11.3.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.3.11.2.11.3.7 Return Message
+
+WriteResult
+
+######## 2.5.3.11.2.11.3.8 Has Return
+
+✅ Yes
+
+######## 2.5.3.11.2.11.3.9 Is Activation
+
+❌ No
+
+######## 2.5.3.11.2.11.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | db.collection('tenants').doc(tenantId).update({...... |
+| Parameters | Update payload, e.g., `{'alertStatus.firestoreRead... |
+| Authentication | Authenticated via Function's service account. |
+| Error Handling | Critical step. Use a transaction to ensure atomici... |
+| Performance | Fast write operation (<50ms). |
+
+######## 2.5.3.11.2.11.3.11 Nested Interactions
+
+*No items available*
+
+### 2.5.4.0.0.0.0.0 Log
+
+#### 2.5.4.1.0.0.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.4.2.0.0.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.4.3.0.0.0.0 Message
+
+4. Log summary (tenants processed, alerts sent)
+
+#### 2.5.4.4.0.0.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0.0.0 Type
+
+🔹 Log
+
+#### 2.5.4.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.4.7.0.0.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0.0.0 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | stdout |
+| Method | console.log() |
+| Parameters | Structured JSON log object. |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | N/A |
+
+#### 2.5.4.11.0.0.0.0 Nested Interactions
+
+*No items available*
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+This entire Cloud Function must be idempotent. If it runs twice for the same period, it must not send duplicate emails. This is achieved by checking and setting the `alertStatus` field in Firestore.
+
+#### 2.6.1.2.0.0.0.0 Position
+
+top
+
+#### 2.6.1.3.0.0.0.0 Participant Id
+
+application-services-layer
+
+#### 2.6.1.4.0.0.0.0 Sequence Number
+
+1
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+Billing cycle logic (start/end dates) must be robust and handle timezones correctly to align with GCP's billing period.
+
+#### 2.6.2.2.0.0.0.0 Position
+
+bottom
+
+#### 2.6.2.3.0.0.0.0 Participant Id
+
+application-services-layer
+
+#### 2.6.2.4.0.0.0.0 Sequence Number
+
+3.1
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The Cloud Function's service account must have lea... |
+| Performance Targets | The entire job execution time for all tenants shou... |
+| Error Handling Strategy | The function should be resilient to single-tenant ... |
+| Testing Considerations | Unit tests (Jest) should mock Firestore, BigQuery,... |
+| Monitoring Requirements | Log the start and end of each job run, including t... |
+| Deployment Considerations | The GCP Billing Export to BigQuery must be configu... |
+

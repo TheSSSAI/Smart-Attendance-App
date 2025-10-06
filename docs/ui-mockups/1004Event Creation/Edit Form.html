@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Creation/Edit Form</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    img, picture, video, canvas, svg { display: block; max-width: 100%; }
+    input, button, textarea, select { font: inherit; }
+    p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
+
+    /* Design System Tokens */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-primary-50: #E6F0FF;
+      --color-secondary-500: #00C2A1;
+      --color-error: #DC2626;
+      --color-error-bg: #FEE2E2;
+      --color-error-text: #991B1B;
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-800: #1E293B;
+      --color-neutral-900: #0F172A;
+
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --fs-h3: 28px;
+      --fs-h4: 20px;
+      --fs-body: 16px;
+      --fs-caption: 14px;
+      --fw-bold: 700;
+      --fw-semibold: 600;
+      --fw-normal: 400;
+
+      /* Spacing */
+      --space-4: 4px; --space-8: 8px; --space-12: 12px; --space-16: 16px; --space-24: 24px; --space-32: 32px;
+
+      /* Borders */
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+    }
+
+    /* Base Styles */
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-neutral-100);
+      color: var(--color-neutral-700);
+      font-size: var(--fs-body);
+      padding: var(--space-16);
+    }
+    
+    .screen-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: var(--color-neutral-white);
+      border-radius: var(--border-radius-lg);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      overflow: hidden;
+    }
+    
+    .screen-variations {
+      max-width: 600px;
+      margin: var(--space-32) auto;
+    }
+    
+    .screen-variations h2 {
+        font-size: var(--fs-h3);
+        color: var(--color-neutral-900);
+        margin-bottom: var(--space-24);
+        border-bottom: 1px solid var(--color-neutral-200);
+        padding-bottom: var(--space-16);
+    }
+    
+    .variation-group {
+        margin-bottom: var(--space-32);
+    }
+    
+    .variation-group h3 {
+        font-size: var(--fs-h4);
+        color: var(--color-neutral-800);
+        margin-bottom: var(--space-8);
+    }
+    
+    .variation-group normal {
+        font-size: var(--fs-caption);
+        color: var(--color-neutral-500);
+        display: block;
+        margin-bottom: var(--space-16);
+    }
+
+    /* Form Styles */
+    .event-form-header {
+      padding: var(--space-16) var(--space-24);
+      border-bottom: 1px solid var(--color-neutral-200);
+    }
+    .event-form-header h1 {
+      font-size: var(--fs-h4);
+      font-weight: var(--fw-semibold);
+      color: var(--color-neutral-900);
+    }
+    .event-form-body {
+      padding: var(--space-24);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-24);
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+    .form-group label {
+      font-weight: var(--fw-semibold);
+      color: var(--color-neutral-800);
+    }
+    .input-field {
+      width: 100%;
+      padding: var(--space-12) var(--space-16);
+      border: 1px solid var(--color-neutral-300);
+      border-radius: var(--border-radius-md);
+      background-color: var(--color-neutral-white);
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+    .input-field::placeholder {
+      color: var(--color-neutral-400);
+    }
+    textarea.input-field {
+        min-height: 100px;
+        resize: vertical;
+    }
+    .form-row {
+        display: flex;
+        gap: var(--space-16);
+    }
+    .form-row > .form-group {
+        flex: 1;
+    }
+    .validation-error {
+        font-size: var(--fs-caption);
+        color: var(--color-error);
+    }
+    .input-field--error {
+        border-color: var(--color-error);
+    }
+    .input-field--error:focus {
+        box-shadow: 0 0 0 3px var(--color-error-bg);
+    }
+
+    /* Checkbox/Toggle Styles */
+    .toggle-group {
+        display: flex;
+        align-items: center;
+        gap: var(--space-12);
+        user-select: none;
+    }
+    .toggle-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--color-primary-500);
+    }
+
+    /* Recurrence Section */
+    .recurrence-section {
+        border: 1px solid var(--color-neutral-200);
+        border-radius: var(--border-radius-lg);
+        padding: var(--space-16);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-16);
+        background-color: var(--color-neutral-50);
+    }
+    .day-selector {
+        display: flex;
+        gap: var(--space-8);
+    }
+    .day-selector button {
+        flex: 1;
+        padding: var(--space-8);
+        border-radius: 9999px;
+        border: 1px solid var(--color-neutral-300);
+        background-color: var(--color-neutral-white);
+        cursor: pointer;
+        transition: background-color 150ms ease, color 150ms ease;
+    }
+    .day-selector button:hover {
+        background-color: var(--color-neutral-100);
+    }
+    .day-selector button[aria-pressed="true"] {
+        background-color: var(--color-primary-500);
+        color: var(--color-neutral-white);
+        border-color: var(--color-primary-500);
+    }
+
+    /* Assignee Section */
+    .assignee-section {
+        position: relative;
+    }
+    .selected-assignees {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-8);
+        margin-top: var(--space-8);
+    }
+    .assignee-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-8);
+        padding: var(--space-4) var(--space-12);
+        background-color: var(--color-primary-50);
+        color: var(--color-primary-700);
+        border-radius: 9999px;
+        font-size: var(--fs-caption);
+        font-weight: var(--fw-semibold);
+    }
+    .assignee-chip button {
+        background: none;
+        border: none;
+        color: var(--color-primary-700);
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    /* Form Actions */
+    .form-actions {
+      padding: var(--space-16) var(--space-24);
+      border-top: 1px solid var(--color-neutral-200);
+      background-color: var(--color-neutral-50);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-12);
+    }
+    .btn {
+      padding: var(--space-12) var(--space-24);
+      border: none;
+      border-radius: var(--border-radius-md);
+      font-weight: var(--fw-semibold);
+      cursor: pointer;
+      transition: background-color 150ms ease, transform 100ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-8);
+    }
+    .btn:active {
+        transform: scale(0.98);
+    }
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--secondary {
+      background-color: var(--color-neutral-white);
+      color: var(--color-neutral-700);
+      border: 1px solid var(--color-neutral-300);
+    }
+    .btn--secondary:hover {
+      background-color: var(--color-neutral-100);
+    }
+    .btn:disabled {
+        background-color: var(--color-neutral-200);
+        color: var(--color-neutral-400);
+        cursor: not-allowed;
+    }
+    .hidden {
+        display: none !important;
+    }
+    
+    /* Loading Spinner */
+    .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: var(--color-neutral-white);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .form-saving-overlay {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-radius: var(--border-radius-lg);
+    }
+    
+    .form-saving-overlay .spinner {
+        width: 48px;
+        height: 48px;
+        border-width: 4px;
+        border-top-color: var(--color-primary-500);
+        border-color: var(--color-neutral-200);
+    }
+    .screen-container.saving {
+        position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="screen-container" id="interactive-form-container">
+    <div class="event-form-header">
+      <h1>Create New Event</h1>
+    </div>
+    <form class="event-form" onsubmit="event.preventDefault(); handleSave(this);">
+      <div class="event-form-body">
+        
+        <div class="form-group">
+          <label for="event-title">Event Title</label>
+          <input type="text" id="event-title" class="input-field" placeholder="e.g., Quarterly Team Sync" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="event-description">Description (optional)</label>
+          <textarea id="event-description" class="input-field" placeholder="Add details about the event..."></textarea>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="start-time">Start Time</label>
+                <input type="datetime-local" id="start-time" class="input-field" required>
+            </div>
+            <div class="form-group">
+                <label for="end-time">End Time</label>
+                <input type="datetime-local" id="end-time" class="input-field" required>
+            </div>
+        </div>
+        
+        <div class="toggle-group">
+            <input type="checkbox" id="repeat-toggle">
+            <label for="repeat-toggle">Repeat Event</label>
+        </div>
+
+        <div id="recurrence-section" class="recurrence-section hidden">
+            <div class="form-group">
+                <label for="frequency">Frequency</label>
+                <select id="frequency" class="input-field">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="form-group" id="weekly-options">
+                <label>Repeat on</label>
+                <div class="day-selector">
+                    <button type="button" aria-pressed="false">S</button>
+                    <button type="button" aria-pressed="true">M</button>
+                    <button type="button" aria-pressed="false">T</button>
+                    <button type="button" aria-pressed="true">W</button>
+                    <button type="button" aria-pressed="false">T</button>
+                    <button type="button" aria-pressed="true">F</button>
+                    <button type="button" aria-pressed="false">S</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="end-date">End Date</label>
+                <input type="date" id="end-date" class="input-field">
+            </div>
+        </div>
+        
+        <div class="form-group assignee-section">
+            <label for="assignees">Assign to</label>
+            <input type="search" id="assignees" class="input-field" placeholder="Search users or teams...">
+            <div class="selected-assignees">
+                <span class="assignee-chip">Jane Doe <button type="button" aria-label="Remove Jane Doe">&times;</button></span>
+                <span class="assignee-chip">Field Ops Team <button type="button" aria-label="Remove Field Ops Team">&times;</button></span>
+            </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn--secondary">Cancel</button>
+        <button type="submit" class="btn btn--primary">
+          <span>Save Event</span>
+        </button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="screen-variations">
+    <h2>Screen Variations</h2>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Editing an Existing Event"</h3>
+      <normal>The form is pre-populated with data from an existing event. The header and save button text are updated to reflect the 'Edit' action.</normal>
+      <div class="screen-container">
+        <div class="event-form-header">
+          <h1>Edit Event: Quarterly Team Sync</h1>
+        </div>
+        <form class="event-form">
+          <div class="event-form-body">
+            <div class="form-group">
+              <label for="edit-title">Event Title</label>
+              <input type="text" id="edit-title" class="input-field" value="Quarterly Team Sync" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-description">Description</label>
+              <textarea id="edit-description" class="input-field">Final review of Q3 performance and planning for Q4 initiatives.</textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit-start">Start Time</label>
+                    <input type="datetime-local" id="edit-start" class="input-field" value="2025-10-28T09:00" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-end">End Time</label>
+                    <input type="datetime-local" id="edit-end" class="input-field" value="2025-10-28T10:30" required>
+                </div>
+            </div>
+            <div class="toggle-group">
+                <input type="checkbox" id="edit-repeat-toggle-static">
+                <label for="edit-repeat-toggle-static">Repeat Event</label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn--secondary">Cancel</button>
+            <button type="submit" class="btn btn--primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Recurring Event Options"</h3>
+      <normal>When the 'Repeat Event' toggle is enabled, additional options for frequency, days, and end date are revealed.</normal>
+      <div class="screen-container">
+          <div class="event-form-header"><h1>Create Recurring Event</h1></div>
+          <form class="event-form">
+              <div class="event-form-body">
+                  <div class="toggle-group"><input type="checkbox" id="repeat-toggle-static-2" checked><label for="repeat-toggle-static-2">Repeat Event</label></div>
+                  <div class="recurrence-section">
+                      <div class="form-group">
+                          <label for="freq-static">Frequency</label>
+                          <select id="freq-static" class="input-field"><option>Daily</option><option selected>Weekly</option><option>Monthly</option></select>
+                      </div>
+                      <div class="form-group">
+                          <label>Repeat on</label>
+                          <div class="day-selector">
+                              <button type="button" aria-pressed="false">S</button><button type="button" aria-pressed="true">M</button><button type="button" aria-pressed="false">T</button><button type="button" aria-pressed="false">W</button><button type="button" aria-pressed="true">T</button><button type="button" aria-pressed="false">F</button><button type="button" aria-pressed="false">S</button>
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label for="end-date-static">End Date</label>
+                          <input type="date" id="end-date-static" class="input-field" value="2025-12-31">
+                      </div>
+                  </div>
+              </div>
+              <div class="form-actions"><button type="button" class="btn btn--secondary">Cancel</button><button type="submit" class="btn btn--primary">Save Event</button></div>
+          </form>
+      </div>
+    </div>
+
+    <div class="variation-group">
+      <h3>Variant Name: "Validation Errors"</h3>
+      <normal>The form shows inline error messages when required fields are missing or data is invalid, preventing submission.</normal>
+      <div class="screen-container">
+          <div class="event-form-header"><h1>Create New Event</h1></div>
+          <form class="event-form">
+              <div class="event-form-body">
+                  <div class="form-group">
+                      <label for="error-title">Event Title</label>
+                      <input type="text" id="error-title" class="input-field input-field--error" required>
+                      <p class="validation-error">Event title is required.</p>
+                  </div>
+                  <div class="form-row">
+                      <div class="form-group">
+                          <label for="error-start">Start Time</label>
+                          <input type="datetime-local" id="error-start" class="input-field input-field--error" value="2025-11-15T14:00" required>
+                      </div>
+                      <div class="form-group">
+                          <label for="error-end">End Time</label>
+                          <input type="datetime-local" id="error-end" class="input-field input-field--error" value="2025-11-15T13:00" required>
+                          <p class="validation-error">End time must be after start time.</p>
+                      </div>
+                  </div>
+              </div>
+              <div class="form-actions"><button type="button" class="btn btn--secondary">Cancel</button><button type="submit" class="btn btn--primary" disabled>Save Event</button></div>
+          </form>
+      </div>
+    </div>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Saving State"</h3>
+      <normal>After submission, the form is overlaid with a loading indicator, and all inputs are disabled to prevent further interaction.</normal>
+      <div class="screen-container saving">
+        <div class="form-saving-overlay">
+            <div class="spinner"></div>
+        </div>
+        <div class="event-form-header"><h1>Create New Event</h1></div>
+        <form class="event-form">
+          <fieldset disabled>
+              <div class="event-form-body">
+                  <div class="form-group"><label for="saving-title">Event Title</label><input type="text" id="saving-title" class="input-field" value="Finalizing Details..." ></div>
+              </div>
+              <div class="form-actions">
+                  <button type="button" class="btn btn--secondary">Cancel</button>
+                  <button type="submit" class="btn btn--primary" disabled>
+                      <div class="spinner"></div>
+                      <span>Saving...</span>
+                  </button>
+              </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const repeatToggle = document.getElementById('repeat-toggle');
+        const recurrenceSection = document.getElementById('recurrence-section');
+        const frequencySelect = document.getElementById('frequency');
+        const weeklyOptions = document.getElementById('weekly-options');
+
+        if (repeatToggle && recurrenceSection && frequencySelect && weeklyOptions) {
+            repeatToggle.addEventListener('change', () => {
+                recurrenceSection.classList.toggle('hidden', !repeatToggle.checked);
+            });
+
+            frequencySelect.addEventListener('change', () => {
+                weeklyOptions.classList.toggle('hidden', frequencySelect.value !== 'weekly');
+            });
+            // Initial check
+            weeklyOptions.classList.toggle('hidden', frequencySelect.value !== 'weekly');
+        }
+
+        // Day selector toggle behavior
+        document.querySelectorAll('.day-selector button').forEach(button => {
+            button.addEventListener('click', () => {
+                const isPressed = button.getAttribute('aria-pressed') === 'true';
+                button.setAttribute('aria-pressed', !isPressed);
+            });
+        });
+    });
+
+    function handleSave(formElement) {
+        const container = formElement.closest('.screen-container');
+        const saveButton = formElement.querySelector('button[type="submit"]');
+        const originalButtonText = saveButton.querySelector('span').textContent;
+        
+        // Disable form
+        const fieldset = document.createElement('fieldset');
+        fieldset.disabled = true;
+        while (formElement.firstChild) {
+            fieldset.appendChild(formElement.firstChild);
+        }
+        formElement.appendChild(fieldset);
+
+        // Show spinner on button
+        saveButton.innerHTML = `<div class="spinner"></div><span>Saving...</span>`;
+        
+        // Simulate network request
+        setTimeout(() => {
+            // Restore form on "success"
+            while (fieldset.firstChild) {
+                formElement.appendChild(fieldset.firstChild);
+            }
+            formElement.removeChild(fieldset);
+            saveButton.innerHTML = `<span>${originalButtonText}</span>`;
+            alert('Event Saved Successfully!');
+        }, 2000);
+    }
+  </script>
+</body>
+</html>

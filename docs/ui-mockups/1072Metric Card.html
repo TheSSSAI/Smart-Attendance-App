@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metric Card Component</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* --- DESIGN SYSTEM FOUNDATION --- */
+    :root {
+        /* Colors */
+        --color-primary-50: #E6F0FF;
+        --color-primary-500: #0073FF;
+        --color-white: #FFFFFF;
+        --color-gray-50: #F8FAFC;
+        --color-gray-100: #F1F5F9;
+        --color-gray-200: #E2E8F0;
+        --color-gray-400: #94A3B8;
+        --color-gray-500: #64748B;
+        --color-gray-700: #334155;
+        --color-gray-900: #0F172A;
+        --color-success: #16A34A;
+        --color-error: #DC2626;
+        /* Typography */
+        --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+        --font-size-body: 16px;
+        --font-size-caption: 14px;
+        --font-weight-regular: 400;
+        --font-weight-semibold: 600;
+        --font-weight-bold: 700;
+        /* Spacing */
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        /* Borders */
+        --border-radius-sm: 4px;
+        --border-radius-md: 12px; /* Updated from 8px to 12px as per card spec */
+        /* Shadows */
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+    /* --- BASE STYLES & SHOWCASE LAYOUT --- */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        font-family: var(--font-family-primary);
+        background-color: var(--color-gray-50);
+        color: var(--color-gray-700);
+        padding: var(--spacing-xl);
+    }
+    .showcase-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .showcase-header {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 1px solid var(--color-gray-200);
+    }
+    .showcase-header h1 {
+        font-size: 36px;
+        font-weight: var(--font-weight-bold);
+        color: var(--color-gray-900);
+        margin-bottom: var(--spacing-sm);
+    }
+    .showcase-section {
+      margin-bottom: var(--spacing-xl);
+    }
+    .showcase-section > h2 {
+      font-size: 24px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-md);
+    }
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--spacing-lg);
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* --- ATOMIC: SKELETON LOADER (Dependency) --- */
+    .skeleton {
+        background-color: var(--color-gray-200);
+        border-radius: var(--border-radius-sm);
+        animation: skeleton-shimmer 1.5s infinite linear;
+        background-image: linear-gradient(90deg, var(--color-gray-200) 0%, var(--color-gray-100) 50%, var(--color-gray-200) 100%);
+        background-size: 200% 100%;
+    }
+    @keyframes skeleton-shimmer { to { background-position-x: -200%; } }
+    .skeleton--text { height: 1em; }
+    
+    /* --- MOLECULAR: METRIC CARD --- */
+    .metric-card {
+      background-color: var(--color-white);
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+      border: 1px solid var(--color-gray-200);
+      min-height: 140px;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .metric-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    .metric-card__title {
+      font-size: var(--font-size-body);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-gray-500);
+    }
+    .metric-card__icon {
+      color: var(--color-gray-400);
+      width: 20px;
+      height: 20px;
+    }
+    .metric-card__body {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--spacing-sm);
+      margin-top: auto; /* Push body and footer down */
+    }
+    .metric-card__value {
+      font-size: 36px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      line-height: 1.1;
+    }
+    .metric-card__footer {
+      margin-top: var(--spacing-xs);
+    }
+    .metric-card__trend {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+    }
+    .metric-card__trend .icon {
+      width: 16px;
+      height: 16px;
+    }
+    .metric-card__trend--up {
+      color: var(--color-success);
+    }
+    .metric-card__trend--down {
+      color: var(--color-error);
+    }
+    .metric-card__error-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: var(--spacing-sm);
+      flex-grow: 1; /* Take up available space */
+      color: var(--color-gray-500);
+    }
+    .metric-card__error-content .icon {
+      width: 32px;
+      height: 32px;
+      color: var(--color-error);
+    }
+    .metric-card__error-text {
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+    }
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      .metric-card {
+        transition: none;
+      }
+      .metric-card:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="showcase-container">
+    <header class="showcase-header">
+      <h1>Metric Card</h1>
+      <p>A molecular component for displaying a key performance indicator (KPI).</p>
+    </header>
+
+    <main>
+      <section class="showcase-section">
+        <h2>States</h2>
+        <div class="showcase-grid">
+          
+          <!-- Loading State -->
+          <article class="metric-card" aria-busy="true">
+            <div class="metric-card__header">
+              <div class="skeleton skeleton--text" style="width: 60%; height: 20px;"></div>
+            </div>
+            <div class="metric-card__body">
+              <div class="skeleton skeleton--text" style="width: 40%; height: 36px;"></div>
+            </div>
+            <div class="metric-card__footer">
+              <div class="skeleton skeleton--text" style="width: 70%; height: 16px;"></div>
+            </div>
+          </article>
+          
+          <!-- With Data State (Implicit Default Variant) -->
+          <article class="metric-card">
+            <div class="metric-card__header">
+              <h3 class="metric-card__title">Total Users</h3>
+              <svg class="metric-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+              </svg>
+            </div>
+            <div class="metric-card__body">
+              <p class="metric-card__value">1,482</p>
+            </div>
+            <div class="metric-card__footer">
+              <!-- No footer content in default variant -->
+            </div>
+          </article>
+
+          <!-- Error State -->
+          <article class="metric-card" role="status">
+            <div class="metric-card__header">
+              <h3 class="metric-card__title">Attendance Rate</h3>
+            </div>
+            <div class="metric-card__error-content">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+              <p class="metric-card__error-text">Could not load data</p>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <section class="showcase-section">
+        <h2>Variants</h2>
+        <div class="showcase-grid">
+
+          <!-- Default Variant (same as above for comparison) -->
+          <article class="metric-card">
+            <div class="metric-card__header">
+              <h3 class="metric-card__title">Total Users</h3>
+            </div>
+            <div class="metric-card__body">
+              <p class="metric-card__value">1,482</p>
+            </div>
+          </article>
+
+          <!-- Variant: With Trend Indicator (Up) -->
+          <article class="metric-card">
+            <div class="metric-card__header">
+              <h3 class="metric-card__title">Attendance %</h3>
+            </div>
+            <div class="metric-card__body">
+              <p class="metric-card__value">92.1%</p>
+            </div>
+            <div class="metric-card__footer">
+              <div class="metric-card__trend metric-card__trend--up">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12 7a1 1 0 11-2 0 1 1 0 012 0zm-4 2.75a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5H8zM6.64 15.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM4.87 15.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM11.13 4.87a.75.75 0 00-1.5 0v.01a.75.75 0 001.5 0v-.01zM9.36 5.39a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM12.64 12.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM10.87 12.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM4.64 8.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM2.87 8.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM7.13 1.87a.75.75 0 00-1.5 0v.01a.75.75 0 001.5 0v-.01z" clip-rule="evenodd" />
+                </svg>
+                <span>+2.5%</span>
+                <span class="sr-only">increase</span>
+              </div>
+            </div>
+          </article>
+          
+          <!-- Variant: With Trend Indicator (Down) -->
+          <article class="metric-card">
+            <div class="metric-card__header">
+              <h3 class="metric-card__title">Overtime Hours</h3>
+            </div>
+            <div class="metric-card__body">
+              <p class="metric-card__value">42.5</p>
+            </div>
+            <div class="metric-card__footer">
+              <div class="metric-card__trend metric-card__trend--down">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12 7a1 1 0 11-2 0 1 1 0 012 0zm-4 2.75a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5H8zM6.64 15.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM4.87 15.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM11.13 4.87a.75.75 0 00-1.5 0v.01a.75.75 0 001.5 0v-.01zM9.36 5.39a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM12.64 12.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM10.87 12.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM4.64 8.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM2.87 8.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM7.13 1.87a.75.75 0 00-1.5 0v.01a.75.75 0 001.5 0v-.01z" clip-rule="evenodd" />
+                </svg>
+                <span>-1.2%</span>
+                <span class="sr-only">decrease</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+    </main>
+  </div>
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : default<h3>
+		<normal> Standard metric card without any additional indicators. Used for displaying a static, high-level number. </normal>
+		
+        <article class="metric-card">
+            <div class="metric-card__header">
+              <h3 class="metric-card__title">Total Users</h3>
+            </div>
+            <div class="metric-card__body">
+              <p class="metric-card__value">1,482</p>
+            </div>
+          </article>     
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : with_trend_indicator<h3>
+		<normal> A metric card that includes a footer section to show a trend (increase or decrease) relative to a previous period. Uses semantic colors and icons. </normal>
+		
+        <article class="metric-card">
+            <div class="metric-card__header">
+              <h3 class="metric-card__title">Attendance %</h3>
+            </div>
+            <div class="metric-card__body">
+              <p class="metric-card__value">92.1%</p>
+            </div>
+            <div class="metric-card__footer">
+              <div class="metric-card__trend metric-card__trend--up">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12 7a1 1 0 11-2 0 1 1 0 012 0zm-4 2.75a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5H8zM6.64 15.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM4.87 15.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM11.13 4.87a.75.75 0 00-1.5 0v.01a.75.75 0 001.5 0v-.01zM9.36 5.39a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM12.64 12.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM10.87 12.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM4.64 8.64a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM2.87 8.13a.75.75 0 000 1.5h.01a.75.75 0 000-1.5h-.01zM7.13 1.87a.75.75 0 00-1.5 0v.01a.75.75 0 001.5 0v-.01z" clip-rule="evenodd" /></svg>
+                <span>+2.5%</span>
+                <span class="sr-only">increase</span>
+              </div>
+            </div>
+          </article>     
+		
+      <div>
+	 </div>    
+	
+	</body>
+</html>

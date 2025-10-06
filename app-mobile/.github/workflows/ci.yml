@@ -1,0 +1,55 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.9' # Use a specific stable version for reproducibility
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Run static analysis
+        run: flutter analyze
+      
+      - name: Run unit and widget tests with coverage
+        run: flutter test --coverage
+
+      - name: Check test coverage
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          min_coverage: 80 # Enforce 80% coverage as per REQ-1-072
+          path: coverage/lcov.info
+
+      # Optional: Build Android APK for validation
+      - name: Build Android APK
+        run: flutter build apk --debug
+
+      # Optional: Build iOS App for validation (requires macOS runner)
+      # - name: Build iOS App
+      #   if: runner.os == 'macOS'
+      #   run: flutter build ios --no-codesign

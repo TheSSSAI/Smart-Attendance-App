@@ -1,0 +1,61 @@
+sequenceDiagram
+    actor User
+    participant RegistrationUI as "Registration UI (Web)"
+    participant RegisterFunc as "registerOrganization (Callable Function)"
+    participant FirestoreDB as "Firestore Database"
+    participant FirebaseAuth as "Firebase Authentication"
+
+    User->>RegistrationUI: 1. Fills and submits registration form
+    activate RegisterFunc
+    RegistrationUI->>RegisterFunc: 2. invoke('registerOrganization', {orgName, email, ...})
+
+    alt [Validate Organization Name Uniqueness]
+        RegisterFunc->>FirestoreDB: 3. Query for existing org name (case-insensitive)
+        FirestoreDB-->>RegisterFunc: 4. Returns query result
+        alt [Name is NOT unique]
+            RegisterFunc-->>RegistrationUI: 5. Return error: 'name-already-taken'
+            RegistrationUI->>User: 6. Display error message
+        end
+    end
+
+    alt [Create Auth User]
+        RegisterFunc->>FirebaseAuth: 7. admin.auth().createUser({email, password})
+        FirebaseAuth-->>RegisterFunc: 8. Returns new UserRecord (with UID)
+        note right of RegisterFunc: On Auth creation failure, function returns error to UI.
+    end
+
+    alt [Create Firestore Docs in Transaction & Set Claims]
+        RegisterFunc->>FirestoreDB: 9. Start Firestore Transaction
+        activate FirestoreDB
+        RegisterFunc->>FirestoreDB: 10. create('/tenants/{newTenantId}', tenantData)
+        RegisterFunc->>FirestoreDB: 11. create('/users/{uid}', userData)
+        FirestoreDB-->>RegisterFunc: 12. Transaction commits
+        deactivate FirestoreDB
+        
+        alt [Transaction Fails]
+            note over RegisterFunc: Transaction failed. Initiating compensation logic.
+            RegisterFunc->>FirebaseAuth: 12a. [COMPENSATION] admin.auth().deleteUser(uid)
+            FirebaseAuth-->>RegisterFunc: 12b. Auth user deleted
+            RegisterFunc-->>RegistrationUI: 12c. Return error: 'registration-failed'
+        end
+
+        RegisterFunc->>FirebaseAuth: 13. admin.auth().setCustomUserClaims(uid, {role:'Admin', tenantId: newTenantId})
+        FirebaseAuth-->>RegisterFunc: 14. Claims set successfully
+
+        alt [Set Claims Fails]
+            note over RegisterFunc: Setting claims failed. Initiating full rollback.
+            RegisterFunc->>FirestoreDB: 14a. [COMPENSATION] Delete created Firestore documents
+            RegisterFunc->>FirebaseAuth: 14b. [COMPENSATION] admin.auth().deleteUser(uid)
+            RegisterFunc-->>RegistrationUI: 14c. Return error: 'configuration-failed'
+        end
+    end
+    
+    RegisterFunc->>FirestoreDB: 15. create('/auditLog/...', {action: 'TENANT_CREATED'})
+
+    RegisterFunc-->>RegistrationUI: 16. Return success
+    deactivate RegisterFunc
+    
+    activate RegistrationUI
+    RegistrationUI->>RegistrationUI: 17. Firebase SDK auto-logs in user, gets ID token with claims
+    RegistrationUI->>User: 18. Redirect to Admin Dashboard
+    deactivate RegistrationUI

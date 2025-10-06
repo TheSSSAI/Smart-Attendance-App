@@ -1,0 +1,30 @@
+flowchart TD
+    subgraph Post-Authentication Flow
+        direction TD
+        A[User Authenticates Successfully] --> B{Inspect 'role' custom claim from JWT}
+        B -->|'Admin'| C{Platform Check}
+        B -->|'Supervisor'| D{Platform Check}
+        B -->|'Subordinate'| E{Platform Check}
+        B -->|Missing or Invalid| F[Show 'Account Misconfigured' Error]
+
+        C -->|Web| G[Redirect to Admin Web Dashboard]
+        C -->|Mobile| G_Mobile[Redirect to Admin Web Dashboard]
+        
+        D -->|Web| H[Show 'Use Mobile App' Page]
+        D -->|Mobile| I[Navigate to Supervisor Mobile Dashboard]
+        
+        E -->|Web| J[Show 'Use Mobile App' Page]
+        E -->|Mobile| K[Navigate to Subordinate Mobile Dashboard]
+        
+        F --> L[Log User Out]
+    end
+
+    %% Styling
+    classDef process fill:#e3f2fd,stroke:#2196f3,color:#000
+    classDef success fill:#e8f5e9,stroke:#4caf50,color:#000
+    classDef error fill:#ffebee,stroke:#d32f2f,color:#000
+    classDef decision fill:#fffde7,stroke:#fbc02d,color:#000
+
+    class A,B,C,D,E process
+    class G,G_Mobile,I,K success
+    class F,H,J,L error

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Data Table</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM TOKENS & BASE STYLES --- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --color-success-bg: #F0FDF4;
+            --color-success-text: #14532D;
+            --color-warning-bg: #FFFBEB;
+            --color-warning-text: #78350F;
+            --color-error: #DC2626;
+            --color-error-bg: #FEF2F2;
+            --color-error-text: #991B1B;
+            --color-info-bg: #EFF6FF;
+            --color-info-text: #1E40AF;
+
+            /* Typography */
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Showcase Page Styles --- */
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-700);
+            padding: var(--spacing-xl);
+            margin: 0;
+        }
+
+        .showcase {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--color-gray-900);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        h1 { font-size: 32px; margin-bottom: var(--spacing-md); }
+        h2 { font-size: 24px; margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); border-bottom: 1px solid var(--color-gray-200); padding-bottom: var(--spacing-md); }
+        h3 { font-size: 18px; margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-600); }
+        
+        /* --- ATOMIC DEPENDENCIES --- */
+        .checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-gray-300);
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .checkbox:checked {
+            background-color: var(--color-primary-500);
+            border-color: var(--color-primary-500);
+        }
+        .checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid var(--color-white);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .checkbox:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+            text-transform: capitalize;
+        }
+        .badge--active { background-color: var(--color-success-bg); color: var(--color-success-text); }
+        .badge--invited { background-color: var(--color-primary-50); color: var(--color-primary-600); }
+        .badge--admin { background-color: var(--color-info-bg); color: var(--color-info-text); }
+        .badge--supervisor { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background-color: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--color-gray-500);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .icon-btn svg { width: 20px; height: 20px; }
+        .icon-btn:hover { background-color: var(--color-gray-100); color: var(--color-gray-700); }
+        .icon-btn:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 1px; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-sm); font-family: var(--font-family-primary); font-size: var(--font-size-body); font-weight: var(--font-weight-semibold); padding: 10px var(--spacing-md); border-radius: var(--border-radius-md); border: 1px solid transparent; cursor: pointer; text-decoration: none; transition: background-color 0.2s ease; min-height: 44px; }
+        .btn--secondary { background-color: var(--color-gray-100); color: var(--color-gray-700); border-color: var(--color-gray-200); }
+        .btn--secondary:hover { background-color: var(--color-gray-200); }
+
+        /* --- DATA TABLE ORGANISM --- */
+        .data-table-wrapper {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Mobile-first: Rows are cards */
+        .data-table__body {
+            padding: var(--spacing-md);
+        }
+
+        .data-table__header {
+            display: none; /* Hidden on mobile */
+        }
+        
+        .data-table__row {
+            display: block;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-gray-200);
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-md);
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .data-table__cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--color-gray-100);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+        .data-table__row:last-child { margin-bottom: 0; }
+        .data-table__cell:last-child { border-bottom: none; }
+
+        .data-table__cell::before {
+            content: attr(data-label);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-500);
+            font-size: var(--font-size-caption);
+        }
+
+        .data-table__cell-content {
+            text-align: right;
+            color: var(--color-gray-700);
+            font-size: var(--font-size-caption);
+        }
+
+        .data-table__cell--user-profile .data-table__cell-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-align: left;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--color-gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-semibold);
+            font-size: 12px;
+            color: var(--color-gray-500);
+            text-transform: uppercase;
+        }
+
+        .user-info__name {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-900);
+            font-size: 15px;
+        }
+
+        .user-info__email {
+            font-size: var(--font-size-caption);
+            color: var(--color-gray-500);
+        }
+
+        .data-table__cell--actions .data-table__cell-content {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        /* States */
+        .data-table__row:hover, .data-table__row.pseudo-hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .data-table__row--selected, .data-table__row.pseudo-selected {
+            background-color: var(--color-primary-50);
+            border-color: var(--color-primary-500);
+        }
+        
+        /* --- TABLET/DESKTOP VIEW --- */
+        @media (min-width: 768px) {
+            .data-table__body { padding: 0; }
+
+            .data-table__header {
+                display: grid;
+                grid-template-columns: var(--grid-columns);
+                background-color: var(--color-gray-100);
+                border-bottom: 1px solid var(--color-gray-200);
+                font-size: 12px;
+                font-weight: var(--font-weight-semibold);
+                color: var(--color-gray-500);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .data-table__header-cell {
+                padding: var(--spacing-md);
+                text-align: left;
+            }
+            .data-table__header-cell--actions { text-align: right; }
+
+            .data-table__row {
+                display: grid;
+                grid-template-columns: var(--grid-columns);
+                align-items: center;
+                border-radius: 0;
+                border: none;
+                border-bottom: 1px solid var(--color-gray-200);
+                margin-bottom: 0;
+                padding: 0;
+            }
+            .data-table__body .data-table__row:last-child { border-bottom: none; }
+
+            .data-table__row:hover, .data-table__row.pseudo-hover { 
+                transform: none; 
+                box-shadow: none;
+                background-color: var(--color-gray-50);
+            }
+            
+            .data-table__cell {
+                display: flex;
+                justify-content: flex-start;
+                border-bottom: none;
+                padding: var(--spacing-md);
+            }
+            .data-table__cell::before { display: none; }
+            .data-table__cell-content { text-align: left; font-size: 15px; }
+            .data-table__cell--actions { justify-content: flex-end; }
+        }
+
+        /* --- TABLE STATES --- */
+        .data-table__state-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--spacing-xl);
+            min-height: 250px;
+        }
+        .data-table__state-container .icon {
+            width: 48px;
+            height: 48px;
+            color: var(--color-gray-400);
+            margin-bottom: var(--spacing-md);
+        }
+        .data-table__state-title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        .data-table__state-message {
+            font-size: var(--font-size-caption);
+            color: var(--color-gray-500);
+            max-width: 300px;
+        }
+        .data-table__state-container .btn { margin-top: var(--spacing-lg); }
+        .data-table__state-container .icon--error { color: var(--color-error); }
+
+        /* Skeleton Loader */
+        .skeleton-row { padding: var(--spacing-md); border-bottom: 1px solid var(--color-gray-200); }
+        @media (min-width: 768px) {
+            .skeleton-row {
+                display: grid;
+                grid-template-columns: var(--grid-columns);
+                gap: var(--spacing-md);
+                align-items: center;
+            }
+        }
+        .skeleton {
+            background-color: var(--color-gray-200);
+            border-radius: var(--border-radius-sm);
+            animation: skeleton-shimmer 1.5s infinite linear;
+            background-image: linear-gradient(90deg, var(--color-gray-200) 0%, var(--color-gray-100) 50%, var(--color-gray-200) 100%);
+            background-size: 200% 100%;
+        }
+        @keyframes skeleton-shimmer { to { background-position-x: -200%; } }
+        .skeleton--text { height: 1em; }
+        .skeleton--circle { width: 40px; height: 40px; border-radius: 50%; }
+
+        /* --- PAGINATION (Dependency) --- */
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--color-gray-200);
+            font-size: var(--font-size-caption);
+            color: var(--color-gray-500);
+            gap: var(--spacing-md);
+        }
+        .pagination__controls {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        .pagination__btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            min-width: 36px;
+            padding: 0 var(--spacing-sm);
+            border: 1px solid var(--color-gray-300);
+            background-color: var(--color-white);
+            color: var(--color-gray-700);
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .pagination__btn:hover:not(:disabled) { background-color: var(--color-gray-50); }
+        .pagination__btn--active { 
+            background-color: var(--color-primary-50);
+            border-color: var(--color-primary-500);
+            color: var(--color-primary-600);
+            font-weight: var(--font-weight-semibold);
+        }
+        .pagination__btn:disabled { 
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-400);
+            cursor: not-allowed;
+        }
+
+    </style>
+</head>
+<body>
+<div class="showcase">
+    <h1>Organism: Data Table</h1>
+
+    <h2>State: With Data (User List Variant)</h2>
+    <p>This is the primary state of the table, showing a list of users. It demonstrates default, hover, and selected row states.</p>
+    <div class="data-table-wrapper data-table--users" style="--grid-columns: 48px minmax(200px, 3fr) 1.5fr 1.5fr 1fr;">
+        <header role="rowgroup" class="data-table__header">
+            <div role="columnheader" class="data-table__header-cell"><input type="checkbox" class="checkbox" aria-label="Select all users"></div>
+            <div role="columnheader" class="data-table__header-cell">User</div>
+            <div role="columnheader" class="data-table__header-cell">Role</div>
+            <div role="columnheader" class="data-table__header-cell">Status</div>
+            <div role="columnheader" class="data-table__header-cell data-table__header-cell--actions">Actions</div>
+        </header>
+        <div role="rowgroup" class="data-table__body">
+            <!-- Default Row -->
+            <div class="data-table__row" role="row">
+                <div class="data-table__cell" role="gridcell" data-label="Select"><input type="checkbox" class="checkbox" aria-label="Select Jane Doe"></div>
+                <div class="data-table__cell data-table__cell--user-profile" role="gridcell" data-label="User">
+                    <div class="data-table__cell-content">
+                        <div class="user-avatar">JD</div>
+                        <div class="user-info">
+                            <div class="user-info__name">Jane Doe</div>
+                            <div class="user-info__email">jane.doe@example.com</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-table__cell" role="gridcell" data-label="Role"><div class="data-table__cell-content"><span class="badge badge--admin">Admin</span></div></div>
+                <div class="data-table__cell" role="gridcell" data-label="Status"><div class="data-table__cell-content"><span class="badge badge--active">Active</span></div></div>
+                <div class="data-table__cell data-table__cell--actions" role="gridcell" data-label="Actions">
+                    <div class="data-table__cell-content">
+                        <button class="icon-btn" aria-label="Edit user Jane Doe"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button>
+                        <button class="icon-btn" aria-label="More options for Jane Doe"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg></button>
+                    </div>
+                </div>
+            </div>
+            <!-- Hover Row (using class for demo) -->
+            <div class="data-table__row pseudo-hover" role="row">
+                <div class="data-table__cell" role="gridcell" data-label="Select"><input type="checkbox" class="checkbox" aria-label="Select John Smith"></div>
+                <div class="data-table__cell data-table__cell--user-profile" role="gridcell" data-label="User"><div class="data-table__cell-content"><div class="user-avatar">JS</div><div class="user-info"><div class="user-info__name">John Smith</div><div class="user-info__email">john.smith@example.com</div></div></div></div>
+                <div class="data-table__cell" role="gridcell" data-label="Role"><div class="data-table__cell-content"><span class="badge badge--supervisor">Supervisor</span></div></div>
+                <div class="data-table__cell" role="gridcell" data-label="Status"><div class="data-table__cell-content"><span class="badge badge--active">Active</span></div></div>
+                <div class="data-table__cell data-table__cell--actions" role="gridcell" data-label="Actions"><div class="data-table__cell-content"><button class="icon-btn" aria-label="Edit user John Smith"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button><button class="icon-btn" aria-label="More options for John Smith"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg></button></div></div>
+            </div>
+            <!-- Selected Row (using class for demo) -->
+            <div class="data-table__row data-table__row--selected pseudo-selected" role="row">
+                <div class="data-table__cell" role="gridcell" data-label="Select"><input type="checkbox" class="checkbox" checked aria-label="Deselect Sam Wilson"></div>
+                <div class="data-table__cell data-table__cell--user-profile" role="gridcell" data-label="User"><div class="data-table__cell-content"><div class="user-avatar">SW</div><div class="user-info"><div class="user-info__name">Sam Wilson</div><div class="user-info__email">sam.wilson@example.com</div></div></div></div>
+                <div class="data-table__cell" role="gridcell" data-label="Role"><div class="data-table__cell-content">Subordinate</div></div>
+                <div class="data-table__cell" role="gridcell" data-label="Status"><div class="data-table__cell-content"><span class="badge badge--invited">Invited</span></div></div>
+                <div class="data-table__cell data-table__cell--actions" role="gridcell" data-label="Actions"><div class="data-table__cell-content"><button class="icon-btn" aria-label="Edit user Sam Wilson"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button><button class="icon-btn" aria-label="More options for Sam Wilson"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg></button></div></div>
+            </div>
+        </div>
+        <footer class="pagination">
+            <div class="pagination__info">Showing 1-3 of 27 results</div>
+            <div class="pagination__controls">
+                <button class="pagination__btn" disabled aria-label="Go to previous page"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                <button class="pagination__btn pagination__btn--active" aria-current="page">1</button>
+                <button class="pagination__btn">2</button>
+                <button class="pagination__btn">3</button>
+                <span style="align-self: center; padding: 0 8px;">...</span>
+                <button class="pagination__btn">9</button>
+                <button class="pagination__btn" aria-label="Go to next page"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            </div>
+        </footer>
+    </div>
+
+    <h2>State: Loading</h2>
+    <p>Displays skeleton loaders while data is being fetched. The structure mimics the final layout.</p>
+    <div class="data-table-wrapper data-table--users" style="--grid-columns: 48px minmax(200px, 3fr) 1.5fr 1.5fr 1fr;" aria-busy="true">
+        <header class="data-table__header">
+            <div class="data-table__header-cell"><div class="skeleton" style="width: 20px; height: 20px;"></div></div>
+            <div class="data-table__header-cell">User</div>
+            <div class="data-table__header-cell">Role</div>
+            <div class="data-table__header-cell">Status</div>
+            <div class="data-table__header-cell data-table__header-cell--actions">Actions</div>
+        </header>
+        <div class="data-table__body">
+            <div class="skeleton-row">
+                <div class="skeleton" style="width: 20px; height: 20px;"></div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="skeleton skeleton--circle"></div>
+                    <div style="flex: 1;"><div class="skeleton skeleton--text" style="width: 80%;"></div><div class="skeleton skeleton--text" style="width: 50%;"></div></div>
+                </div>
+                <div><div class="skeleton skeleton--text" style="width: 70px;"></div></div>
+                <div><div class="skeleton skeleton--text" style="width: 60px;"></div></div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <div class="skeleton" style="width: 44px; height: 44px; border-radius: 50%;"></div>
+                    <div class="skeleton" style="width: 44px; height: 44px; border-radius: 50%;"></div>
+                </div>
+            </div>
+            <div class="skeleton-row">
+                <div class="skeleton" style="width: 20px; height: 20px;"></div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="skeleton skeleton--circle"></div>
+                    <div style="flex: 1;"><div class="skeleton skeleton--text" style="width: 70%;"></div><div class="skeleton skeleton--text" style="width: 60%;"></div></div>
+                </div>
+                <div><div class="skeleton skeleton--text" style="width: 90px;"></div></div>
+                <div><div class="skeleton skeleton--text" style="width: 70px;"></div></div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <div class="skeleton" style="width: 44px; height: 44px; border-radius: 50%;"></div>
+                    <div class="skeleton" style="width: 44px; height: 44px; border-radius: 50%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>State: Empty</h2>
+    <p>Shown when there is no data to display for the current filters or view.</p>
+    <div class="data-table-wrapper">
+        <div class="data-table__state-container">
+            <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962A3.375 3.375 0 0110.5 9h3c1.933 0 3.5 1.567 3.5 3.5s-1.567 3.5-3.5 3.5H6.25a2.25 2.25 0 01-2.25-2.25v-2.5a2.25 2.25 0 012.25-2.25H10.5a3.375 3.375 0 013.375-3.375z" /></svg>
+            <h3 class="data-table__state-title">No Users Found</h3>
+            <p class="data-table__state-message">There are no users matching your current search criteria. Try inviting a new user to get started.</p>
+            <button class="btn btn--secondary" type="button">Invite User</button>
+        </div>
+    </div>
+
+    <h2>State: Error</h2>
+    <p>Shown when the data fails to load due to a network or server error.</p>
+    <div class="data-table-wrapper">
+        <div class="data-table__state-container" role="alert">
+            <svg class="icon icon--error" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+            <h3 class="data-table__state-title">Could Not Load Data</h3>
+            <p class="data-table__state-message">An error occurred while fetching the user list. Please check your connection and try again.</p>
+            <button class="btn btn--secondary" type="button">Retry</button>
+        </div>
+    </div>
+</div>
+
+<div> 
+    <h2> Component Variations</h2>
+    <div>
+        <h3>Variant Name : "users"</h3>
+		<normal> A table variant configured to display a list of users, with columns for user profile, role, status, and actions. </normal>
+    </div>
+    <div>
+        <h3>Variant Name : "teams"</h3>
+		<normal> A table variant for displaying teams, with columns for team name, supervisor, member count, and actions. </normal>
+    </div>
+    <div>
+        <h3>Variant Name : "reports"</h3>
+		<normal> A table variant for displaying attendance report data, with columns for user, date, times, status, and a view details action. </normal>
+    </div>
+    <div>
+        <h3>Variant Name : "paginated"</h3>
+		<normal> This is not a visual variant, but a functional one. It indicates the table is connected to pagination controls to handle large datasets. </normal>
+    </div>
+</div>
+</body>
+</html>

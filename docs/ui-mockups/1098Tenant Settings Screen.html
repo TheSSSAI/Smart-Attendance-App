@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenant Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* 1. DESIGN SYSTEM FOUNDATION (CSS VARIABLES) */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-primary-50: #E6F0FF;
+      --color-error-500: #DC2626;
+      --color-error-50: #FEF2F2;
+      --color-error-900: #7F1D1D;
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-h3: 28px;
+      --font-size-h4: 20px;
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-weight-regular: 400;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+
+      /* Borders */
+      --border-radius-lg: 12px;
+      --border-radius-md: 8px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* 2. CSS RESET & BASE STYLES */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-700);
+      line-height: 1.5;
+    }
+    h1, h2, h3, h4 {
+      color: var(--color-neutral-900);
+      line-height: 1.3;
+    }
+
+    /* 3. SCREEN LAYOUT */
+    .screen-container {
+      padding: var(--space-32);
+    }
+    .screen-header {
+      margin-bottom: var(--space-32);
+    }
+    .screen-header h1 {
+        font-size: var(--font-size-h3);
+        font-weight: var(--font-weight-bold);
+    }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-24);
+    }
+    @media (min-width: 1024px) {
+      .settings-grid {
+        grid-template-columns: repeat(2, 1fr);
+        align-items: start;
+      }
+    }
+
+    /* 4. COMPONENT STYLES */
+
+    /* Form Section (Organism) */
+    .form-section {
+      background-color: var(--color-neutral-white);
+      border: 1px solid var(--color-neutral-200);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .form-section__header {
+      padding: var(--space-24);
+      border-bottom: 1px solid var(--color-neutral-200);
+    }
+    .form-section__title {
+      font-size: var(--font-size-h4);
+      font-weight: var(--font-weight-semibold);
+    }
+    .form-section__description {
+      margin-top: var(--space-8);
+      font-size: var(--font-size-caption);
+      color: var(--color-neutral-500);
+    }
+    .form-section__body {
+      padding: var(--space-24);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-24);
+    }
+    .form-section__footer {
+      padding: var(--space-16) var(--space-24);
+      background-color: var(--color-neutral-50);
+      border-top: 1px solid var(--color-neutral-200);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      border-bottom-left-radius: var(--border-radius-lg);
+      border-bottom-right-radius: var(--border-radius-lg);
+    }
+
+    /* Form Field Group (Molecule) */
+    .form-field-group {
+      display: grid;
+      gap: var(--space-8);
+    }
+    .form-field-group label {
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--font-size-caption);
+    }
+    .form-field-group .help-text {
+        font-size: var(--font-size-caption);
+        color: var(--color-neutral-500);
+    }
+    .form-field-group .error-text {
+        font-size: var(--font-size-caption);
+        color: var(--color-error-500);
+        font-weight: var(--font-weight-semibold);
+    }
+    .form-field-group--toggle {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Text Input (Atom) */
+    .text-input {
+      width: 100%;
+      padding: var(--space-12) var(--space-16);
+      border: 1px solid var(--color-neutral-300);
+      border-radius: var(--border-radius-md);
+      font-size: var(--font-size-body);
+      font-family: var(--font-primary);
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .text-input:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+    .text-input[disabled] {
+      background-color: var(--color-neutral-100);
+      cursor: not-allowed;
+    }
+    .text-input--error {
+      border-color: var(--color-error-500);
+    }
+    .text-input--error:focus {
+      box-shadow: 0 0 0 3px var(--color-error-50);
+    }
+    
+    /* Display Value (for default state) */
+    .display-value {
+        font-size: var(--font-size-body);
+        color: var(--color-neutral-500);
+        padding: var(--space-12) 0;
+    }
+
+    /* Toggle Switch (Atom) */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .toggle-switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-switch .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--color-neutral-300);
+      transition: 200ms;
+      border-radius: 24px;
+    }
+    .toggle-switch .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: 200ms;
+      border-radius: 50%;
+    }
+    .toggle-switch input:checked + .slider {
+      background-color: var(--color-primary-500);
+    }
+    .toggle-switch input:focus + .slider {
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+    .toggle-switch input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    .toggle-switch input:disabled + .slider {
+        background-color: var(--color-neutral-200);
+        cursor: not-allowed;
+    }
+
+    /* Button (Atom) */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-8) var(--space-16);
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+      border-radius: var(--border-radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 150ms ease, color 150ms ease, transform 100ms ease;
+      text-decoration: none;
+    }
+    .btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--secondary {
+      background-color: var(--color-neutral-white);
+      color: var(--color-neutral-700);
+      border-color: var(--color-neutral-300);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn--secondary:hover {
+      background-color: var(--color-neutral-50);
+    }
+    .btn--destructive {
+      background-color: var(--color-error-500);
+      color: var(--color-neutral-white);
+    }
+    .btn--destructive:hover {
+      background-color: var(--color-error-900);
+    }
+    .btn:disabled {
+        background-color: var(--color-neutral-200);
+        color: var(--color-neutral-400);
+        cursor: not-allowed;
+        border-color: var(--color-neutral-200);
+    }
+    .btn-group {
+        display: flex;
+        gap: var(--space-12);
+    }
+    
+    /* State Management for Editing */
+    .form-section .display-value,
+    .form-section .btn-edit {
+        display: block;
+    }
+    .form-section .form-field-group .text-input,
+    .form-section .form-field-group .toggle-switch,
+    .form-section .btn-save-cancel {
+        display: none;
+    }
+    .form-section.is-editing .display-value,
+    .form-section.is-editing .btn-edit {
+        display: none;
+    }
+    .form-section.is-editing .form-field-group .text-input,
+    .form-section.is-editing .form-field-group .toggle-switch,
+    .form-section.is-editing .btn-save-cancel {
+        display: flex; /* or block/inline-block as needed */
+    }
+
+    /* Variant Specific Styles */
+    .form-section--danger {
+        border-color: var(--color-error-500);
+    }
+    .form-section--danger .form-section__header {
+        border-color: var(--color-error-500);
+    }
+    .form-section--danger .form-section__title {
+        color: var(--color-error-900);
+    }
+    
+    /* Saving State */
+    .is-saving .btn {
+      cursor: wait;
+      position: relative;
+      color: transparent !important;
+    }
+    .is-saving .btn::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin: -8px 0 0 -8px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: var(--color-neutral-white);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-container">
+    <header class="screen-header">
+      <h1>Tenant Settings</h1>
+    </header>
+    
+    <main class="screen-content">
+      <div class="settings-grid">
+
+        <!-- Variant: Timezone -->
+        <section class="form-section" data-section="timezone">
+          <form>
+            <div class="form-section__header">
+              <h2 class="form-section__title">Timezone</h2>
+              <p class="form-section__description">Set the default timezone for your organization. All reports and time-based rules will use this setting.</p>
+            </div>
+            <div class="form-section__body">
+              <div class="form-field-group">
+                <label for="timezone-select">Organization Timezone</label>
+                <div class="display-value">(GMT-05:00) Eastern Time</div>
+                <select id="timezone-select" class="text-input">
+                  <option value="est">(GMT-05:00) Eastern Time</option>
+                  <option value="pst">(GMT-08:00) Pacific Time</option>
+                  <option value="gmt">(GMT+00:00) Greenwich Mean Time</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-section__footer">
+                <button type="button" class="btn btn--secondary btn-edit">Edit</button>
+                <div class="btn-group btn-save-cancel">
+                    <button type="button" class="btn btn--secondary btn-cancel">Cancel</button>
+                    <button type="submit" class="btn btn--primary" disabled>Save</button>
+                </div>
+            </div>
+          </form>
+        </section>
+
+        <!-- Variant: Password Policy -->
+        <section class="form-section" data-section="password">
+          <form>
+            <div class="form-section__header">
+              <h2 class="form-section__title">Password Policy</h2>
+              <p class="form-section__description">Configure password complexity requirements for all users in your organization.</p>
+            </div>
+            <div class="form-section__body">
+              <div class="form-field-group">
+                <label for="min-length">Minimum Length</label>
+                <div class="display-value">10 characters</div>
+                <input type="number" id="min-length" class="text-input" value="10" min="8">
+              </div>
+              <div class="form-field-group form-field-group--toggle">
+                <label for="req-uppercase">Require uppercase letter</label>
+                <div class="display-value">Enabled</div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="req-uppercase" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="form-field-group form-field-group--toggle">
+                <label for="req-number">Require number</label>
+                <div class="display-value">Enabled</div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="req-number" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="form-field-group form-field-group--toggle">
+                <label for="req-special">Require special character</label>
+                <div class="display-value">Disabled</div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="req-special">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="form-section__footer">
+              <button type="button" class="btn btn--secondary btn-edit">Edit</button>
+              <div class="btn-group btn-save-cancel">
+                  <button type="button" class="btn btn--secondary btn-cancel">Cancel</button>
+                  <button type="submit" class="btn btn--primary" disabled>Save</button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <!-- Variant: Data Retention -->
+        <section class="form-section" data-section="retention">
+          <form>
+            <div class="form-section__header">
+              <h2 class="form-section__title">Data Retention</h2>
+              <p class="form-section__description">Set how long to retain different types of data before it is automatically anonymized or deleted.</p>
+            </div>
+            <div class="form-section__body">
+              <div class="form-field-group">
+                <label for="ret-attendance">Attendance Records</label>
+                <div class="display-value">2 Years</div>
+                <input type="number" id="ret-attendance" class="text-input" value="2" min="1">
+              </div>
+              <div class="form-field-group">
+                <label for="ret-audit">Audit Logs</label>
+                <div class="display-value">7 Years</div>
+                <input type="number" id="ret-audit" class="text-input" value="7" min="1">
+                <p class="help-text">A minimum of 1 year is required for compliance.</p>
+              </div>
+            </div>
+            <div class="form-section__footer">
+              <button type="button" class="btn btn--secondary btn-edit">Edit</button>
+              <div class="btn-group btn-save-cancel">
+                  <button type="button" class="btn btn--secondary btn-cancel">Cancel</button>
+                  <button type="submit" class="btn btn--primary" disabled>Save</button>
+              </div>
+            </div>
+          </form>
+        </section>
+        
+        <!-- Variant: Danger Zone -->
+        <section class="form-section form-section--danger">
+          <form>
+            <div class="form-section__header">
+              <h2 class="form-section__title">Danger Zone</h2>
+              <p class="form-section__description">These actions are destructive and cannot be undone easily.</p>
+            </div>
+            <div class="form-section__body">
+                <div class="form-field-group">
+                    <label>Delete Organization</label>
+                    <p class="help-text">Permanently delete your organization, including all users, teams, and attendance data. This action is irreversible after a 30-day grace period.</p>
+                </div>
+            </div>
+            <div class="form-section__footer">
+              <button type="button" class="btn btn--destructive">Request Deletion</button>
+            </div>
+          </form>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="screen-variations screen-container">
+    <h2>Screen States</h2>
+    
+    <div class="variation-group" style="max-width: 500px; margin-bottom: 24px;">
+      <h3>Variant Name: "Default State"</h3>
+      <normal>Standard read-only appearance. User can initiate an edit.</normal>
+       <section class="form-section" style="margin-top: 16px;">
+            <div class="form-section__header">
+              <h2 class="form-section__title">Example Section</h2>
+              <p class="form-section__description">This is the default, read-only view of a settings section.</p>
+            </div>
+            <div class="form-section__body">
+              <div class="form-field-group">
+                <label>Setting Name</label>
+                <div class="display-value">Current Saved Value</div>
+              </div>
+            </div>
+            <div class="form-section__footer">
+                <button type="button" class="btn btn--secondary">Edit</button>
+            </div>
+        </section>
+    </div>
+    
+    <div class="variation-group" style="max-width: 500px; margin-bottom: 24px;">
+      <h3>Variant Name: "Editing State"</h3>
+      <normal>The form fields are active, and the user can save or cancel their changes.</normal>
+       <section class="form-section is-editing" style="margin-top: 16px;">
+            <div class="form-section__header">
+              <h2 class="form-section__title">Example Section</h2>
+              <p class="form-section__description">This is the editing view of a settings section.</p>
+            </div>
+            <div class="form-section__body">
+              <div class="form-field-group">
+                <label for="edit-example">Setting Name</label>
+                <input id="edit-example" class="text-input" value="Current Saved Value">
+              </div>
+            </div>
+            <div class="form-section__footer">
+                <div class="btn-group btn-save-cancel" style="display: flex;">
+                    <button type="button" class="btn btn--secondary">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Save</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="variation-group" style="max-width: 500px;">
+        <h3>Variant Name: "Saving State"</h3>
+        <normal>The UI provides feedback while the save operation is in progress.</normal>
+         <section class="form-section is-editing" style="margin-top: 16px;">
+              <div class="form-section__header">
+                <h2 class="form-section__title">Example Section</h2>
+                <p class="form-section__description">This is the saving view of a settings section.</p>
+              </div>
+              <div class="form-section__body">
+                <div class="form-field-group">
+                  <label for="saving-example">Setting Name</label>
+                  <input id="saving-example" class="text-input" value="New Value" disabled>
+                </div>
+              </div>
+              <div class="form-section__footer is-saving">
+                  <div class="btn-group btn-save-cancel" style="display: flex;">
+                      <button type="button" class="btn btn--secondary" disabled>Cancel</button>
+                      <button type="submit" class="btn btn--primary" disabled>Save</button>
+                  </div>
+              </div>
+          </section>
+      </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sections = document.querySelectorAll('.form-section');
+
+        sections.forEach(section => {
+            const form = section.querySelector('form');
+            const editButton = section.querySelector('.btn-edit');
+            const cancelButton = section.querySelector('.btn-cancel');
+            const saveButton = section.querySelector('.btn-save-cancel .btn--primary');
+            const inputs = section.querySelectorAll('.text-input, .toggle-switch input');
+
+            if(editButton) {
+                editButton.addEventListener('click', () => {
+                    section.classList.add('is-editing');
+                    if (saveButton) saveButton.disabled = true; // Disable save until a change is made
+                });
+            }
+
+            if(cancelButton) {
+                cancelButton.addEventListener('click', () => {
+                    section.classList.remove('is-editing');
+                    // In a real app, you would reset form values here
+                    form.reset();
+                });
+            }
+            
+            if(inputs && saveButton) {
+                inputs.forEach(input => {
+                   input.addEventListener('input', () => {
+                       saveButton.disabled = false;
+                   });
+                });
+            }
+
+            if(form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    // Simulate saving
+                    const footer = section.querySelector('.form-section__footer');
+                    if(footer){
+                        footer.classList.add('is-saving');
+                        if(saveButton) saveButton.disabled = true;
+                        if(cancelButton) cancelButton.disabled = true;
+
+                        setTimeout(() => {
+                           footer.classList.remove('is-saving');
+                           if(saveButton) saveButton.disabled = false;
+                           if(cancelButton) cancelButton.disabled = false;
+                           section.classList.remove('is-editing');
+                           // Here you would typically show a success toast
+                           console.log(`Section '${section.dataset.section}' saved!`);
+                        }, 1500);
+                    }
+                });
+            }
+        });
+    });
+  </script>
+</body>
+</html>

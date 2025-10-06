@@ -1,0 +1,51 @@
+sequenceDiagram
+    actor User
+    participant AdminWebDashboard as Frontend
+    participant UniquenessCheckFN as "Validation Function"
+    participant RegisterOrgFN as "Registration Function"
+    participant FirebaseAuth as "Firebase Auth"
+    participant FirestoreDB as "Firestore Database"
+
+    User->>Frontend: 1. Fills out registration form (Org Name, Email, Password)
+    Frontend->>UniquenessCheckFN: 2. [onBlur] Check if Org Name is unique
+    activate UniquenessCheckFN
+    UniquenessCheckFN->>FirestoreDB: 3. Query for existing org name (case-insensitive)
+    FirestoreDB-->>UniquenessCheckFN: 4. Returns result (exists/does not exist)
+    alt Name is Taken
+        UniquenessCheckFN-->>Frontend: 5a. Returns { available: false }
+        Frontend-->>User: 6a. Displays 'Organization name is already taken' error
+    else Name is Available
+        UniquenessCheckFN-->>Frontend: 5b. Returns { available: true }
+        Frontend-->>User: 6b. Shows success indicator; enables 'Register' button
+    end
+    deactivate UniquenessCheckFN
+
+    User->>Frontend: 7. Clicks 'Register'
+    Frontend->>RegisterOrgFN: 8. Invoke 'registerOrganization' function with form data
+    activate RegisterOrgFN
+    RegisterOrgFN->>FirebaseAuth: 9. Create user account (admin.auth().createUser())
+    activate FirebaseAuth
+    FirebaseAuth-->>RegisterOrgFN: 10. Returns new UserRecord (with uid)
+    deactivate FirebaseAuth
+    
+    RegisterOrgFN->>FirestoreDB: 11. Start Firestore Transaction
+    activate FirestoreDB
+    RegisterOrgFN->>FirestoreDB: 11a. Create tenant document (/tenants/{tenantId})
+    RegisterOrgFN->>FirestoreDB: 11b. Create user document (/users/{uid}) with role 'Admin'
+    FirestoreDB-->>RegisterOrgFN: 12. Transaction commits
+    deactivate FirestoreDB
+
+    alt Transaction Fails
+        RegisterOrgFN->>FirebaseAuth: 12a. [COMPENSATION] Delete Auth user (admin.auth().deleteUser())
+        note right of RegisterOrgFN: Ensures no orphaned Auth accounts are left
+        RegisterOrgFN-->>Frontend: 12b. Return error 'Registration failed'
+    end
+
+    RegisterOrgFN->>FirebaseAuth: 13. Set custom claims on user token (tenantId, role: 'Admin')
+    activate FirebaseAuth
+    FirebaseAuth-->>RegisterOrgFN: 14. Confirmation
+    deactivate FirebaseAuth
+
+    RegisterOrgFN-->>Frontend: 15. Return success, user is now authenticated
+    deactivate RegisterOrgFN
+    Frontend-->>User: 16. Redirect to Admin Dashboard

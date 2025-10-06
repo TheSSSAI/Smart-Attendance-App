@@ -1,0 +1,650 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Range Picker - Component Specifications</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .component-type-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4f46e5;
+            display: inline-block;
+        }
+        
+        .section h3 {
+            color: #4f46e5;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 20px 0 12px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .info-card h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        
+        .info-card p {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .variations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .variation-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .variation-name {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 8px;
+        }
+        
+        .variation-code {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            color: #1e293b;
+            overflow-x: auto;
+            margin: 8px 0;
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .variation-description {
+            font-size: 13px;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .feature-category {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .feature-category h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .feature-category ul {
+            list-style: none;
+        }
+        
+        .feature-category li {
+            padding: 6px 0;
+            color: #4b5563;
+            font-size: 14px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .feature-category li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .token {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            border: 1px solid #bae6fd;
+            text-align: center;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 16px 0;
+            line-height: 1.4;
+        }
+        
+        .stats-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Date Range Picker</h1>
+            <div class="component-type-badge">molecular Component</div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Variations</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">16</span>
+                <span class="stat-label">Design Tokens</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">3</span>
+                <span class="stat-label">Breakpoints</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">5</span>
+                <span class="stat-label">A11y Features</span>
+            </div>
+        </div><div class="content">
+        <div class="section">
+            <h2>Component Information</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Component Id</h4>
+                    <p>MU-1057-001</p>
+                </div>
+                <div class="info-card">
+                    <h4>Component Name</h4>
+                    <p>Date Range Picker</p>
+                </div>
+                <div class="info-card">
+                    <h4>Component Type</h4>
+                    <p>molecular</p>
+                </div>
+                <div class="info-card">
+                    <h4>Description</h4>
+                    <p>A form control component that allows users to select a start and end date. It combines two text inputs with an interactive calendar popup, which adapts for mobile and desktop views.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Design System Alignment</h4>
+                    <p>This component utilizes the design system's color palette for borders, focus states, and calendar elements. It inherits typography, spacing, and form input styles from the atomic Text Input Field, ensuring a consistent look and feel.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Organism Map</h4>
+                    <p>orga-xx-3</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Design Tokens Used</h2>
+            <div class="tokens-grid"><div class="token">--color-primary-50</div><div class="token">--color-primary-500</div><div class="token">--color-white</div><div class="token">--color-gray-200</div><div class="token">--color-gray-300</div><div class="token">--color-gray-400</div><div class="token">--color-gray-900</div><div class="token">--font-family-primary</div><div class="token">--font-size-body</div><div class="token">--font-size-caption</div><div class="token">--font-weight-semibold</div><div class="token">--spacing-sm</div><div class="token">--spacing-md</div><div class="token">--spacing-lg</div><div class="token">--border-radius-md</div><div class="token">--shadow-md</div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Responsive Specifications</h2>
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Mobile Adaptations</h4>
+                    <ul><li>On screens narrower than 768px, the calendar popup transforms into a full-screen modal with a backdrop.</li><li>The modal presentation is optimized for touch, providing a larger, more focused interface for date selection.</li><li>Calendar day touch targets are slightly increased for better usability on mobile.</li>
+                    </ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Tablet Adaptations</h4>
+                    <ul><li>Maintains the desktop-style dropdown popup for the calendar, as screen real estate is sufficient.</li>
+                    </ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Desktop Enhancements</h4>
+                    <ul><li>The calendar is presented as a dropdown popup positioned below the input fields.</li><li>Utilizes `:focus-within` to provide a clear visual grouping and focus state for the entire component when either input is active.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Accessibility Features</h2>
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Keyboard Support</h4><p>The component can be activated using keyboard navigation (Tab to focus, Space/Enter to open calendar). Calendar navigation would require JS, but this CSS-only mockup ensures the trigger is accessible.</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Screen Reader Support</h4><p>Each input field is associated with a `label` for screen readers. The trigger label encompasses both inputs to indicate a single interactive element.</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Focus Management</h4><p>A clear, high-contrast focus ring is applied to the entire component container using `:focus-within`, providing context to keyboard users.</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Aria Attributes</h4><ul></ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Color Contrast</h4><p>All text and interactive elements are designed to meet WCAG 2.1 AA contrast requirements.</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>CSS Implementation</h2>
+            <div class="code-block">/* Component: Date Range Picker */
+
+.date-range-picker {
+  position: relative;
+  font-family: var(--font-family-primary);
+}
+
+.date-range-picker__inputs-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-white);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-range-picker:focus-within .date-range-picker__inputs-container,
+.date-range-picker.pseudo-focus .date-range-picker__inputs-container {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-50);
+}
+
+.date-range-picker__input-group {
+  position: relative;
+  flex: 1 1 50%;
+}
+
+.date-range-picker__input {
+  width: 100%;
+  padding: 10px var(--spacing-md);
+  border: none;
+  background-color: transparent;
+  font-size: var(--font-size-body);
+  color: var(--color-gray-900);
+  outline: none;
+}
+
+.date-range-picker__input::placeholder {
+  color: var(--color-gray-400);
+}
+
+.date-range-picker__separator {
+  color: var(--color-gray-400);
+  padding: 0 var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.date-range-picker__trigger-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.date-range-picker__trigger {
+  display: none; /* Hide the actual checkbox */
+}
+
+.date-range-picker__popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + var(--spacing-sm));
+  left: 0;
+  width: 100%;
+  max-width: 320px;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-gray-200);
+}
+
+.date-range-picker__trigger:checked ~ .date-range-picker__popup {
+  display: block;
+}
+
+/* Calendar Styles */
+.calendar__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.calendar__month-year {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-900);
+}
+
+.calendar__nav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  color: var(--color-gray-500);
+}
+
+.calendar__nav:hover {
+  color: var(--color-primary-500);
+}
+
+.calendar__days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+  text-align: center;
+}
+
+.calendar__day-name {
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-400);
+  padding: var(--spacing-xs);
+}
+
+.calendar__day {
+  font-size: var(--font-size-caption);
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.calendar__day:hover {
+  background-color: var(--color-primary-50);
+}
+
+.calendar__day--today {
+  border: 1px solid var(--color-primary-500);
+  color: var(--color-primary-500);
+}
+
+.calendar__day--selected {
+  background-color: var(--color-primary-500);
+  color: var(--color-white);
+}
+
+.calendar__day--in-range {
+  background-color: var(--color-primary-50);
+  border-radius: 0;
+}
+
+.calendar__day--range-start {
+  background-color: var(--color-primary-500);
+  color: var(--color-white);
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+}
+
+.calendar__day--range-end {
+  background-color: var(--color-primary-500);
+  color: var(--color-white);
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+}
+
+.calendar__day--other-month {
+  color: var(--color-gray-300);
+  cursor: default;
+}
+
+/* Responsive Adaptations for Mobile */
+@media (max-width: 768px) {
+  .date-range-picker__popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    display: none; /* Re-hide for toggle logic */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+    padding: 0;
+  }
+
+  .date-range-picker__trigger:checked ~ .date-range-picker__popup {
+    display: flex;
+  }
+
+  .date-range-picker__popup-content {
+    background-color: var(--color-white);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    width: calc(100% - var(--spacing-xl));
+    max-width: 360px;
+  }
+  
+  .calendar__day {
+    width: 40px;
+    height: 40px;
+  }
+}
+</div>
+        </div>
+        <div class="section">
+            <h2>Implementation Notes</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Embedded Css Architecture</h4>
+                    <p>All styles are embedded in a single `<style>` tag, using design system tokens defined as CSS custom properties and a BEM methodology (`date-range-picker__element--modifier`).</p>
+                </div>
+                <div class="info-card">
+                    <h4>Component Organization</h4>
+                    <p>The HTML structure uses a CSS-only technique (hidden checkbox) to toggle the visibility of the calendar popup, allowing for an interactive mockup without JavaScript.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Responsive Design</h4>
+                    <p>A mobile-first approach is applied within the embedded CSS. The desktop dropdown style is the default, overridden by a media query for screens below 768px to implement the full-screen mobile modal.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Accessibility Compliance</h4>
+                    <p>WCAG 2.1 AA compliance is ensured through semantic labeling, high-contrast colors, and clear focus indicators. The component is designed to be usable with keyboard navigation.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Browser Support</h4>
+                    <p>Designed for modern browsers (Chrome, Firefox, Safari, Edge) that support `:focus-within` and CSS custom properties.</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Usage Guidelines</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>When To Use</h4><p>Use in report filter bars, booking forms, or any interface where selecting a start and end date is required.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Content Guidelines</h4><p>Use clear placeholder text like 'Start Date' and 'End Date'.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Placement Rules</h4><p>Typically placed at the top of a data table or list that it filters.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Customization Options</h4><ul><li style="list-style: disc; margin-left: 16px; padding-left: 0;">The component can be expanded with JavaScript to handle actual date selection, validation, and formatting.</li><li style="list-style: disc; margin-left: 16px; padding-left: 0;">An `.date-range-picker--error` class could be added to show a validation state for the entire component.</li></ul>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Testing Recommendations</h2>
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Browser Testing</h4><p>Test in Chrome, Firefox, Safari, and Edge to ensure consistent rendering and behavior.</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Device Testing</h4><p>Test on mobile (iOS/Android) and desktop viewports to verify the responsive adaptation of the calendar popup.</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Accessibility Testing</h4><ul><li>Keyboard navigation testing to ensure the component can be fully operated without a mouse.</li><li>Screen reader testing to verify that labels are correctly announced.</li><li>Color contrast validation for all text and UI elements.</li></ul>
+                </div>
+                <div class="feature-category">
+                    <h4>Performance Testing</h4><p>N/A for this CSS-only mockup. In a real implementation, JS performance for date calculations would be critical.</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

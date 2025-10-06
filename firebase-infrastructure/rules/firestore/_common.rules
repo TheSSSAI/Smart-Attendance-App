@@ -1,0 +1,90 @@
+rules_version = '2';
+
+// ------------------------------------------------------------------
+//
+//  Common Firestore Security Rules Functions
+//  This module contains reusable helper functions for enforcing
+//  authentication, tenancy, roles, and ownership across the ruleset.
+//
+// ------------------------------------------------------------------
+
+// --- Authentication & Basic Checks ---
+
+// Checks if the user is authenticated.
+// All protected routes should start with this check.
+function isSignedIn() {
+  return request.auth != null;
+}
+
+// --- Tenancy & Role-Based Access Control (RBAC) ---
+
+// Verifies that the authenticated user belongs to the tenant of the resource being accessed.
+// This is the cornerstone of the multi-tenancy model.
+// @param tenantId The ID of the tenant from the document path.
+function isTenantMember(tenantId) {
+  return isSignedIn() && request.auth.token.tenantId == tenantId;
+}
+
+// Generic function to check for a specific role in the user's auth token.
+// @param role The role string to check (e.g., 'Admin', 'Supervisor').
+function isRole(role) {
+    return isSignedIn() && request.auth.token.role == role;
+}
+
+// Checks if the user has the 'Admin' role.
+function isAdmin() {
+    return isRole('Admin');
+}
+
+// Checks if the user has the 'Supervisor' role.
+function isSupervisor() {
+    return isRole('Supervisor');
+}
+
+// Checks if the user has the 'Subordinate' role.
+function isSubordinate() {
+    return isRole('Subordinate');
+}
+
+
+// --- Ownership & Hierarchical Checks ---
+
+// Verifies that the authenticated user is the owner of the resource.
+// @param userId The userId from the document's data.
+function isOwner(userId) {
+  return isSignedIn() && request.auth.uid == userId;
+}
+
+// Verifies if the requesting user is the direct supervisor of the user
+// specified by subordinateId.
+// This requires a cross-document read, which incurs a cost of one read operation.
+// It is secured by scoping the `get()` call within the user's own tenant.
+// @param subordinateId The UID of the user to check the supervisory relationship against.
+function isSupervisorOf(subordinateId) {
+    let tenantId = request.auth.token.tenantId;
+    let userPath = /databases/$(database)/documents/tenants/$(tenantId)/users/$(subordinateId);
+    return isSupervisor() && get(userPath).data.supervisorId == request.auth.uid;
+}
+
+// --- Data Validation ---
+
+// Checks if a field exists in the incoming request data.
+function has(field) {
+    return field in request.resource.data;
+}
+
+// Checks if a field has not been changed during an update operation.
+function isUnchanged(field) {
+    return request.resource.data[field] == resource.data[field];
+}
+
+// Checks if a field is being set to a specific value.
+function isSetTo(field, value) {
+    return request.resource.data[field] == value;
+}
+
+// Checks if incoming data map has only the allowed fields.
+// @param allowedFields A list of strings representing the keys that are allowed.
+function hasOnly(allowedFields) {
+    return request.resource.data.keys().hasOnly(allowedFields);
+}

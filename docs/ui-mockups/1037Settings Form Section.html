@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Settings Form Section</title>
+    <style>
+        /* 1. FOUNDATION & DESIGN TOKENS */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+            --color-destructive-500: #DC2626;
+            --color-destructive-600: #B91C1C;
+            --color-error-50: #FEF2F2;
+            --color-error-200: #FECACA;
+            --color-error-500: #DC2626;
+            --color-error-700: #B91C1C;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F59;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            /* Typography */
+            --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-size-lg: 20px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --line-height-body: 1.5;
+            /* Spacing */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            --border-width-1: 1px;
+            --border-width-2: 2px;
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* 2. BASE & LAYOUT STYLES */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: var(--font-family-sans);
+            background-color: var(--color-neutral-50);
+            color: var(--color-neutral-700);
+            margin: 0;
+            padding: var(--space-8);
+        }
+        .showcase { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-8); }
+        h1 { font-size: 28px; color: var(--color-neutral-900); text-align: center; margin-bottom: var(--space-6); }
+
+        /* 3. ATOMIC/MOLECULAR DEPENDENCIES */
+        /* Button */
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: var(--space-3) var(--space-6); font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); border-radius: var(--border-radius-md); border: var(--border-width-1) solid transparent; cursor: pointer; text-decoration: none; transition: background-color 0.2s; white-space: nowrap; }
+        .btn:focus-visible { outline: var(--border-width-2) solid var(--color-primary-500); outline-offset: 2px; }
+        .btn--primary { background-color: var(--color-primary-500); color: var(--color-neutral-white); }
+        .btn--primary:hover { background-color: var(--color-primary-600); }
+        .btn--primary[disabled] { background-color: var(--color-neutral-200); color: var(--color-neutral-400); cursor: not-allowed; }
+        .btn--secondary { background-color: var(--color-neutral-white); color: var(--color-neutral-700); border-color: var(--color-neutral-300); }
+        .btn--secondary:hover { background-color: var(--color-neutral-100); }
+        .btn--destructive { background-color: var(--color-destructive-500); color: var(--color-neutral-white); }
+        .btn--destructive:hover { background-color: var(--color-destructive-600); }
+        .btn--loading { position: relative; color: transparent !important; cursor: wait; }
+        .btn--loading::after { content: ''; position: absolute; width: 1.2em; height: 1.2em; border-radius: 50%; border: 2px solid currentColor; border-top-color: var(--color-primary-500); animation: spinner-anim 0.7s linear infinite; }
+        .btn--primary.btn--loading::after { border-color: var(--color-neutral-white); border-right-color: transparent; }
+        @keyframes spinner-anim { to { transform: rotate(360deg); } }
+
+        /* Form Field Group */
+        .form-field { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; }
+        .form-field__label { font-weight: var(--font-weight-medium); color: var(--color-neutral-700); cursor: pointer; }
+        .form-field__input { width: 100%; padding: var(--space-3) var(--space-4); font-size: var(--font-size-md); border: var(--border-width-1) solid var(--color-neutral-300); border-radius: var(--border-radius-md); transition: border-color 0.2s, box-shadow 0.2s; min-height: 48px; }
+        .form-field__input:focus-visible { outline: none; border-color: var(--color-primary-500); box-shadow: 0 0 0 var(--border-width-2) var(--color-primary-50); }
+        .form-field__helper-text { font-size: var(--font-size-sm); color: var(--color-neutral-500); margin-top: calc(var(--space-1) * -1); }
+
+        /* Toggle Switch */
+        .switch { display: inline-flex; align-items: center; gap: var(--space-3); cursor: pointer; }
+        .switch__input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .switch__track { width: 44px; height: 24px; background-color: var(--color-neutral-300); border-radius: 12px; position: relative; transition: background-color 0.2s; }
+        .switch__thumb { width: 20px; height: 20px; background-color: var(--color-neutral-white); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; }
+        .switch__input:checked + .switch__track { background-color: var(--color-primary-500); }
+        .switch__input:checked + .switch__track .switch__thumb { transform: translateX(20px); }
+        .switch__input:focus-visible + .switch__track { outline: var(--border-width-2) solid var(--color-primary-500); outline-offset: 2px; }
+
+        /* 4. ORGANISM: SETTINGS FORM SECTION */
+        .settings-section {
+            background-color: var(--color-neutral-white);
+            border: var(--border-width-1) solid var(--color-neutral-200);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .settings-section__header {
+            padding: var(--space-6);
+            border-bottom: var(--border-width-1) solid var(--color-neutral-200);
+        }
+        .settings-section__title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            margin: 0;
+        }
+        .settings-section__description {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-500);
+            margin-top: var(--space-1);
+        }
+        .settings-section__content {
+            padding: var(--space-6);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+        .settings-section__footer {
+            padding: var(--space-4) var(--space-6);
+            background-color: var(--color-neutral-50);
+            border-top: var(--border-width-1) solid var(--color-neutral-200);
+            border-bottom-left-radius: var(--border-radius-lg);
+            border-bottom-right-radius: var(--border-radius-lg);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        /* Variants */
+        .settings-section--danger {
+            border-color: var(--color-error-200);
+        }
+        .settings-section--danger .settings-section__header {
+            border-color: var(--color-error-200);
+        }
+        .settings-section--danger .settings-section__title {
+            color: var(--color-error-700);
+        }
+        .settings-section--danger .settings-section__footer {
+            border-color: var(--color-error-200);
+            justify-content: space-between;
+        }
+        /* States */
+        .settings-section.is-saving .settings-section__content input,
+        .settings-section.is-saving .settings-section__content select,
+        .settings-section.is-saving .settings-section__content .switch {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .settings-section.is-saving .settings-section__footer .btn {
+            pointer-events: none;
+        }
+        /* Responsive Adaptations */
+        @media (max-width: 768px) {
+            body { padding: var(--space-4); }
+            .showcase { gap: var(--space-6); }
+            .settings-section__header,
+            .settings-section__content,
+            .settings-section__footer {
+                padding: var(--space-4);
+            }
+            .settings-section__footer {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+            .settings-section__footer .btn {
+                width: 100%;
+            }
+            .settings-section--danger .settings-section__footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-4);
+            }
+            .settings-section--danger .settings-section__footer .btn {
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase">
+        <h1>Settings Form Section</h1>
+
+        <!-- Timezone Variant -->
+        <section class="settings-section" aria-labelledby="timezone-title" aria-describedby="timezone-desc">
+            <div class="settings-section__header">
+                <h2 id="timezone-title" class="settings-section__title">Timezone</h2>
+                <p id="timezone-desc" class="settings-section__description">
+                    Set the primary timezone for your organization to ensure all reports and logs are consistent.
+                </p>
+            </div>
+            <div class="settings-section__content">
+                <div class="form-field">
+                    <label for="timezone-select" class="form-field__label">Organization Timezone</label>
+                    <select id="timezone-select" class="form-field__input">
+                        <option value="America/New_York">(GMT-05:00) Eastern Time</option>
+                        <option value="Europe/London">(GMT+00:00) London</option>
+                        <option value="Asia/Tokyo">(GMT+09:00) Tokyo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="settings-section__footer">
+                <button type="button" class="btn btn--secondary">Cancel</button>
+                <button type="button" class="btn btn--primary">Save Changes</button>
+            </div>
+        </section>
+
+        <!-- Password Policy Variant -->
+        <section class="settings-section is-saving" aria-labelledby="password-title" aria-describedby="password-desc">
+            <div class="settings-section__header">
+                <h2 id="password-title" class="settings-section__title">Password Policy</h2>
+                <p id="password-desc" class="settings-section__description">
+                    Configure password requirements for all users in your organization.
+                </p>
+            </div>
+            <div class="settings-section__content">
+                <div class="form-field">
+                    <label for="min-length" class="form-field__label">Minimum Length</label>
+                    <input type="number" id="min-length" class="form-field__input" value="10">
+                </div>
+                <label class="switch">
+                    <input type="checkbox" class="switch__input" role="switch" aria-checked="true" checked>
+                    <span class="switch__track"><span class="switch__thumb"></span></span>
+                    <span class="switch__label">Require special character</span>
+                </label>
+            </div>
+            <div class="settings-section__footer">
+                <span style="font-size: var(--font-size-sm); color: var(--color-neutral-500);">Saving...</span>
+                <button type="button" class="btn btn--secondary" disabled>Cancel</button>
+                <button type="button" class="btn btn--primary btn--loading" disabled><span class="sr-only">Saving Changes</span></button>
+            </div>
+        </section>
+
+        <!-- Data Retention Variant -->
+        <section class="settings-section" aria-labelledby="retention-title" aria-describedby="retention-desc">
+            <div class="settings-section__header">
+                <h2 id="retention-title" class="settings-section__title">Data Retention</h2>
+                <p id="retention-desc" class="settings-section__description">
+                    Set how long attendance and audit data is stored before being anonymized or deleted.
+                </p>
+            </div>
+            <div class="settings-section__content">
+                <div class="form-field">
+                    <label for="attendance-retention" class="form-field__label">Attendance Records</label>
+                    <input type="number" id="attendance-retention" class="form-field__input" value="365">
+                    <p class="form-field__helper-text">Days to keep attendance records.</p>
+                </div>
+                 <div class="form-field">
+                    <label for="audit-retention" class="form-field__label">Audit Logs</label>
+                    <input type="number" id="audit-retention" class="form-field__input" value="730">
+                     <p class="form-field__helper-text">Days to keep audit log records.</p>
+                </div>
+            </div>
+            <div class="settings-section__footer">
+                <button type="button" class="btn btn--secondary">Cancel</button>
+                <button type="button" class="btn btn--primary" disabled>Save Changes</button>
+            </div>
+        </section>
+
+        <!-- Danger Zone Variant -->
+        <section class="settings-section settings-section--danger" aria-labelledby="danger-title" aria-describedby="danger-desc">
+            <div class="settings-section__header">
+                <h2 id="danger-title" class="settings-section__title">Danger Zone</h2>
+            </div>
+            <div class="settings-section__content">
+                <div>
+                    <h3 style="font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-neutral-900);">Delete this organization</h3>
+                    <p id="danger-desc" style="font-size: var(--font-size-sm); color: var(--color-neutral-500); margin-top: var(--space-1);">
+                        Once you delete your organization, there is no going back. All data will be permanently erased after a 30-day grace period.
+                    </p>
+                </div>
+            </div>
+             <div class="settings-section__footer">
+                <button type="button" class="btn btn--destructive">Request Organization Deletion</button>
+            </div>
+        </section>
+
+    </div>
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : "timezone"<h3>
+		<!--description--><normal> A form section for selecting the organization's timezone. Contains a single dropdown select field. </normal>
+		<!-- vrient 1 html -->
+        <section class="settings-section" aria-labelledby="timezone-title" aria-describedby="timezone-desc">
+            <div class="settings-section__header">
+                <h2 id="timezone-title" class="settings-section__title">Timezone</h2>
+                <p id="timezone-desc" class="settings-section__description">
+                    Set the primary timezone for your organization to ensure all reports and logs are consistent.
+                </p>
+            </div>
+            <div class="settings-section__content">
+                <div class="form-field">
+                    <label for="timezone-select" class="form-field__label">Organization Timezone</label>
+                    <select id="timezone-select" class="form-field__input">
+                        <option value="America/New_York">(GMT-05:00) Eastern Time</option>
+                        <option value="Europe/London">(GMT+00:00) London</option>
+                        <option value="Asia/Tokyo">(GMT+09:00) Tokyo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="settings-section__footer">
+                <button type="button" class="btn btn--secondary">Cancel</button>
+                <button type="button" class="btn btn--primary">Save Changes</button>
+            </div>
+        </section>"     
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "password_policy"<h3>
+		<!--description--><normal> A form section for configuring password complexity rules, including a number input for minimum length and toggle switches for character requirements. </normal>
+		<!-- vrient 1 html -->
+        <section class="settings-section is-saving" aria-labelledby="password-title" aria-describedby="password-desc">
+            <div class="settings-section__header">
+                <h2 id="password-title" class="settings-section__title">Password Policy</h2>
+                <p id="password-desc" class="settings-section__description">
+                    Configure password requirements for all users in your organization.
+                </p>
+            </div>
+            <div class="settings-section__content">
+                <div class="form-field">
+                    <label for="min-length" class="form-field__label">Minimum Length</label>
+                    <input type="number" id="min-length" class="form-field__input" value="10">
+                </div>
+                <label class="switch">
+                    <input type="checkbox" class="switch__input" role="switch" aria-checked="true" checked="">
+                    <span class="switch__track"><span class="switch__thumb"></span></span>
+                    <span class="switch__label">Require special character</span>
+                </label>
+            </div>
+            <div class="settings-section__footer">
+                <span style="font-size: var(--font-size-sm); color: var(--color-neutral-500);">Saving...</span>
+                <button type="button" class="btn btn--secondary" disabled="">Cancel</button>
+                <button type="button" class="btn btn--primary btn--loading" disabled=""><span class="sr-only">Saving Changes</span></button>
+            </div>
+        </section>"     
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "data_retention"<h3>
+		<!--description--><normal> A form section for setting data retention periods for different types of data, such as attendance records and audit logs. </normal>
+		<!-- vrient 1 html -->
+        <section class="settings-section" aria-labelledby="retention-title" aria-describedby="retention-desc">
+            <div class="settings-section__header">
+                <h2 id="retention-title" class="settings-section__title">Data Retention</h2>
+                <p id="retention-desc" class="settings-section__description">
+                    Set how long attendance and audit data is stored before being anonymized or deleted.
+                </p>
+            </div>
+            <div class="settings-section__content">
+                <div class="form-field">
+                    <label for="attendance-retention" class="form-field__label">Attendance Records</label>
+                    <input type="number" id="attendance-retention" class="form-field__input" value="365">
+                    <p class="form-field__helper-text">Days to keep attendance records.</p>
+                </div>
+                 <div class="form-field">
+                    <label for="audit-retention" class="form-field__label">Audit Logs</label>
+                    <input type="number" id="audit-retention" class="form-field__input" value="730">
+                     <p class="form-field__helper-text">Days to keep audit log records.</p>
+                </div>
+            </div>
+            <div class="settings-section__footer">
+                <button type="button" class="btn btn--secondary">Cancel</button>
+                <button type="button" class="btn btn--primary" disabled="">Save Changes</button>
+            </div>
+        </section>"     
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "danger_zone"<h3>
+		<!--description--><normal> A visually distinct section for high-risk, destructive actions, such as deleting the entire tenant. Uses destructive action button styles. </normal>
+		<!-- vrient 1 html -->
+        <section class="settings-section settings-section--danger" aria-labelledby="danger-title" aria-describedby="danger-desc">
+            <div class="settings-section__header">
+                <h2 id="danger-title" class="settings-section__title">Danger Zone</h2>
+            </div>
+            <div class="settings-section__content">
+                <div>
+                    <h3 style="font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-neutral-900);">Delete this organization</h3>
+                    <p id="danger-desc" style="font-size: var(--font-size-sm); color: var(--color-neutral-500); margin-top: var(--space-1);">
+                        Once you delete your organization, there is no going back. All data will be permanently erased after a 30-day grace period.
+                    </p>
+                </div>
+            </div>
+             <div class="settings-section__footer">
+                <button type="button" class="btn btn--destructive">Request Organization Deletion</button>
+            </div>
+        </section>"     
+		
+      <div>
+	 </div>    
+	
+	</body>
+</html>

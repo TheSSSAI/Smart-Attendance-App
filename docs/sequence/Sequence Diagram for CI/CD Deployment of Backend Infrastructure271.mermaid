@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant "Developer" as Developer
+    participant "GitHub" as GitHub
+    participant "GitHub Actions Runner" as GitHubActionsRunner
+    participant "Application Services" as ApplicationServices
+    participant "Security Layer" as SecurityLayer
+    participant "Data & Persistence" as DataPersistence
+
+    Developer->>GitHub: 1. 1. git push origin <branch-name>
+    GitHub-->>Developer: Push confirmation
+    activate GitHubActionsRunner
+    GitHub->>GitHubActionsRunner: 2. 2. Trigger Workflow [on: push: branches: 'main']
+    GitHubActionsRunner->>GitHubActionsRunner: 3. 3. Checkout Code, Setup Env, Install Deps (npm ci)
+    GitHubActionsRunner-->>GitHubActionsRunner: Environment ready
+    GitHubActionsRunner->>GitHubActionsRunner: 4. 4. Run Validation Steps (Linting & Testing)
+    GitHubActionsRunner-->>GitHubActionsRunner: Tests passed/failed
+    GitHubActionsRunner->>GitHubActionsRunner: 5. 5. Authenticate to Google Cloud
+    GitHubActionsRunner-->>GitHubActionsRunner: Short-lived access token
+    GitHubActionsRunner->>ApplicationServices: 6. 6. Deploy Cloud Functions (firebase deploy --only functions)
+    ApplicationServices-->>GitHubActionsRunner: Deployment status for functions
+    GitHubActionsRunner->>SecurityLayer: 7. 7. Deploy Firestore Rules (firebase deploy --only firestore:rules)
+    SecurityLayer-->>GitHubActionsRunner: Deployment status for rules
+    GitHubActionsRunner->>DataPersistence: 8. 8. Deploy Firestore Indexes (firebase deploy --only firestore:indexes)
+    DataPersistence-->>GitHubActionsRunner: Deployment status for indexes
+    GitHubActionsRunner->>GitHub: 9. 9. Report Deployment Status
+    GitHub-->>GitHubActionsRunner: API confirmation
+    GitHubActionsRunner->>Developer: 10. 10. Notify Developer of Outcome
+
+    note over GitHubActionsRunner: The workflow is configured with different jobs for different branches. A push to develop deploys ...
+    note over GitHubActionsRunner: A critical failure at any step (lint, test, or deploy) results in a 'fail-fast' termination of th...
+
+    deactivate GitHubActionsRunner

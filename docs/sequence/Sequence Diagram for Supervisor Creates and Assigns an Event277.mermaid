@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor "Supervisor (User)" as SupervisorUser
+    actor "Mobile App (Flutter Client)" as MobileAppFlutterClient
+    participant "Firestore Database" as FirestoreDatabase
+
+    activate MobileAppFlutterClient
+    SupervisorUser->>MobileAppFlutterClient: 1. 1. Taps 'Create Event' button on the calendar/dashboard screen.
+    MobileAppFlutterClient-->>SupervisorUser: Navigates to the event creation form.
+    MobileAppFlutterClient->>MobileAppFlutterClient: 2. 2. Initiates EventCreationScreen state via Riverpod Provider.
+    MobileAppFlutterClient-->>MobileAppFlutterClient: Triggers data fetching for the form.
+    activate FirestoreDatabase
+    MobileAppFlutterClient->>FirestoreDatabase: 3. 3. Fetches subordinates and teams managed by the Supervisor to populate assignee lists.
+    FirestoreDatabase-->>MobileAppFlutterClient: Returns a collection of User and Team documents.
+    MobileAppFlutterClient->>MobileAppFlutterClient: 4. 4. Renders EventCreationScreen UI with loading indicators, then populates form fields and assignee lists.
+    SupervisorUser->>MobileAppFlutterClient: 5. 5. Enters event details (title, description, start/end times, recurrence) and selects assignees.
+    MobileAppFlutterClient-->>SupervisorUser: UI state is updated in real-time.
+    MobileAppFlutterClient->>MobileAppFlutterClient: 6. 6. Performs client-side validation on form fields.
+    MobileAppFlutterClient-->>MobileAppFlutterClient: Displays error messages for invalid fields (e.g., 'End time must be after start time').
+    SupervisorUser->>MobileAppFlutterClient: 7. 7. Taps 'Save Event' button.
+    MobileAppFlutterClient-->>SupervisorUser: Triggers the event creation logic.
+    MobileAppFlutterClient->>FirestoreDatabase: 8. 8. Creates a new document in the /events collection with the event data.
+    FirestoreDatabase-->>MobileAppFlutterClient: Returns success confirmation or a FirestoreException.
+    FirestoreDatabase->>MobileAppFlutterClient: 9. 9. Confirms successful write operation.
+    MobileAppFlutterClient->>SupervisorUser: 10. 10. Displays a success notification (Snackbar) and navigates back to the previous screen.
+
+    note over MobileAppFlutterClient: Offline Handling: If the device is offline at step 8, the Firestore SDK automatically writes the ...
+    note over FirestoreDatabase: Security Enforcement: Firestore Security Rules are critical. They must validate that the auth.uid...
+    note over FirestoreDatabase: Real-time Updates: Other assigned users who have the application open will see the new event appe...
+
+    deactivate FirestoreDatabase
+    deactivate MobileAppFlutterClient

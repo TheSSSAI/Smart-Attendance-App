@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Component: Date/Time Picker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------------- */
+        /* --- 1. Design System Foundations --- */
+        /* ------------------------- */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --color-error-500: #DC2626;
+            --color-white: #FFFFFF;
+
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --space-4: 4px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --space-48: 48px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+        }
+
+        /* ------------------------- */
+        /* --- 2. Base & Showcase Layout --- */
+        /* ------------------------- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; }
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-neutral-50);
+            color: var(--color-neutral-700);
+            padding: var(--space-32);
+        }
+        main { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 2.25rem; font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-16); }
+        h2 { font-size: 1.75rem; font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-24); border-bottom: 1px solid var(--color-neutral-200); padding-bottom: var(--space-12); margin-top: var(--space-48);}
+        h3 { font-size: 1.25rem; font-weight: 600; color: var(--color-neutral-900); margin-top: var(--space-32); margin-bottom: var(--space-16); }
+        p { margin-bottom: var(--space-16); max-width: 65ch; line-height: 1.6; }
+
+        .showcase {
+            padding: var(--space-24);
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--border-radius-md);
+        }
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-32);
+        }
+
+        /* ------------------------- */
+        /* --- 3. Component: Date/Time Picker CSS --- */
+        /* ------------------------- */
+        .picker-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+            width: 100%;
+        }
+
+        .picker-group label {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-700);
+        }
+
+        .picker-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            border: 1px solid var(--color-neutral-300);
+            border-radius: var(--border-radius-md);
+            background-color: var(--color-white);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .picker-wrapper:has(input:focus) {
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 20%, transparent);
+        }
+
+        .picker-wrapper--error {
+            border-color: var(--color-error-500);
+        }
+
+        .picker-wrapper--error:has(input:focus) {
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error-500) 20%, transparent);
+        }
+
+        .picker-wrapper--disabled {
+            background-color: var(--color-neutral-100);
+            cursor: not-allowed;
+        }
+
+        .picker-wrapper__input {
+            flex-grow: 1;
+            padding: var(--space-12) var(--space-16);
+            padding-right: var(--space-48); /* Make space for the icon */
+            font-family: inherit;
+            font-size: var(--font-size-md);
+            border: none;
+            background-color: transparent;
+            width: 100%;
+            color: var(--color-neutral-700);
+        }
+
+        .picker-wrapper__input:focus {
+            outline: none;
+        }
+
+        /* This pseudo-element makes the entire input clickable to show the picker,
+           while hiding the ugly default browser icon. */
+        .picker-wrapper__input::-webkit-calendar-picker-indicator {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .picker-wrapper__input:disabled {
+            cursor: not-allowed;
+            color: var(--color-neutral-400);
+        }
+        
+        /* For browsers that don't support the above trick, ensure cursor is correct */
+        .picker-wrapper:not(.picker-wrapper--disabled) {
+            cursor: text;
+        }
+
+        .picker-wrapper__icon {
+            position: absolute;
+            right: var(--space-16);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: var(--color-neutral-400);
+            pointer-events: none; /* Allows clicks to pass through to the input */
+        }
+
+        .picker-wrapper--disabled .picker-wrapper__icon {
+            color: var(--color-neutral-300);
+        }
+
+        .picker-error-message {
+            color: var(--color-error-500);
+            font-size: var(--font-size-sm);
+        }
+
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Molecular Component: Date/Time Picker</h1>
+        <p>A form control that allows users to select a date, time, or both, using a platform-native interface. This component is styled to look consistent with other text inputs but triggers the browser's or OS's built-in picker UI for a familiar user experience.</p>
+
+        <section class="showcase">
+            <div class="showcase-grid">
+
+                <!-- Date Only Picker -->
+                <div class="component-variant">
+                    <h3>Date Only Picker</h3>
+                    <div class="picker-group">
+                        <label for="date-picker">Event Date</label>
+                        <div class="picker-wrapper">
+                            <input type="date" id="date-picker" class="picker-wrapper__input">
+                            <svg class="picker-wrapper__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c0-.414.336-.75.75-.75h10.5a.75.75 0 010 1.5H5.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Only Picker -->
+                <div class="component-variant">
+                    <h3>Time Only Picker</h3>
+                    <div class="picker-group">
+                        <label for="time-picker">Start Time</label>
+                        <div class="picker-wrapper">
+                            <input type="time" id="time-picker" class="picker-wrapper__input">
+                            <svg class="picker-wrapper__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Platform Adaptive (Date & Time) Picker -->
+                <div class="component-variant">
+                    <h3>Date & Time Picker</h3>
+                    <div class="picker-group">
+                        <label for="datetime-picker">End Time</label>
+                        <div class="picker-wrapper">
+                            <input type="datetime-local" id="datetime-picker" class="picker-wrapper__input">
+                             <svg class="picker-wrapper__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c0-.414.336-.75.75-.75h10.5a.75.75 0 010 1.5H5.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <h2>Component States</h2>
+        <p>Demonstration of different states like error and disabled.</p>
+
+        <section class="showcase">
+            <div class="showcase-grid">
+
+                <!-- Error State -->
+                <div class="component-variant">
+                    <h3>Error State</h3>
+                    <div class="picker-group">
+                        <label for="date-picker-error">Return Date</label>
+                        <div class="picker-wrapper picker-wrapper--error">
+                            <input type="date" id="date-picker-error" class="picker-wrapper__input" aria-describedby="date-error-msg">
+                            <svg class="picker-wrapper__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c0-.414.336-.75.75-.75h10.5a.75.75 0 010 1.5H5.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <span id="date-error-msg" class="picker-error-message">Return date must be after today.</span>
+                    </div>
+                </div>
+
+                <!-- Disabled State -->
+                <div class="component-variant">
+                    <h3>Disabled State</h3>
+                    <div class="picker-group">
+                        <label for="time-picker-disabled">Appointment Time</label>
+                        <div class="picker-wrapper picker-wrapper--disabled">
+                            <input type="time" id="time-picker-disabled" class="picker-wrapper__input" disabled value="14:30">
+                            <svg class="picker-wrapper__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        
+        <h2>Component Variations</h2>
+
+        <div>
+            <h3>Variant Name: date_only</h3>
+            <p>Used for selecting only a calendar date (year, month, day). Appropriate for scenarios like filtering reports by a specific day or setting an event date.</p>
+        </div>
+
+        <div>
+            <h3>Variant Name: time_only</h3>
+            <p>Used for selecting only a time of day (hours, minutes, and optionally AM/PM). Suitable for setting start/end times for daily work shifts or events where the date is already contextually understood.</p>
+        </div>
+
+        <div>
+            <h3>Variant Name: platform_adaptive</h3>
+            <p>Used for selecting both a date and a time together. This is the most common variant for scheduling specific appointments or events, such as 'January 15, 2025, at 10:30 AM'. The HTML `datetime-local` input type achieves this in a web context.</p>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Molecular Component: Attendance List Item</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ------------------------- */
+    /* --- 1. Design System Foundations & Reset --- */
+    /* ------------------------- */
+    :root {
+      /* Colors */
+      --color-primary-50: #E6F0FF;
+      --color-primary-500: #0073FF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-600: #475569;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+      --color-white: #FFFFFF;
+      --color-success-50: #F0FDF4;
+      --color-success-900: #14532D;
+      --color-warning-50: #FFFBEB;
+      --color-warning-900: #78350F;
+      --color-error-50: #FEF2F2;
+      --color-error-900: #7F1D1D;
+
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+
+      /* Borders */
+      --border-radius-sm: 4px;
+      --border-radius-md: 8px;
+
+      /* Transitions */
+      --transition-fast: 150ms ease-in-out;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-700);
+      line-height: 1.5;
+      padding: var(--space-24);
+    }
+
+    /* Showcase Layout Styles */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 2rem; font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-8); }
+    h2 { font-size: 1.5rem; font-weight: 600; color: var(--color-neutral-900); margin-top: var(--space-24); margin-bottom: var(--space-16); border-bottom: 1px solid var(--color-neutral-200); padding-bottom: var(--space-8); }
+    p { margin-bottom: var(--space-16); max-width: 65ch; font-size: var(--font-size-sm); color: var(--color-neutral-600);}
+    .component-showcase {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-16);
+      background-color: var(--color-neutral-100);
+      padding: var(--space-16);
+      border-radius: var(--border-radius-md);
+      border: 1px solid var(--color-neutral-200);
+    }
+    
+    /* ------------------------- */
+    /* --- 2. Atomic Dependencies --- */
+    /* ------------------------- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4) var(--space-8);
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .badge--pending { background-color: var(--color-warning-50); color: var(--color-warning-900); }
+    .badge--approved { background-color: var(--color-success-50); color: var(--color-success-900); }
+    .badge--rejected { background-color: var(--color-error-50); color: var(--color-error-900); }
+    .badge--offline,
+    .badge--corrected,
+    .badge--discrepancy,
+    .badge--auto_checkout {
+      background-color: var(--color-neutral-100); color: var(--color-neutral-700);
+    }
+
+    .checkbox-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .checkbox-box {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--color-neutral-300);
+      border-radius: var(--border-radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color var(--transition-fast), border-color var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .checkbox-box svg {
+      display: none;
+      width: 16px;
+      height: 16px;
+      color: var(--color-white);
+    }
+
+    /* ---------------------------------- */
+    /* --- 3. MOLECULAR COMPONENT: Attendance List Item --- */
+    /* ---------------------------------- */
+    .att-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-16);
+      background-color: var(--color-white);
+      border: 1px solid var(--color-neutral-200);
+      border-radius: var(--border-radius-md);
+      padding: var(--space-16);
+      transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    }
+
+    .att-item:focus-within {
+      border-color: var(--color-primary-500);
+    }
+    
+    .att-item:hover {
+      border-color: var(--color-neutral-300);
+      background-color: var(--color-neutral-50);
+    }
+
+    .att-item:active {
+      transform: scale(0.99);
+      background-color: var(--color-neutral-100);
+    }
+
+    /* States */
+    .att-item.is-selected {
+      background-color: var(--color-primary-50);
+      border-color: var(--color-primary-500);
+    }
+
+    .att-item.is-selected .checkbox-box {
+      background-color: var(--color-primary-500);
+      border-color: var(--color-primary-500);
+    }
+    
+    .att-item.is-selected .checkbox-box svg {
+      display: block;
+    }
+
+    /* Variants & Structure */
+    .att-item__checkbox-wrapper {
+      display: none; /* Hidden by default */
+    }
+
+    .att-item--multi_select_enabled .att-item__checkbox-wrapper {
+      display: block;
+    }
+
+    .att-item__content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+      min-width: 0; /* Prevents flexbox overflow */
+    }
+    
+    .att-item__main {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-16);
+    }
+
+    .att-item__info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    
+    .att-item__name {
+      display: none; /* Supervisor view only */
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-900);
+      font-size: var(--font-size-md);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .att-item__date {
+      font-size: var(--font-size-sm);
+      color: var(--color-neutral-600);
+      font-weight: var(--font-weight-medium);
+    }
+
+    /* Subordinate View: Date is prominent */
+    .att-item--subordinate_view .att-item__date {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-900);
+      font-size: var(--font-size-md);
+    }
+
+    /* Supervisor View: Name is prominent */
+    .att-item--supervisor_view .att-item__name {
+      display: block;
+    }
+
+    .att-item__times {
+      display: flex;
+      align-items: center;
+      gap: var(--space-12);
+      font-size: var(--font-size-sm);
+      color: var(--color-neutral-700);
+      flex-shrink: 0;
+    }
+    
+    .att-item__time {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .att-item__time .icon {
+      width: 16px;
+      height: 16px;
+      color: var(--color-neutral-400);
+    }
+    
+    .att-item__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-8);
+    }
+
+    .att-item__flags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-8);
+    }
+
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Molecular Component: Attendance List Item</h1>
+    <p>Displays a single attendance record. The component has several variants to adapt to different contexts, such as the user's role and whether multi-selection is active.</p>
+
+    <div id="variants">
+      <h2>Component Variations</h2>
+
+      <div>
+        <h3>Variant Name: "subordinate_view"</h3>
+        <p>This is the default view for a Subordinate looking at their own attendance history. The date is the most prominent piece of information.</p>
+        <div class="component-showcase">
+          <div class="att-item att-item--subordinate_view" tabindex="0" role="button">
+            <div class="att-item__content">
+              <div class="att-item__main">
+                <div class="att-item__info">
+                  <span class="att-item__name">John Doe</span>
+                  <span class="att-item__date">January 20, 2025</span>
+                </div>
+                <div class="att-item__times">
+                  <div class="att-item__time">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" /></svg>
+                    <span>09:01 AM</span>
+                  </div>
+                  <div class="att-item__time">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" /></svg>
+                    <span>05:03 PM</span>
+                  </div>
+                </div>
+              </div>
+              <div class="att-item__footer">
+                <div class="att-item__flags"></div>
+                <span class="badge badge--approved">Approved</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <h3>Variant Name: "supervisor_view"</h3>
+        <p>This view is for Supervisors in an approval queue. The Subordinate's name is the most prominent piece of information.</p>
+        <div class="component-showcase">
+          <div class="att-item att-item--supervisor_view" tabindex="0" role="button">
+            <div class="att-item__content">
+              <div class="att-item__main">
+                <div class="att-item__info">
+                  <span class="att-item__name">Eleanor Vance</span>
+                  <span class="att-item__date">January 20, 2025</span>
+                </div>
+                <div class="att-item__times">
+                  <div class="att-item__time">
+                    <span>08:58 AM</span>
+                  </div>
+                  <div class="att-item__time">
+                    <span>05:01 PM</span>
+                  </div>
+                </div>
+              </div>
+              <div class="att-item__footer">
+                <div class="att-item__flags"></div>
+                <span class="badge badge--pending">Pending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Variant Name: "with_flags"</h3>
+        <p>This variant demonstrates how exception flags (offline, corrected, etc.) are displayed to draw the Supervisor's attention.</p>
+        <div class="component-showcase">
+          <div class="att-item att-item--supervisor_view" tabindex="0" role="button">
+            <div class="att-item__content">
+              <div class="att-item__main">
+                <div class="att-item__info">
+                  <span class="att-item__name">Marcus Holloway</span>
+                  <span class="att-item__date">January 19, 2025</span>
+                </div>
+                <div class="att-item__times">
+                  <div class="att-item__time">
+                    <span>09:15 AM</span>
+                  </div>
+                  <div class="att-item__time">
+                    <span>05:30 PM</span>
+                  </div>
+                </div>
+              </div>
+              <div class="att-item__footer">
+                <div class="att-item__flags">
+                  <span class="badge badge--offline">Offline</span>
+                  <span class="badge badge--discrepancy">Discrepancy</span>
+                  <span class="badge badge--auto_checkout">Auto Checkout</span>
+                </div>
+                <span class="badge badge--pending">Pending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Variant Name: "multi_select_enabled"</h3>
+        <p>Used in Supervisor approval queues to enable bulk actions. The checkbox becomes visible, and a selected state is available.</p>
+        <div class="component-showcase">
+          <!-- Unselected Item -->
+          <label class="att-item att-item--supervisor_view att-item--multi_select_enabled">
+            <div class="att-item__checkbox-wrapper">
+              <input type="checkbox" class="checkbox-input" aria-label="Select attendance for Jane Doe">
+              <span class="checkbox-box">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg>
+              </span>
+            </div>
+            <div class="att-item__content">
+              <div class="att-item__main">
+                <div class="att-item__info">
+                  <span class="att-item__name">Jane Doe</span>
+                  <span class="att-item__date">January 20, 2025</span>
+                </div>
+                <div class="att-item__times">
+                  <div class="att-item__time"><span>09:05 AM</span></div>
+                  <div class="att-item__time"><span>04:55 PM</span></div>
+                </div>
+              </div>
+              <div class="att-item__footer">
+                <div class="att-item__flags"></div>
+                <span class="badge badge--pending">Pending</span>
+              </div>
+            </div>
+          </label>
+          <!-- Selected Item -->
+          <label class="att-item att-item--supervisor_view att-item--multi_select_enabled is-selected">
+            <div class="att-item__checkbox-wrapper">
+              <input type="checkbox" class="checkbox-input" checked aria-label="Deselect attendance for Sam Fisher">
+              <span class="checkbox-box">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg>
+              </span>
+            </div>
+            <div class="att-item__content">
+              <div class="att-item__main">
+                <div class="att-item__info">
+                  <span class="att-item__name">Sam Fisher</span>
+                  <span class="att-item__date">January 20, 2025</span>
+                </div>
+                <div class="att-item__times">
+                  <div class="att-item__time"><span>08:45 AM</span></div>
+                  <div class="att-item__time"><span>05:15 PM</span></div>
+                </div>
+              </div>
+              <div class="att-item__footer">
+                <div class="att-item__flags">
+                  <span class="badge badge--corrected">Corrected</span>
+                </div>
+                <span class="badge badge--pending">Pending</span>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>

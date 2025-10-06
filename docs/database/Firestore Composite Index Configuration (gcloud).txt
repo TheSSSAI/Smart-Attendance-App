@@ -1,0 +1,59 @@
+# This script contains gcloud commands to create the composite indexes.
+# Run these commands from your terminal after authenticating with the gcloud CLI.
+
+echo "Issuing commands to create Firestore indexes..."
+
+# Index: IX_Tenant_Status_DeletionTime
+gcloud firestore indexes composite create --collection-group=tenants \
+  --field-config field-path=status,order=ascending \
+  --field-config field-path=deletionRequestedAt,order=ascending
+
+# Index: IX_User_TeamIds (Array Index)
+gcloud firestore indexes composite create --collection-group=users \
+  --field-config field-path=teamIds,array-config=contains
+
+# Index: IX_User_Status_DeactivatedAt
+gcloud firestore indexes composite create --collection-group=users \
+  --field-config field-path=status,order=ascending \
+  --field-config field-path=deactivatedAt,order=ascending
+
+# Index: IX_Team_MemberIds (Array Index)
+gcloud firestore indexes composite create --collection-group=teams \
+  --field-config field-path=memberIds,array-config=contains
+
+# Index: IX_AttendanceRecord_User_CheckInTime
+gcloud firestore indexes composite create --collection-group=attendanceRecords \
+  --field-config field-path=userId,order=ascending \
+  --field-config field-path=checkInTime,order=descending
+
+# Index: IX_AttendanceRecord_Supervisor_Status_CheckInTime
+gcloud firestore indexes composite create --collection-group=attendanceRecords \
+  --field-config field-path=supervisorId,order=ascending \
+  --field-config field-path=status,order=ascending \
+  --field-config field-path=checkInTime,order=descending
+
+# Index: IX_AttendanceRecord_Status_UpdatedAt
+gcloud firestore indexes composite create --collection-group=attendanceRecords \
+  --field-config field-path=status,order=ascending \
+  --field-config field-path=updatedAt,order=descending
+
+# Index: IX_Event_AssignedUsers (Array Index)
+gcloud firestore indexes composite create --collection-group=events \
+  --field-config field-path=assignedUserIds,array-config=contains
+
+# Index: IX_Event_AssignedTeams (Array Index)
+gcloud firestore indexes composite create --collection-group=events \
+  --field-config field-path=assignedTeamIds,array-config=contains
+
+# Index: IX_AuditLog_TargetEntity_Id_Timestamp
+gcloud firestore indexes composite create --collection-group=auditLogs \
+  --field-config field-path=targetEntity,order=ascending \
+  --field-config field-path=targetEntityId,order=ascending \
+  --field-config field-path=timestamp,order=descending
+
+# Index: IX_DailySummary_User_Date
+gcloud firestore indexes composite create --collection-group=dailySummaries \
+  --field-config field-path=userId,order=ascending \
+  --field-config field-path=summaryDate,order=descending
+
+echo "Index creation commands sent. Monitor the Google Cloud Console for progress."

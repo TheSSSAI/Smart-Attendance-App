@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"45","236","22","18","5","[""Tenant & User Lifecycle Management"",""Security & Compliance"",""Core Attendance Workflow"",""Supervisor Features"",""Admin Reporting & Integrations"",""Event Management"",""System Configuration & Settings"",""Usability & Accessibility""]","10","[""Firebase Project Setup"",""User Authentication"",""Tenant Creation""]"

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings Form Section Component</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ------------------------------ */
+    /* DESIGN SYSTEM FOUNDATION       */
+    /* ------------------------------ */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-white: #FFFFFF;
+      --color-gray-50: #F8FAFC;
+      --color-gray-100: #F1F5F9;
+      --color-gray-300: #CBD5E1;
+      --color-gray-400: #94A3B8;
+      --color-gray-500: #64748B;
+      --color-gray-700: #334155;
+      --color-gray-900: #0F172A;
+      --color-error-500: #DC2626;
+      --color-error-100: #FEF2F2;
+      --color-error-900: #7F1D1D;
+
+      /* Typography */
+      --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-h3: 20px;
+      --font-weight-h3: 600;
+      --font-size-body: 16px;
+      --font-weight-body: 400;
+      --font-size-caption: 14px;
+      
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+
+      /* Borders */
+      --border-radius-lg: 12px;
+      --border-radius-md: 8px;
+    }
+
+    /* ------------------------------ */
+    /* CSS RESET & BASE STYLES        */
+    /* ------------------------------ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      padding: var(--space-32);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    h1, h2, h3 {
+      font-weight: var(--font-weight-h3);
+    }
+
+    /* ------------------------------ */
+    /* ATOMIC COMPONENTS              */
+    /* ------------------------------ */
+
+    /* Buttons */
+    .btn {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-body);
+      font-weight: 600;
+      padding: var(--space-12) var(--space-24);
+      border-radius: var(--border-radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-8);
+      white-space: nowrap;
+    }
+    .btn:focus-visible {
+      outline: 2px solid var(--color-primary-500);
+      outline-offset: 2px;
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--primary:active {
+      background-color: var(--color-primary-700);
+      transform: scale(0.98);
+    }
+    .btn:disabled {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+
+    .btn--danger {
+      background-color: var(--color-error-100);
+      color: var(--color-error-900);
+      border-color: var(--color-error-100);
+    }
+    .btn--danger:hover {
+      background-color: #FEE2E2;
+      border-color: #FEE2E2;
+    }
+    .btn--danger:active {
+      background-color: #FECACA;
+    }
+    
+    .btn .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: var(--color-white);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Form Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+    .form-group label {
+      font-weight: 600;
+      font-size: var(--font-size-caption);
+      color: var(--color-gray-700);
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: var(--space-12) var(--space-16);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--border-radius-md);
+      font-size: var(--font-size-body);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--color-primary-500);
+      outline: 2px solid var(--color-primary-500);
+      outline-offset: 1px;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-12);
+    }
+    .checkbox-group label {
+      font-weight: normal;
+      font-size: var(--font-size-body);
+      color: var(--color-gray-700);
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--color-primary-500);
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .toggle-switch input { display: none; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--color-gray-300);
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--color-primary-500); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* ------------------------------ */
+    /* SETTINGS SECTION COMPONENT     */
+    /* ------------------------------ */
+    .settings-section {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--border-radius-lg);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .settings-section + .settings-section {
+        margin-top: var(--space-32);
+    }
+    
+    .section-header {
+      padding: var(--space-24);
+      border-bottom: 1px solid var(--color-gray-300);
+    }
+    .section-header h3 {
+      font-size: var(--font-size-h3);
+      color: var(--color-gray-900);
+      margin-bottom: var(--space-4);
+    }
+    .section-header p {
+      font-size: var(--font-size-caption);
+      color: var(--color-gray-500);
+    }
+    
+    .section-body {
+      padding: var(--space-24);
+      display: grid;
+      gap: var(--space-24);
+    }
+    @media (min-width: 768px) {
+        .section-body.two-columns {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    
+    .section-footer {
+      padding: var(--space-16) var(--space-24);
+      background-color: var(--color-gray-50);
+      border-top: 1px solid var(--color-gray-300);
+      border-bottom-left-radius: var(--border-radius-lg);
+      border-bottom-right-radius: var(--border-radius-lg);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .section-danger {
+        border-color: var(--color-error-500);
+    }
+    .section-danger .section-header {
+        border-bottom-color: var(--color-error-500);
+    }
+    .section-danger .section-header h3 {
+        color: var(--color-error-900);
+    }
+
+    /* ------------------------------ */
+    /* SCREEN VARIATIONS              */
+    /* ------------------------------ */
+    .screen-variations {
+      margin-top: 64px;
+    }
+    .variation-group {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin-top: 32px;
+    }
+    .variation-group h3 {
+      margin-bottom: 8px;
+    }
+    .variation-group normal {
+      display: block;
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Settings Form Section Component</h1>
+  <p style="max-width: 800px; margin: 16px auto 32px; color: var(--color-gray-500);">This component encapsulates a group of related settings within a settings page. Below are different variants and states of this component.</p>
+  
+  <div class="settings-section" id="password-policy-section">
+    <div class="section-header">
+      <h3 id="password-policy-heading">Password Policy</h3>
+      <p>Configure password complexity requirements for users in your organization.</p>
+    </div>
+    <form>
+      <fieldset id="password-policy-fieldset">
+        <div class="section-body">
+          <div class="form-group">
+            <label for="minLength">Minimum Length</label>
+            <input type="number" id="minLength" name="minLength" class="form-input" value="8">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Complexity Requirements</label>
+              <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 8px;">
+                  <div class="checkbox-group">
+                      <input type="checkbox" id="req-uppercase" name="req-uppercase" checked>
+                      <label for="req-uppercase">Require uppercase letter (A-Z)</label>
+                  </div>
+                  <div class="checkbox-group">
+                      <input type="checkbox" id="req-lowercase" name="req-lowercase" checked>
+                      <label for="req-lowercase">Require lowercase letter (a-z)</label>
+                  </div>
+                  <div class="checkbox-group">
+                      <input type="checkbox" id="req-number" name="req-number" checked>
+                      <label for="req-number">Require number (0-9)</label>
+                  </div>
+                  <div class="checkbox-group">
+                      <input type="checkbox" id="req-special" name="req-special">
+                      <label for="req-special">Require special character (e.g., !@#$%)</label>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </fieldset>
+      <div class="section-footer">
+        <button type="submit" class="btn btn--primary" id="password-policy-save-btn" disabled>Save Changes</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="screen-variations">
+    <h2>Screen Variations</h2>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Timezone Configuration"</h3>
+      <normal>Allows an Admin to set the default timezone for their entire organization. This affects all time-based calculations and reports.</normal>
+      <div class="settings-section">
+          <div class="section-header">
+              <h3>Organization Timezone</h3>
+              <p>Set the default timezone for your organization. All timestamps will be displayed in this zone.</p>
+          </div>
+          <div class="section-body">
+              <div class="form-group">
+                  <label for="timezone-select">Timezone</label>
+                  <select id="timezone-select" class="form-select">
+                      <option>(GMT-05:00) Eastern Time (US & Canada)</option>
+                      <option selected>(GMT-08:00) Pacific Time (US & Canada)</option>
+                      <option>(GMT+00:00) Greenwich Mean Time</option>
+                      <option>(GMT+01:00) Central European Time</option>
+                  </select>
+              </div>
+          </div>
+          <div class="section-footer">
+              <button type="button" class="btn btn--primary" disabled>Save Changes</button>
+          </div>
+      </div>
+    </div>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Data Retention"</h3>
+      <normal>Allows configuration of data retention periods for compliance and storage management.</normal>
+      <div class="settings-section">
+          <div class="section-header">
+              <h3>Data Retention</h3>
+              <p>Define how long to keep attendance and audit log data before it's anonymized or deleted.</p>
+          </div>
+          <div class="section-body two-columns">
+              <div class="form-group">
+                  <label for="retention-attendance">Attendance Records</label>
+                  <input type="number" id="retention-attendance" class="form-input" value="2">
+              </div>
+              <div class="form-group">
+                  <label for="retention-attendance-unit">Unit</label>
+                  <select id="retention-attendance-unit" class="form-select">
+                      <option>Months</option>
+                      <option selected>Years</option>
+                  </select>
+              </div>
+              <div class="form-group">
+                  <label for="retention-audit">Audit Logs</label>
+                  <input type="number" id="retention-audit" class="form-input" value="5">
+              </div>
+              <div class="form-group">
+                  <label for="retention-audit-unit">Unit</label>
+                  <select id="retention-audit-unit" class="form-select">
+                      <option>Months</option>
+                      <option selected>Years</option>
+                  </select>
+              </div>
+          </div>
+          <div class="section-footer">
+              <button type="button" class="btn btn--primary" disabled>Save Changes</button>
+          </div>
+      </div>
+    </div>
+
+    <div class="variation-group">
+      <h3>Variant Name: "Danger Zone"</h3>
+      <normal>A visually distinct section for high-risk, irreversible actions like deleting the entire organization's account.</normal>
+      <div class="settings-section section-danger">
+          <div class="section-header">
+              <h3>Danger Zone</h3>
+              <p>These actions are destructive and cannot be undone.</p>
+          </div>
+          <div class="section-body" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                  <h4 style="font-weight: 600; color: var(--color-gray-900);">Delete this organization</h4>
+                  <p style="font-size: var(--font-size-caption); color: var(--color-gray-500); margin-top: 4px;">Once you delete the organization, all data will be permanently lost.</p>
+              </div>
+              <button type="button" class="btn btn--danger">Delete Organization</button>
+          </div>
+      </div>
+    </div>
+
+    <div class="variation-group">
+      <h3>State: "Editing"</h3>
+      <normal>When the user has made a change to a form field, the "Save Changes" button becomes enabled, indicating there are unsaved changes.</normal>
+       <div class="settings-section">
+        <div class="section-header">
+          <h3>Password Policy</h3>
+          <p>Configure password complexity requirements for users in your organization.</p>
+        </div>
+        <div class="section-footer">
+            <button type="button" class="btn btn--primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="variation-group">
+      <h3>State: "Saving"</h3>
+      <normal>After clicking "Save Changes", all form fields are disabled, and the button shows a loading spinner to indicate that the request is in progress.</normal>
+      <div class="settings-section">
+        <div class="section-header">
+          <h3>Password Policy</h3>
+          <p>Configure password complexity requirements for users in your organization.</p>
+        </div>
+        <form>
+            <fieldset disabled>
+                <div class="section-body">
+                    <div class="form-group">
+                        <label for="minLength-saving">Minimum Length</label>
+                        <input type="number" id="minLength-saving" class="form-input" value="10">
+                    </div>
+                </div>
+            </fieldset>
+            <div class="section-footer">
+                <button type="button" class="btn btn--primary" disabled>
+                    <span class="spinner"></span>
+                    Saving...
+                </button>
+            </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Simple script to demonstrate editing state
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordSection = document.getElementById('password-policy-section');
+        const form = passwordSection.querySelector('form');
+        const saveBtn = document.getElementById('password-policy-save-btn');
+        const inputs = form.querySelectorAll('input');
+
+        function checkChanges() {
+            saveBtn.disabled = false;
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('input', checkChanges);
+            input.addEventListener('change', checkChanges);
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fieldset = document.getElementById('password-policy-fieldset');
+            fieldset.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+            saveBtn.disabled = true;
+
+            setTimeout(() => {
+                fieldset.disabled = false;
+                saveBtn.innerHTML = 'Save Changes';
+                // In a real app, you'd disable it again until new changes are made.
+                alert('Settings saved successfully!');
+            }, 2000);
+        });
+    });
+  </script>
+
+</body>
+</html>

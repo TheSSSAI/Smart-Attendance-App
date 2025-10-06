@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Authentication Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ------------------------- */
+        /* --- 1. Design System Foundations --- */
+        /* ------------------------- */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-600: #475569;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --color-white: #FFFFFF;
+            --color-error-500: #DC2626;
+            --color-error-50: #FEF2F2;
+            --color-error-900: #7F1D1D;
+
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-size-h3: 28px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --space-48: 48px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-radius-lg: 16px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+        }
+
+        /* ------------------------- */
+        /* --- 2. Base & Layout --- */
+        /* ------------------------- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-neutral-100);
+            color: var(--color-neutral-700);
+            line-height: 1.5;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+        }
+        main {
+            width: 100%;
+            padding: var(--space-24);
+        }
+        .showcase-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--space-48);
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .showcase-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: var(--space-16);
+        }
+        h2 {
+            font-size: 1rem;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-600);
+            text-align: center;
+        }
+
+        /* -------------------------------- */
+        /* --- 3. Atomic Dependencies --- */
+        /* -------------------------------- */
+        /* Button */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: var(--space-16);
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color var(--transition-fast), transform var(--transition-fast);
+        }
+        .btn:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+        .btn--primary { background-color: var(--color-primary-500); color: var(--color-white); }
+        .btn--primary:hover { background-color: var(--color-primary-600); }
+        .btn--primary:active { background-color: var(--color-primary-700); transform: scale(0.98); }
+        .btn:disabled { background-color: var(--color-neutral-200); color: var(--color-neutral-400); cursor: not-allowed; }
+        
+        /* Text Input */
+        .input-group { display: flex; flex-direction: column; gap: var(--space-8); width: 100%; }
+        .input-group label { font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); }
+        .input {
+            width: 100%;
+            padding: var(--space-16);
+            font-size: var(--font-size-md);
+            border: 1px solid var(--color-neutral-300);
+            border-radius: var(--border-radius-md);
+            background-color: var(--color-white);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+        .input:focus {
+            outline: none;
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 20%, transparent);
+        }
+        .input-group--error .input { border-color: var(--color-error-500); }
+        .input-group--error .input:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error-500) 20%, transparent); }
+        .input-error-message { color: var(--color-error-500); font-size: var(--font-size-sm); }
+
+        /* Text Link */
+        .link {
+            color: var(--color-primary-500);
+            text-decoration: none;
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+        }
+        .link:hover { text-decoration: underline; }
+
+        /* Alert */
+        .alert {
+            display: flex;
+            gap: var(--space-8);
+            padding: var(--space-16);
+            border-radius: var(--border-radius-md);
+            font-size: var(--font-size-sm);
+        }
+        .alert--error { background-color: var(--color-error-50); color: var(--color-error-900); }
+        
+        /* Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--color-primary-500);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ------------------------- */
+        /* --- 4. Organism: Authentication Form --- */
+        /* ------------------------- */
+        .auth-card {
+            background-color: var(--color-white);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--color-neutral-200);
+            padding: var(--space-32) var(--space-24);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-24);
+        }
+        
+        .auth-form__header {
+            text-align: center;
+        }
+
+        .auth-form__title {
+            font-size: var(--font-size-h3);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-8);
+        }
+        
+        .auth-form__subtitle {
+            color: var(--color-neutral-600);
+            font-size: var(--font-size-md);
+        }
+
+        .auth-form__body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-16);
+        }
+        
+        .auth-form__footer {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-16);
+            margin-top: var(--space-8);
+        }
+        
+        .auth-form__actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* States */
+        .auth-card--loading::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+        }
+        
+        .auth-card--loading .spinner-overlay {
+            display: flex;
+        }
+
+        .spinner-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 11;
+        }
+        
+        /* OTP Variant Specific */
+        .otp-input-group {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-8);
+        }
+        
+        .otp-input {
+            width: 48px !important;
+            height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: var(--font-weight-bold);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+                background-color: var(--color-white);
+            }
+            main {
+                padding: 0;
+            }
+            .showcase-container {
+                grid-template-columns: 1fr;
+                gap: var(--space-48);
+                padding: var(--space-24) 0;
+            }
+            .auth-card {
+                padding: var(--space-24) var(--space-16);
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <div class="showcase-container">
+            <!-- Variant 1: Login with Email/Password -->
+            <div class="showcase-item">
+                <h2>Email & Password Login</h2>
+                <div class="auth-card" id="login-email">
+                    <form class="auth-form">
+                        <header class="auth-form__header">
+                            <h1 class="auth-form__title">Welcome Back</h1>
+                            <p class="auth-form__subtitle">Please enter your details to sign in.</p>
+                        </header>
+                        <div class="auth-form__body">
+                            <div class="input-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" class="input" placeholder="you@example.com" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" class="input" placeholder="Enter your password" required>
+                            </div>
+                        </div>
+                        <footer class="auth-form__footer">
+                            <div class="auth-form__actions">
+                                <div><!-- Placeholder for potential 'Remember me' checkbox --></div>
+                                <a href="#forgot-password" class="link">Forgot Password?</a>
+                            </div>
+                            <button type="submit" class="btn btn--primary">Log In</button>
+                            <a href="#login-phone" class="link" style="text-align: center;">Login with Phone</a>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Variant 2: Login with Phone (Number Entry) -->
+            <div class="showcase-item">
+                <h2>Phone Number Entry</h2>
+                <div class="auth-card" id="login-phone">
+                    <form class="auth-form">
+                        <header class="auth-form__header">
+                            <h1 class="auth-form__title">Login with Phone</h1>
+                            <p class="auth-form__subtitle">Enter your phone number to receive a verification code.</p>
+                        </header>
+                        <div class="auth-form__body">
+                            <div class="input-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" class="input" placeholder="+1 (555) 000-0000" required>
+                            </div>
+                        </div>
+                        <footer class="auth-form__footer">
+                            <button type="submit" class="btn btn--primary">Send Code</button>
+                            <a href="#login-email" class="link" style="text-align: center;">Back to Email Login</a>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Variant 3: OTP Entry -->
+            <div class="showcase-item">
+                <h2>OTP Entry</h2>
+                <div class="auth-card" id="otp-entry">
+                    <form class="auth-form">
+                        <header class="auth-form__header">
+                            <h1 class="auth-form__title">Enter Code</h1>
+                            <p class="auth-form__subtitle">A 6-digit code was sent to +1 (555) ***-1234.</p>
+                        </header>
+                        <div class="auth-form__body">
+                            <div class="input-group otp-input-group">
+                                <input type="text" class="input otp-input" maxlength="1" required>
+                                <input type="text" class="input otp-input" maxlength="1" required>
+                                <input type="text" class="input otp-input" maxlength="1" required>
+                                <input type="text" class="input otp-input" maxlength="1" required>
+                                <input type="text" class="input otp-input" maxlength="1" required>
+                                <input type="text" class="input otp-input" maxlength="1" required>
+                            </div>
+                            <a href="#" class="link" style="text-align: center;">Resend Code (0:28)</a>
+                        </div>
+                        <footer class="auth-form__footer">
+                            <button type="submit" class="btn btn--primary">Verify</button>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Variant 4: Forgot Password -->
+            <div class="showcase-item">
+                <h2>Forgot Password</h2>
+                <div class="auth-card" id="forgot-password">
+                    <form class="auth-form">
+                        <header class="auth-form__header">
+                            <h1 class="auth-form__title">Forgot Password</h1>
+                            <p class="auth-form__subtitle">Enter your email and we'll send you a link to reset your password.</p>
+                        </header>
+                        <div class="auth-form__body">
+                            <div class="input-group">
+                                <label for="forgot-email">Email Address</label>
+                                <input type="email" id="forgot-email" class="input" placeholder="you@example.com" required>
+                            </div>
+                        </div>
+                        <footer class="auth-form__footer">
+                            <button type="submit" class="btn btn--primary">Send Reset Link</button>
+                            <a href="#login-email" class="link" style="text-align: center;">Back to Login</a>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+            
+             <!-- Variant 5: Set New Password -->
+             <div class="showcase-item">
+                <h2>Set New Password</h2>
+                <div class="auth-card" id="set-new-password">
+                    <form class="auth-form">
+                        <header class="auth-form__header">
+                            <h1 class="auth-form__title">Set New Password</h1>
+                            <p class="auth-form__subtitle">Your new password must be different from previous passwords.</p>
+                        </header>
+                        <div class="auth-form__body">
+                             <div class="input-group">
+                                <label for="new-password">New Password</label>
+                                <input type="password" id="new-password" class="input" required>
+                            </div>
+                             <div class="input-group">
+                                <label for="confirm-password">Confirm New Password</label>
+                                <input type="password" id="confirm-password" class="input" required>
+                            </div>
+                        </div>
+                        <footer class="auth-form__footer">
+                            <button type="submit" class="btn btn--primary">Set New Password</button>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+
+            <!-- States Showcase -->
+            <div class="showcase-item">
+                <h2>Form States</h2>
+                <!-- Error State -->
+                <div class="auth-card" id="login-error">
+                    <form class="auth-form">
+                        <div class="alert alert--error" role="alert">
+                            Invalid email or password. Please try again.
+                        </div>
+                        <header class="auth-form__header">
+                            <h1 class="auth-form__title">Error State</h1>
+                        </header>
+                        <div class="auth-form__body">
+                            <div class="input-group input-group--error">
+                                <label for="email-error">Email Address</label>
+                                <input type="email" id="email-error" class="input" value="user@wrong.com" required aria-invalid="true" aria-describedby="auth-error-msg">
+                            </div>
+                            <div class="input-group input-group--error">
+                                <label for="password-error">Password</label>
+                                <input type="password" id="password-error" class="input" value="wrongpass" required aria-invalid="true" aria-describedby="auth-error-msg">
+                                <span id="auth-error-msg" class="input-error-message" style="display:none;">Invalid credentials</span>
+                            </div>
+                        </div>
+                        <footer class="auth-form__footer">
+                            <button type="submit" class="btn btn--primary">Log In</button>
+                        </footer>
+                    </form>
+                </div>
+                <!-- Loading State -->
+                <div class="auth-card auth-card--loading" id="login-loading" style="margin-top: 24px;">
+                    <div class="spinner-overlay"><div class="spinner"></div></div>
+                    <form class="auth-form">
+                        <header class="auth-form__header">
+                            <h1 class="auth-form__title">Loading State</h1>
+                        </header>
+                        <div class="auth-form__body">
+                            <div class="input-group">
+                                <label for="email-load">Email Address</label>
+                                <input type="email" id="email-load" class="input" value="user@example.com" disabled>
+                            </div>
+                            <div class="input-group">
+                                <label for="password-load">Password</label>
+                                <input type="password" id="password-load" class="input" value="password" disabled>
+                            </div>
+                        </div>
+                        <footer class="auth-form__footer">
+                            <button type="submit" class="btn btn--primary" disabled>Log In</button>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : "login_email_password"<h3>
+		<!--description--><normal> The primary form for users to log in using their registered email and password. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "login_phone_number_entry"<h3>
+		<!--description--><normal> The initial step for passwordless login, where the user provides their phone number to receive an OTP. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "otp_entry"<h3>
+		<!--description--><normal> The second step for phone login, where the user enters the 6-digit code they received via SMS. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "forgot_password"<h3>
+		<!--description--><normal> A simple form for users who have forgotten their password to request a reset link via their email. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "set_new_password"<h3>
+		<!--description--><normal> The final step in the password reset flow, where the user sets and confirms their new password after clicking the link from the email. </normal>
+		
+      <div>
+	 </div>
+	</div>
+	</body>
+</html>

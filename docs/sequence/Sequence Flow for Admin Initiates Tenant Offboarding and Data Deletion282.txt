@@ -1,0 +1,1052 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-018
+
+## 1.2 Name
+
+Admin Initiates Tenant Offboarding and Data Deletion
+
+## 1.3 Description
+
+An Admin requests the permanent deletion of their tenant. The action is confirmed, enters a grace period, and is then executed by a scheduled function that systematically erases all tenant data.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To provide a secure and compliant method for customers to exit the service and have their data permanently deleted, fulfilling 'Right to Erasure' requirements.
+
+## 1.6 Complexity
+
+Critical
+
+## 1.7 Priority
+
+🟡 Medium
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- presentation-layer
+- application-services-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- Admin navigates to a 'danger zone' in settings and requests tenant deletion.
+- UI presents a confirmation modal requiring re-authentication.
+- A callable Cloud Function is invoked, which marks the tenant document with `status: pendingDeletion` and a `deletionTimestamp` (now + 30 days).
+- A daily scheduled Cloud Function queries for tenants whose `deletionTimestamp` has passed.
+- For each such tenant, the function systematically deletes all documents in all collections associated with that `tenantId`.
+- The function also revokes any external integrations (e.g., Google Sheets tokens).
+
+## 1.11 Triggers
+
+- Admin confirms the tenant deletion request.
+
+## 1.12 Outcomes
+
+- After a 30-day grace period, all data associated with the tenant is irreversibly deleted from the system.
+
+## 1.13 Business Rules
+
+- A 30-day grace period is required before permanent deletion (REQ-3.1.2).
+- Deletion is irreversible and must be comprehensive.
+
+## 1.14 Error Scenarios
+
+- The deletion function fails midway, requiring an idempotent design to resume correctly on the next run.
+- Admin requests to reverse the deletion within the grace period.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-018-IMPL
+
+## 2.2 Name
+
+Implementation: Admin Initiates Tenant Offboarding and Data Deletion
+
+## 2.3 Description
+
+A comprehensive technical sequence for the two-phase tenant offboarding process. Phase 1 involves a secure, re-authenticated request by an Admin to mark a tenant for deletion, initiating a 30-day grace period. Phase 2 is an automated, idempotent, scheduled process that executes after the grace period to irreversibly delete all tenant-associated data from all services, including Firestore and Firebase Authentication, and revoke external integration tokens.
+
+## 2.4 Participants
+
+### 2.4.1 Actor
+
+#### 2.4.1.1 Repository Id
+
+actor-admin
+
+#### 2.4.1.2 Display Name
+
+Admin User
+
+#### 2.4.1.3 Type
+
+🔹 Actor
+
+#### 2.4.1.4 Technology
+
+Human
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #90CAF9 |
+| Stereotype | User |
+
+### 2.4.2.0 Client Application
+
+#### 2.4.2.1 Repository Id
+
+presentation-layer
+
+#### 2.4.2.2 Display Name
+
+Admin Web Dashboard
+
+#### 2.4.2.3 Type
+
+🔹 Client Application
+
+#### 2.4.2.4 Technology
+
+Flutter for Web
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #81D4FA |
+| Stereotype | UI/UX |
+
+### 2.4.3.0 Serverless Backend
+
+#### 2.4.3.1 Repository Id
+
+application-services-layer
+
+#### 2.4.3.2 Display Name
+
+Application Services
+
+#### 2.4.3.3 Type
+
+🔹 Serverless Backend
+
+#### 2.4.3.4 Technology
+
+Firebase Cloud Functions (TypeScript)
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #FFCC80 |
+| Stereotype | Business Logic |
+
+### 2.4.4.0 Managed Services
+
+#### 2.4.4.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.4.2 Display Name
+
+Data & Auth Layer
+
+#### 2.4.4.3 Type
+
+🔹 Managed Services
+
+#### 2.4.4.4 Technology
+
+Firestore, Firebase Auth
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #A5D6A7 |
+| Stereotype | Persistence |
+
+### 2.4.5.0 System Trigger
+
+#### 2.4.5.1 Repository Id
+
+scheduler-service
+
+#### 2.4.5.2 Display Name
+
+Cloud Scheduler
+
+#### 2.4.5.3 Type
+
+🔹 System Trigger
+
+#### 2.4.5.4 Technology
+
+Google Cloud Scheduler
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | control |
+| Color | #CE93D8 |
+| Stereotype | Scheduler |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+actor-admin
+
+#### 2.5.1.2 Target Id
+
+presentation-layer
+
+#### 2.5.1.3 Message
+
+1. Submits tenant deletion request from 'Danger Zone' settings page.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+Displays confirmation modal.
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+❌ No
+
+### 2.5.2.0 UI Response
+
+#### 2.5.2.1 Source Id
+
+presentation-layer
+
+#### 2.5.2.2 Target Id
+
+actor-admin
+
+#### 2.5.2.3 Message
+
+2. Renders confirmation modal requiring password re-entry.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 UI Response
+
+#### 2.5.2.6 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7 Has Return
+
+❌ No
+
+### 2.5.3.0 User Interaction
+
+#### 2.5.3.1 Source Id
+
+actor-admin
+
+#### 2.5.3.2 Target Id
+
+presentation-layer
+
+#### 2.5.3.3 Message
+
+3. Enters password and confirms irreversible deletion.
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 User Interaction
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Has Return
+
+❌ No
+
+### 2.5.4.0 Security Operation
+
+#### 2.5.4.1 Source Id
+
+presentation-layer
+
+#### 2.5.4.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.4.3 Message
+
+4. Re-authenticates user to confirm identity.
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 Security Operation
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+Re-authentication successful or failed.
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10 Technical Details
+
+##### 2.5.4.10.1 Protocol
+
+Firebase SDK
+
+##### 2.5.4.10.2 Method
+
+firebase.auth().currentUser.reauthenticateWithCredential()
+
+##### 2.5.4.10.3 Parameters
+
+- EmailAuthCredential(user.email, enteredPassword)
+
+##### 2.5.4.10.4 Authentication
+
+Requires current user session.
+
+##### 2.5.4.10.5 Error Handling
+
+Catch `auth/wrong-password` or other auth errors and display feedback to the user.
+
+##### 2.5.4.10.6 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+<1s
+
+### 2.5.5.0.0.0 Synchronous API Call
+
+#### 2.5.5.1.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.5.2.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.5.3.0.0 Message
+
+5. Invoke function to initiate grace period.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 Synchronous API Call
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+Returns `{success: true}` or error.
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+HTTPS/RPC
+
+##### 2.5.5.10.2.0 Method
+
+Callable Function: requestTenantDeletion()
+
+##### 2.5.5.10.3.0 Parameters
+
+None (tenantId and role are derived from auth context)
+
+##### 2.5.5.10.4.0 Authentication
+
+Requires Firebase Auth JWT. Function will verify `context.auth.token.role === 'Admin'`.
+
+##### 2.5.5.10.5.0 Error Handling
+
+Client handles `permission-denied`, `not-found`, and `internal` errors from the function.
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+<500ms (p95)
+
+#### 2.5.5.11.0.0 Nested Interactions
+
+##### 2.5.5.11.1.0 Database Write
+
+###### 2.5.5.11.1.1 Source Id
+
+application-services-layer
+
+###### 2.5.5.11.1.2 Target Id
+
+data-persistence-layer
+
+###### 2.5.5.11.1.3 Message
+
+5.1. Update tenant document to start grace period.
+
+###### 2.5.5.11.1.4 Sequence Number
+
+6
+
+###### 2.5.5.11.1.5 Type
+
+🔹 Database Write
+
+###### 2.5.5.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.1.7 Return Message
+
+Write result.
+
+###### 2.5.5.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.5.11.1.9 Technical Details
+
+####### 2.5.5.11.1.9.1 Protocol
+
+Firestore SDK
+
+####### 2.5.5.11.1.9.2 Method
+
+db.doc(`/tenants/${tenantId}`).update()
+
+####### 2.5.5.11.1.9.3 Parameters
+
+- { status: 'pendingDeletion', deletionScheduledAt: serverTimestamp() + 30 days }
+
+####### 2.5.5.11.1.9.4 Authentication
+
+Cloud Function uses admin privileges.
+
+####### 2.5.5.11.1.9.5 Error Handling
+
+Function catches Firestore exceptions and returns an 'internal' error to the client.
+
+####### 2.5.5.11.1.9.6 Performance
+
+*No data available*
+
+##### 2.5.5.11.2.0.0 Database Write
+
+###### 2.5.5.11.2.1.0 Source Id
+
+application-services-layer
+
+###### 2.5.5.11.2.2.0 Target Id
+
+data-persistence-layer
+
+###### 2.5.5.11.2.3.0 Message
+
+5.2. Create an audit log for the deletion request.
+
+###### 2.5.5.11.2.4.0 Sequence Number
+
+7
+
+###### 2.5.5.11.2.5.0 Type
+
+🔹 Database Write
+
+###### 2.5.5.11.2.6.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.5.11.2.7.0 Return Message
+
+Write result.
+
+###### 2.5.5.11.2.8.0 Has Return
+
+✅ Yes
+
+###### 2.5.5.11.2.9.0 Technical Details
+
+####### 2.5.5.11.2.9.1 Protocol
+
+Firestore SDK
+
+####### 2.5.5.11.2.9.2 Method
+
+db.collection('/auditLog').add()
+
+####### 2.5.5.11.2.9.3 Parameters
+
+- { actorUserId, actionType: 'TENANT_DELETE_REQUEST', targetEntityId: tenantId, ... }
+
+####### 2.5.5.11.2.9.4 Authentication
+
+Cloud Function uses admin privileges.
+
+####### 2.5.5.11.2.9.5 Error Handling
+
+Logged internally; does not fail the primary operation.
+
+####### 2.5.5.11.2.9.6 Performance
+
+*No data available*
+
+### 2.5.6.0.0.0.0 UI Response
+
+#### 2.5.6.1.0.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.6.2.0.0.0 Target Id
+
+actor-admin
+
+#### 2.5.6.3.0.0.0 Message
+
+6. Displays success message: 'Tenant deletion scheduled in 30 days.'
+
+#### 2.5.6.4.0.0.0 Sequence Number
+
+8
+
+#### 2.5.6.5.0.0.0 Type
+
+🔹 UI Response
+
+#### 2.5.6.6.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.6.7.0.0.0 Has Return
+
+❌ No
+
+### 2.5.7.0.0.0.0 Scheduled Trigger
+
+#### 2.5.7.1.0.0.0 Source Id
+
+scheduler-service
+
+#### 2.5.7.2.0.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.7.3.0.0.0 Message
+
+7. [Daily] Trigger scheduled function to process deletions.
+
+#### 2.5.7.4.0.0.0 Sequence Number
+
+9
+
+#### 2.5.7.5.0.0.0 Type
+
+🔹 Scheduled Trigger
+
+#### 2.5.7.6.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.8.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.7.9.0.0.0 Technical Details
+
+##### 2.5.7.9.1.0.0 Protocol
+
+Pub/Sub
+
+##### 2.5.7.9.2.0.0 Method
+
+Scheduled Function: executePendingDeletions()
+
+##### 2.5.7.9.3.0.0 Parameters
+
+Triggered by cron schedule (e.g., 'every day 02:00')
+
+##### 2.5.7.9.4.0.0 Authentication
+
+System-level via service account.
+
+##### 2.5.7.9.5.0.0 Error Handling
+
+Failures are logged; function is designed to be idempotent for the next run.
+
+##### 2.5.7.9.6.0.0 Performance
+
+###### 2.5.7.9.6.1.0 Timeout
+
+540s
+
+#### 2.5.7.10.0.0.0 Nested Interactions
+
+##### 2.5.7.10.1.0.0 Database Read
+
+###### 2.5.7.10.1.1.0 Source Id
+
+application-services-layer
+
+###### 2.5.7.10.1.2.0 Target Id
+
+data-persistence-layer
+
+###### 2.5.7.10.1.3.0 Message
+
+7.1. Query for tenants past their grace period.
+
+###### 2.5.7.10.1.4.0 Sequence Number
+
+10
+
+###### 2.5.7.10.1.5.0 Type
+
+🔹 Database Read
+
+###### 2.5.7.10.1.6.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.7.10.1.7.0 Return Message
+
+List of tenant documents to be deleted.
+
+###### 2.5.7.10.1.8.0 Has Return
+
+✅ Yes
+
+###### 2.5.7.10.1.9.0 Technical Details
+
+####### 2.5.7.10.1.9.1 Protocol
+
+Firestore SDK
+
+####### 2.5.7.10.1.9.2 Method
+
+db.collection('tenants').where('status', '==', 'pendingDeletion').where('deletionScheduledAt', '<=', now()).get()
+
+####### 2.5.7.10.1.9.3 Parameters
+
+*No items available*
+
+####### 2.5.7.10.1.9.4 Authentication
+
+Cloud Function uses admin privileges.
+
+####### 2.5.7.10.1.9.5 Error Handling
+
+Function logs error and exits if query fails.
+
+####### 2.5.7.10.1.9.6 Performance
+
+*No data available*
+
+##### 2.5.7.10.2.0.0 Loop
+
+###### 2.5.7.10.2.1.0 Source Id
+
+application-services-layer
+
+###### 2.5.7.10.2.2.0 Target Id
+
+application-services-layer
+
+###### 2.5.7.10.2.3.0 Message
+
+7.2. [Loop] For each tenant, execute deletion logic.
+
+###### 2.5.7.10.2.4.0 Sequence Number
+
+11
+
+###### 2.5.7.10.2.5.0 Type
+
+🔹 Loop
+
+###### 2.5.7.10.2.6.0 Is Synchronous
+
+❌ No
+
+###### 2.5.7.10.2.7.0 Has Return
+
+❌ No
+
+###### 2.5.7.10.2.8.0 Nested Interactions
+
+####### 2.5.7.10.2.8.1 Database Delete
+
+######## 2.5.7.10.2.8.1.1 Source Id
+
+application-services-layer
+
+######## 2.5.7.10.2.8.1.2 Target Id
+
+data-persistence-layer
+
+######## 2.5.7.10.2.8.1.3 Message
+
+7.2.1. Recursively delete all sub-collections and documents for the tenant (e.g., users, attendance, teams, events).
+
+######## 2.5.7.10.2.8.1.4 Sequence Number
+
+12
+
+######## 2.5.7.10.2.8.1.5 Type
+
+🔹 Database Delete
+
+######## 2.5.7.10.2.8.1.6 Is Synchronous
+
+✅ Yes
+
+######## 2.5.7.10.2.8.1.7 Has Return
+
+❌ No
+
+######## 2.5.7.10.2.8.1.8 Technical Details
+
+######### 2.5.7.10.2.8.1.8.1 Protocol
+
+Firestore SDK
+
+######### 2.5.7.10.2.8.1.8.2 Method
+
+Batch delete operations on collections filtered by tenantId.
+
+######### 2.5.7.10.2.8.1.8.3 Parameters
+
+- tenantId
+
+######### 2.5.7.10.2.8.1.8.4 Authentication
+
+Cloud Function uses admin privileges.
+
+######### 2.5.7.10.2.8.1.8.5 Error Handling
+
+Process is idempotent. If it fails, the next run will resume deleting remaining data. Uses logging to track progress.
+
+######### 2.5.7.10.2.8.1.8.6 Performance
+
+########## 2.5.7.10.2.8.1.8.6.1 Notes
+
+May be a long-running operation; must operate within function timeout.
+
+####### 2.5.7.10.2.8.2.0.0.0 Database Delete
+
+######## 2.5.7.10.2.8.2.1.0.0 Source Id
+
+application-services-layer
+
+######## 2.5.7.10.2.8.2.2.0.0 Target Id
+
+data-persistence-layer
+
+######## 2.5.7.10.2.8.2.3.0.0 Message
+
+7.2.2. Delete associated integration tokens (e.g., Google Sheets).
+
+######## 2.5.7.10.2.8.2.4.0.0 Sequence Number
+
+13
+
+######## 2.5.7.10.2.8.2.5.0.0 Type
+
+🔹 Database Delete
+
+######## 2.5.7.10.2.8.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.7.10.2.8.2.7.0.0 Has Return
+
+❌ No
+
+######## 2.5.7.10.2.8.2.8.0.0 Technical Details
+
+######### 2.5.7.10.2.8.2.8.1.0 Protocol
+
+Firestore SDK
+
+######### 2.5.7.10.2.8.2.8.2.0 Method
+
+db.collection('linkedSheets').where('tenantId', '==', tenantId).delete()
+
+######### 2.5.7.10.2.8.2.8.3.0 Parameters
+
+*No items available*
+
+######### 2.5.7.10.2.8.2.8.4.0 Authentication
+
+Cloud Function uses admin privileges.
+
+######### 2.5.7.10.2.8.2.8.5.0 Error Handling
+
+Logged internally.
+
+######### 2.5.7.10.2.8.2.8.6.0 Performance
+
+*No data available*
+
+####### 2.5.7.10.2.8.3.0.0.0 Authentication Operation
+
+######## 2.5.7.10.2.8.3.1.0.0 Source Id
+
+application-services-layer
+
+######## 2.5.7.10.2.8.3.2.0.0 Target Id
+
+data-persistence-layer
+
+######## 2.5.7.10.2.8.3.3.0.0 Message
+
+7.2.3. Delete all associated users from Firebase Authentication.
+
+######## 2.5.7.10.2.8.3.4.0.0 Sequence Number
+
+14
+
+######## 2.5.7.10.2.8.3.5.0.0 Type
+
+🔹 Authentication Operation
+
+######## 2.5.7.10.2.8.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.7.10.2.8.3.7.0.0 Has Return
+
+❌ No
+
+######## 2.5.7.10.2.8.3.8.0.0 Technical Details
+
+######### 2.5.7.10.2.8.3.8.1.0 Protocol
+
+Firebase Admin SDK
+
+######### 2.5.7.10.2.8.3.8.2.0 Method
+
+admin.auth().deleteUsers(userUidsToDelete)
+
+######### 2.5.7.10.2.8.3.8.3.0 Parameters
+
+- Array of UIDs for the tenant.
+
+######### 2.5.7.10.2.8.3.8.4.0 Authentication
+
+Cloud Function uses admin privileges.
+
+######### 2.5.7.10.2.8.3.8.5.0 Error Handling
+
+Logs failures for manual review; does not halt the entire process.
+
+######### 2.5.7.10.2.8.3.8.6.0 Performance
+
+*No data available*
+
+####### 2.5.7.10.2.8.4.0.0.0 Database Delete
+
+######## 2.5.7.10.2.8.4.1.0.0 Source Id
+
+application-services-layer
+
+######## 2.5.7.10.2.8.4.2.0.0 Target Id
+
+data-persistence-layer
+
+######## 2.5.7.10.2.8.4.3.0.0 Message
+
+7.2.4. [Final Step] Delete the main tenant document.
+
+######## 2.5.7.10.2.8.4.4.0.0 Sequence Number
+
+15
+
+######## 2.5.7.10.2.8.4.5.0.0 Type
+
+🔹 Database Delete
+
+######## 2.5.7.10.2.8.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+######## 2.5.7.10.2.8.4.7.0.0 Has Return
+
+❌ No
+
+######## 2.5.7.10.2.8.4.8.0.0 Technical Details
+
+######### 2.5.7.10.2.8.4.8.1.0 Protocol
+
+Firestore SDK
+
+######### 2.5.7.10.2.8.4.8.2.0 Method
+
+db.doc(`/tenants/${tenantId}`).delete()
+
+######### 2.5.7.10.2.8.4.8.3.0 Parameters
+
+*No items available*
+
+######### 2.5.7.10.2.8.4.8.4.0 Authentication
+
+Cloud Function uses admin privileges.
+
+######### 2.5.7.10.2.8.4.8.5.0 Error Handling
+
+This final action signifies the completion of the tenant's deletion.
+
+######### 2.5.7.10.2.8.4.8.6.0 Performance
+
+*No data available*
+
+## 2.6.0.0.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0.0.0 Content
+
+Business Rule: A 30-day grace period is enforced between the deletion request and the permanent data erasure to allow for accidental request reversal. (REQ-3.1.2)
+
+#### 2.6.1.2.0.0.0.0.0.0 Position
+
+Top
+
+#### 2.6.1.3.0.0.0.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0.0.0.0.0 Sequence Number
+
+5
+
+### 2.6.2.0.0.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0.0.0 Content
+
+Idempotency is critical. The scheduled deletion function (7) must be able to run multiple times for the same tenant without errors if it previously failed. It should check for the existence of data before attempting deletion and only delete the main tenant document (7.2.4) after all other data is confirmed to be gone.
+
+#### 2.6.2.2.0.0.0.0.0.0 Position
+
+Right
+
+#### 2.6.2.3.0.0.0.0.0.0 Participant Id
+
+application-services-layer
+
+#### 2.6.2.4.0.0.0.0.0.0 Sequence Number
+
+9
+
+## 2.7.0.0.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | User re-authentication (Step 4) is a mandatory sec... |
+| Performance Targets | The initial request (Steps 4-5) must be fast (<2s ... |
+| Error Handling Strategy | The scheduled deletion function must be fully idem... |
+| Testing Considerations | 1. Create a dedicated test tenant and populate it ... |
+| Monitoring Requirements | Configure an alert in Google Cloud Monitoring for ... |
+| Deployment Considerations | The Firestore indexes required for the query in st... |
+

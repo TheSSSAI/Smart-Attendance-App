@@ -1,0 +1,993 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-DF-004
+
+## 1.2 Name
+
+Subordinate Marks Attendance (Offline and Sync)
+
+## 1.3 Description
+
+A Subordinate user marks their attendance while the mobile device is offline. The data is saved to the local Firestore cache with a specific flag. When connectivity is restored, the Firebase SDK automatically syncs the queued data to the server without user intervention.
+
+## 1.4 Type
+
+🔹 DataFlow
+
+## 1.5 Purpose
+
+To ensure core attendance marking functionality is available even without a reliable internet connection, preventing data loss.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- REPO-APP-MOBILE-010
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- User marks attendance while the device is offline.
+- The app writes the attendance record to the local Firestore cache with an `isOfflineEntry` flag set to `true`.
+- The user may continue to use the app or close it.
+- Later, the user's device regains internet connectivity.
+- The background Firebase SDK automatically detects the connection and begins syncing the queued local write operations to the Firestore backend.
+- The server processes the synced record as a normal write operation, and the data becomes visible to supervisors.
+
+## 1.11 Triggers
+
+- User performs a check-in/out without an internet connection.
+
+## 1.12 Outcomes
+
+- Attendance data is successfully captured and stored durably on the device.
+- The data is seamlessly synced to the server once the device is online.
+- The record is identifiable as an offline entry for supervisor review.
+
+## 1.13 Business Rules
+
+- Offline entries must be flagged with `isOfflineEntry: true` (REQ-3.2.3).
+- If a sync fails for over 24 hours, the user must be shown a persistent notification (handled in SEQ-ER-019).
+
+## 1.14 Error Scenarios
+
+- Connectivity is not restored within 24 hours, triggering a sync failure notification.
+- Local data cache is cleared by the user or OS before sync can occur, leading to data loss.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-DF-004-IMPL
+
+## 2.2 Name
+
+Implementation: Subordinate Marks Attendance Offline and Syncs
+
+## 2.3 Description
+
+Technical sequence for a user marking attendance on a mobile device without an internet connection. The Flutter application leverages the Repository Pattern to interact with the Firebase SDK, which writes the attendance record to its local on-device cache (Firestore Offline Persistence). Upon network restoration, the Firebase SDK's background sync engine automatically transmits the queued write operation to the Firestore backend, where it is validated by Security Rules and persisted.
+
+## 2.4 Participants
+
+### 2.4.1 Client Presentation Layer
+
+#### 2.4.1.1 Repository Id
+
+REPO-APP-MOBILE-010
+
+#### 2.4.1.2 Display Name
+
+Mobile App (Presentation)
+
+#### 2.4.1.3 Type
+
+🔹 Client Presentation Layer
+
+#### 2.4.1.4 Technology
+
+Flutter, Riverpod
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4CAF50 |
+| Stereotype | UI |
+
+### 2.4.2.0 Client Data Layer
+
+#### 2.4.2.1 Repository Id
+
+REPO-LIB-CLIENT-008
+
+#### 2.4.2.2 Display Name
+
+Client Data Access Layer
+
+#### 2.4.2.3 Type
+
+🔹 Client Data Layer
+
+#### 2.4.2.4 Technology
+
+Dart, Repository Pattern
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #03A9F4 |
+| Stereotype | Repository |
+
+### 2.4.3.0 SDK / Persistence
+
+#### 2.4.3.1 Repository Id
+
+firebase-sdk-local
+
+#### 2.4.3.2 Display Name
+
+Firebase SDK (Local Cache)
+
+#### 2.4.3.3 Type
+
+🔹 SDK / Persistence
+
+#### 2.4.3.4 Technology
+
+Firestore Offline Persistence
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFC107 |
+| Stereotype | Local Cache |
+
+### 2.4.4.0 SDK / Network
+
+#### 2.4.4.1 Repository Id
+
+firebase-sdk-sync
+
+#### 2.4.4.2 Display Name
+
+Firebase SDK (Sync Engine)
+
+#### 2.4.4.3 Type
+
+🔹 SDK / Network
+
+#### 2.4.4.4 Technology
+
+Firebase SDK Background Sync
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FF9800 |
+| Stereotype | Sync Agent |
+
+### 2.4.5.0 Database
+
+#### 2.4.5.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.5.2 Display Name
+
+Firestore Backend
+
+#### 2.4.5.3 Type
+
+🔹 Database
+
+#### 2.4.5.4 Technology
+
+Google Firestore
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #F44336 |
+| Stereotype | Cloud Database |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 MethodCall
+
+#### 2.5.1.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.2 Target Id
+
+REPO-LIB-CLIENT-008
+
+#### 2.5.1.3 Message
+
+1. User initiates check-in/out; App detects offline state and invokes `attendanceRepository.markAttendance(gpsData)`.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 MethodCall
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+Returns Future<void> indicating acceptance of the write request.
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+Dart Method Call
+
+##### 2.5.1.10.2 Method
+
+markAttendance
+
+##### 2.5.1.10.3 Parameters
+
+gpsData: GpsCoordinates object. The implementation will fetch userId, tenantId, and timestamp internally.
+
+##### 2.5.1.10.4 Authentication
+
+N/A (Internal call)
+
+##### 2.5.1.10.5 Error Handling
+
+Throws `LocalCacheException` if the SDK indicates the local cache is full or unavailable.
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+< 10ms
+
+### 2.5.2.0.0.0 InternalProcessing
+
+#### 2.5.2.1.0.0 Source Id
+
+REPO-LIB-CLIENT-008
+
+#### 2.5.2.2.0.0 Target Id
+
+REPO-LIB-CLIENT-008
+
+#### 2.5.2.3.0.0 Message
+
+2. Constructs `AttendanceRecord` data object. Sets `isOfflineEntry: true`, `clientTimestamp`, and GPS data. (REQ-3.2.3)
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 InternalProcessing
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.2.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.9.0.0 Technical Details
+
+##### 2.5.2.9.1.0 Protocol
+
+Internal Logic
+
+##### 2.5.2.9.2.0 Method
+
+Object Instantiation
+
+##### 2.5.2.9.3.0 Parameters
+
+Data model fields: `userId`, `supervisorId`, `checkInTime`, `checkInGps`, `isOfflineEntry: true`, etc.
+
+##### 2.5.2.9.4.0 Authentication
+
+N/A
+
+##### 2.5.2.9.5.0 Error Handling
+
+N/A
+
+##### 2.5.2.9.6.0 Performance
+
+###### 2.5.2.9.6.1 Latency
+
+minimal
+
+### 2.5.3.0.0.0 DatabaseWrite
+
+#### 2.5.3.1.0.0 Source Id
+
+REPO-LIB-CLIENT-008
+
+#### 2.5.3.2.0.0 Target Id
+
+firebase-sdk-local
+
+#### 2.5.3.3.0.0 Message
+
+3. Invokes Firestore SDK write operation: `firestore.collection('attendance').add(record)`. The SDK queues the write.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 DatabaseWrite
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+Returns a local Future that completes immediately, confirming the data is queued.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+Firebase SDK API
+
+##### 2.5.3.10.2.0 Method
+
+add()
+
+##### 2.5.3.10.3.0 Parameters
+
+A Map<String, dynamic> representing the `AttendanceRecord`.
+
+##### 2.5.3.10.4.0 Authentication
+
+N/A (Operation is local)
+
+##### 2.5.3.10.5.0 Error Handling
+
+SDK handles offline queuing. An error is only thrown if the local cache is misconfigured or full.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+< 50ms (Disk I/O)
+
+### 2.5.4.0.0.0 Return
+
+#### 2.5.4.1.0.0 Source Id
+
+firebase-sdk-local
+
+#### 2.5.4.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.3.0.0 Message
+
+4. Returns success, confirming the data is durably stored on the device. UI shows confirmation to the user.
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 Return
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.9.0.0 Technical Details
+
+##### 2.5.4.9.1.0 Protocol
+
+Dart Future Completion
+
+##### 2.5.4.9.2.0 Method
+
+N/A
+
+##### 2.5.4.9.3.0 Parameters
+
+N/A
+
+##### 2.5.4.9.4.0 Authentication
+
+N/A
+
+##### 2.5.4.9.5.0 Error Handling
+
+N/A
+
+##### 2.5.4.9.6.0 Performance
+
+*No data available*
+
+### 2.5.5.0.0.0 SystemEvent
+
+#### 2.5.5.1.0.0 Source Id
+
+firebase-sdk-sync
+
+#### 2.5.5.2.0.0 Target Id
+
+firebase-sdk-sync
+
+#### 2.5.5.3.0.0 Message
+
+5. [Later] Device OS restores network connectivity. SDK's background agent detects the connection.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 SystemEvent
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.5.8.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Technical Details
+
+##### 2.5.5.9.1.0 Protocol
+
+OS Network State Change
+
+##### 2.5.5.9.2.0 Method
+
+N/A
+
+##### 2.5.5.9.3.0 Parameters
+
+N/A
+
+##### 2.5.5.9.4.0 Authentication
+
+N/A
+
+##### 2.5.5.9.5.0 Error Handling
+
+N/A
+
+##### 2.5.5.9.6.0 Performance
+
+*No data available*
+
+### 2.5.6.0.0.0 DatabaseRead
+
+#### 2.5.6.1.0.0 Source Id
+
+firebase-sdk-sync
+
+#### 2.5.6.2.0.0 Target Id
+
+firebase-sdk-local
+
+#### 2.5.6.3.0.0 Message
+
+6. Reads the queued `AttendanceRecord` write operation from the local cache.
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 DatabaseRead
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+Returns the serialized `AttendanceRecord` object.
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+Internal SDK Call
+
+##### 2.5.6.10.2.0 Method
+
+N/A
+
+##### 2.5.6.10.3.0 Parameters
+
+N/A
+
+##### 2.5.6.10.4.0 Authentication
+
+N/A
+
+##### 2.5.6.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.6.10.6.0 Performance
+
+*No data available*
+
+### 2.5.7.0.0.0 NetworkRequest
+
+#### 2.5.7.1.0.0 Source Id
+
+firebase-sdk-sync
+
+#### 2.5.7.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.7.3.0.0 Message
+
+7. Sends queued write request to Firestore backend. The SDK automatically attaches the user's Firebase Auth JWT.
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 NetworkRequest
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0 Return Message
+
+Returns HTTP 200 OK on successful write.
+
+#### 2.5.7.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+HTTPS/gRPC
+
+##### 2.5.7.10.2.0 Method
+
+Write/Commit
+
+##### 2.5.7.10.3.0 Parameters
+
+The `AttendanceRecord` payload, including the `isOfflineEntry: true` flag.
+
+##### 2.5.7.10.4.0 Authentication
+
+Firebase Auth JWT (Bearer Token). Must contain valid `tenantId` and `role` custom claims.
+
+##### 2.5.7.10.5.0 Error Handling
+
+Handles standard network errors (retries). Will receive `PERMISSION_DENIED` if security rules fail.
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Latency
+
+Variable (network dependent)
+
+### 2.5.8.0.0.0 SecurityCheck
+
+#### 2.5.8.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.8.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.8.3.0.0 Message
+
+8. Evaluates Firestore Security Rules to authorize the write based on JWT claims (`tenantId`, `userId`).
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 SecurityCheck
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.9.0.0 Technical Details
+
+##### 2.5.8.9.1.0 Protocol
+
+Firestore Security Rules Engine
+
+##### 2.5.8.9.2.0 Method
+
+Rule Evaluation
+
+##### 2.5.8.9.3.0 Parameters
+
+`request.auth.uid`, `request.auth.token.tenantId`, `request.resource.data`
+
+##### 2.5.8.9.4.0 Authentication
+
+Implicit
+
+##### 2.5.8.9.5.0 Error Handling
+
+If rules fail, rejects the write and returns a `PERMISSION_DENIED` error to the client SDK.
+
+##### 2.5.8.9.6.0 Performance
+
+*No data available*
+
+### 2.5.9.0.0.0 DatabaseWrite
+
+#### 2.5.9.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.9.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.9.3.0.0 Message
+
+9. Persists the document to the `/tenants/{tenantId}/attendance/{recordId}` collection and generates `serverTimestamp`.
+
+#### 2.5.9.4.0.0 Sequence Number
+
+9
+
+#### 2.5.9.5.0.0 Type
+
+🔹 DatabaseWrite
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.9.0.0 Technical Details
+
+##### 2.5.9.9.1.0 Protocol
+
+Internal Firestore Operation
+
+##### 2.5.9.9.2.0 Method
+
+N/A
+
+##### 2.5.9.9.3.0 Parameters
+
+The validated `AttendanceRecord` document.
+
+##### 2.5.9.9.4.0 Authentication
+
+N/A
+
+##### 2.5.9.9.5.0 Error Handling
+
+Handles internal data consistency and indexing.
+
+##### 2.5.9.9.6.0 Performance
+
+###### 2.5.9.9.6.1 Latency
+
+< 100ms
+
+### 2.5.10.0.0.0 NetworkResponse
+
+#### 2.5.10.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.10.2.0.0 Target Id
+
+firebase-sdk-sync
+
+#### 2.5.10.3.0.0 Message
+
+10. Sends success acknowledgement for the write operation.
+
+#### 2.5.10.4.0.0 Sequence Number
+
+10
+
+#### 2.5.10.5.0.0 Type
+
+🔹 NetworkResponse
+
+#### 2.5.10.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.10.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.10.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.10.9.0.0 Technical Details
+
+##### 2.5.10.9.1.0 Protocol
+
+HTTPS/gRPC
+
+##### 2.5.10.9.2.0 Method
+
+N/A
+
+##### 2.5.10.9.3.0 Parameters
+
+Success code
+
+##### 2.5.10.9.4.0 Authentication
+
+N/A
+
+##### 2.5.10.9.5.0 Error Handling
+
+N/A
+
+##### 2.5.10.9.6.0 Performance
+
+*No data available*
+
+### 2.5.11.0.0.0 DatabaseDelete
+
+#### 2.5.11.1.0.0 Source Id
+
+firebase-sdk-sync
+
+#### 2.5.11.2.0.0 Target Id
+
+firebase-sdk-local
+
+#### 2.5.11.3.0.0 Message
+
+11. Removes the successfully synced write operation from the local cache queue.
+
+#### 2.5.11.4.0.0 Sequence Number
+
+11
+
+#### 2.5.11.5.0.0 Type
+
+🔹 DatabaseDelete
+
+#### 2.5.11.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.11.7.0.0 Has Return
+
+❌ No
+
+#### 2.5.11.8.0.0 Is Activation
+
+❌ No
+
+#### 2.5.11.9.0.0 Technical Details
+
+##### 2.5.11.9.1.0 Protocol
+
+Internal SDK Call
+
+##### 2.5.11.9.2.0 Method
+
+N/A
+
+##### 2.5.11.9.3.0 Parameters
+
+The ID of the completed operation.
+
+##### 2.5.11.9.4.0 Authentication
+
+N/A
+
+##### 2.5.11.9.5.0 Error Handling
+
+N/A
+
+##### 2.5.11.9.6.0 Performance
+
+*No data available*
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+The Firebase SDK's offline persistence is the core technology enabling this flow. The application logic is primarily concerned with enabling this feature in the SDK and flagging the data correctly.
+
+#### 2.6.1.2.0.0 Position
+
+top-left
+
+#### 2.6.1.3.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0 Sequence Number
+
+*Not specified*
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+The sync process is fully automatic and managed by the Firebase SDK. No application-level code is required to trigger or manage the sync once connectivity is restored.
+
+#### 2.6.2.2.0.0 Position
+
+bottom-right
+
+#### 2.6.2.3.0.0 Participant Id
+
+firebase-sdk-sync
+
+#### 2.6.2.4.0.0 Sequence Number
+
+5
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Security is not bypassed. The synced data is subjected to the same Firestore Security Rules as a real-time online write. The device must have a valid, non-expired auth token for the sync to succeed.
+
+#### 2.6.3.2.0.0 Position
+
+bottom-right
+
+#### 2.6.3.3.0.0 Participant Id
+
+data-persistence-layer
+
+#### 2.6.3.4.0.0 Sequence Number
+
+8
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Firestore Security Rules must validate that `reque... |
+| Performance Targets | Local cache write operations must complete in unde... |
+| Error Handling Strategy | The primary failure mode is a sync failure lasting... |
+| Testing Considerations | Testing requires the ability to toggle the device'... |
+| Monitoring Requirements | On the backend, create a log-based metric in Googl... |
+| Deployment Considerations | The Flutter app must be configured to enable Fires... |
+

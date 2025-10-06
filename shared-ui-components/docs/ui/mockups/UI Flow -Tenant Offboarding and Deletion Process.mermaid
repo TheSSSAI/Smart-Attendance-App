@@ -1,0 +1,52 @@
+flowchart TD
+    subgraph Admin Action in Web Dashboard
+        direction LR
+        A[Admin navigates to 'Tenant Settings'] --> B(Clicks 'Delete Tenant' button);
+        B --> C{Displays warning & re-auth modal (REQ-1-034)};
+        C --> D[Admin enters password & confirms];
+    end
+
+    subgraph Backend Processing (Initiation)
+        direction LR
+        E{Backend validates password};
+        E -- Correct Password --> F[Update tenant status to 'pending_deletion'];
+        F --> G[Set 'deletionScheduledAt' timestamp to NOW + 30 days];
+        G --> H[Create 'TENANT_DELETION_REQUESTED' audit log];
+    end
+
+    subgraph 30-Day Grace Period
+        direction TD
+        I[UI displays persistent banner with final deletion date (US-024)] --> J{Admin choice...};
+        J -- Option 1: Cancel --> K(Admin clicks 'Cancel Deletion');
+        K --> L[Backend: Update tenant status to 'active'];
+        L --> M[Backend: Create 'TENANT_DELETION_CANCELLED' audit log];
+        M --> N[UI: Banner removed, tenant fully restored];
+
+        J -- Option 2: Do Nothing --> O(Grace period expires);
+    end
+
+    subgraph Automated Deletion (Scheduled Job)
+        direction LR
+        P[Cloud Scheduler triggers daily cleanup job (REQ-1-035)] --> Q{Job: Query for tenants past grace period};
+        Q -- Found --> R[Systematically delete all tenant data (Users, Teams, Attendance, etc.)];
+        R --> S[Delete the Tenant document itself];
+        S --> T((End State: Data is irreversibly deleted));
+        Q -- Not Found --> P;
+    end
+
+    %% Connections
+    D --> E;
+    E -- Incorrect Password --> C;
+    H --> I;
+    N --> A;
+    O --> P;
+
+    %% Styling
+    classDef userAction fill:#e3f2fd,stroke:#1976d2,color:#000;
+    classDef systemProcess fill:#f3e5f5,stroke:#7b1fa2,color:#000;
+    classDef destructiveAction fill:#ffebee,stroke:#d32f2f,color:#000;
+    classDef stateNode style A,I,N,T fill:#e8f5e9,stroke:#388e3c,color:#000
+
+    class B,D,K userAction;
+    class E,F,G,H,L,M,P,Q,R,S systemProcess;
+    class S,T destructiveAction;

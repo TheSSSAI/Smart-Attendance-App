@@ -1,0 +1,247 @@
+-- Enable necessary extensions for UUID and GIS functionality
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- Custom ENUM Types for constrained value columns
+CREATE TYPE tenant_status AS ENUM ('active', 'pending_deletion', 'deleted');
+CREATE TYPE user_role AS ENUM ('Admin', 'Supervisor', 'Subordinate');
+CREATE TYPE user_status AS ENUM ('invited', 'active', 'deactivated');
+CREATE TYPE attendance_record_status AS ENUM ('pending', 'approved', 'rejected', 'correction_pending');
+CREATE TYPE assignee_type AS ENUM ('USER', 'TEAM');
+CREATE TYPE audit_action_type AS ENUM ('DIRECT_EDIT', 'CORRECTION_APPROVED', 'CORRECTION_REJECTED', 'APPROVAL_ESCALATION', 'USER_DEACTIVATED');
+CREATE TYPE integration_status AS ENUM ('active', 'error', 'disabled');
+
+-- Table Creation
+
+-- Defines the available subscription tiers and their features.
+CREATE TABLE "SubscriptionPlan" (
+    "subscriptionPlanId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "name" VARCHAR(100) NOT NULL UNIQUE,
+    "description" TEXT,
+    "price" DECIMAL(10, 2) NOT NULL DEFAULT 0.00 CHECK ("price" >= 0),
+    "features" JSONB DEFAULT '{}'
+);
+
+-- Represents an organization, which is a logically isolated container for all its data.
+CREATE TABLE "Tenant" (
+    "tenantId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "name" VARCHAR(255) NOT NULL UNIQUE,
+    "status" tenant_status NOT NULL DEFAULT 'active',
+    "deletionRequestedAt" TIMESTAMPTZ,
+    "gcpRegion" VARCHAR(100) NOT NULL,
+    "subscriptionPlanId" UUID NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Represents an individual user account within a tenant.
+CREATE TABLE "User" (
+    "userId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "tenantId" UUID NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
+    "passwordHash" VARCHAR(255),
+    "firstName" VARCHAR(100) NOT NULL,
+    "lastName" VARCHAR(100) NOT NULL,
+    "phoneNumber" VARCHAR(20),
+    "role" user_role NOT NULL,
+    "status" user_status NOT NULL DEFAULT 'invited',
+    "supervisorId" UUID,
+    "hierarchyPath" VARCHAR(1000), -- Note: This denormalized field must be updated transactionally with supervisorId via application logic or triggers.
+    "invitationToken" VARCHAR(255) UNIQUE,
+    "invitationExpiresAt" TIMESTAMPTZ,
+    "deactivatedAt" TIMESTAMPTZ,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("tenantId", "email"),
+    CHECK ("supervisorId" <> "userId") -- Prevents a user from being their own supervisor.
+);
+
+-- A logical grouping of users within a tenant, typically managed by a Supervisor.
+CREATE TABLE "Team" (
+    "teamId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "tenantId" UUID NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "supervisorId" UUID NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("tenantId", "name")
+);
+
+-- Join table to represent the many-to-many relationship between Users and Teams.
+CREATE TABLE "UserTeamMembership" (
+    "userTeamMembershipId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userId" UUID NOT NULL,
+    "teamId" UUID NOT NULL,
+    UNIQUE("userId", "teamId")
+);
+
+-- Represents a calendar event that can be assigned to users or teams.
+CREATE TABLE "Event" (
+    "eventId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "tenantId" UUID NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "startTime" TIMESTAMPTZ NOT NULL,
+    "endTime" TIMESTAMPTZ NOT NULL,
+    "isRecurring" BOOLEAN NOT NULL DEFAULT false,
+    "recurrenceRule" VARCHAR(255),
+    "createdByUserId" UUID,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Join table for the polymorphic relationship between Events and their assignees (Users or Teams).
+CREATE TABLE "EventAssignment" (
+    "eventAssignmentId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "eventId" UUID NOT NULL,
+    "assigneeId" UUID NOT NULL,
+    "assigneeType" assignee_type NOT NULL,
+    UNIQUE("eventId", "assigneeId", "assigneeType")
+);
+
+-- Stores a single attendance entry. Partitioned for performance on large datasets.
+CREATE TABLE "AttendanceRecord" (
+    "attendanceRecordId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "userId" UUID NOT NULL,
+    "tenantId" UUID NOT NULL,
+    "userFullName" VARCHAR(201),
+    "checkInTime" TIMESTAMPTZ NOT NULL,
+    "checkInLatitude" DECIMAL(9, 6) NOT NULL,
+    "checkInLongitude" DECIMAL(9, 6) NOT NULL,
+    "checkOutTime" TIMESTAMPTZ,
+    "checkOutLatitude" DECIMAL(9, 6),
+    "checkOutLongitude" DECIMAL(9, 6),
+    "status" attendance_record_status NOT NULL DEFAULT 'pending',
+    "supervisorId" UUID,
+    "rejectionReason" TEXT,
+    "flags" JSONB DEFAULT '[]',
+    "eventId" UUID,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+) PARTITION BY RANGE ("checkInTime");
+
+-- An immutable log of critical system actions. Partitioned for performance.
+CREATE TABLE "AuditLog" (
+    "auditLogId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "tenantId" UUID NOT NULL,
+    "actingUserId" UUID NOT NULL,
+    "targetEntity" VARCHAR(100) NOT NULL,
+    "targetEntityId" UUID NOT NULL,
+    "actionType" audit_action_type NOT NULL,
+    "details" JSONB NOT NULL DEFAULT '{}',
+    "timestamp" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+) PARTITION BY RANGE ("timestamp");
+
+-- Stores tenant-specific settings and configurable business rules.
+CREATE TABLE "TenantConfiguration" (
+    "tenantId" UUID PRIMARY KEY,
+    "timezone" VARCHAR(100) NOT NULL DEFAULT 'UTC',
+    "autoCheckoutTime" TIME,
+    "approvalEscalationPeriodDays" INTEGER NOT NULL DEFAULT 3 CHECK ("approvalEscalationPeriodDays" > 0),
+    "defaultWorkingHours" JSONB DEFAULT '{}',
+    "passwordPolicy" JSONB DEFAULT '{}',
+    "dataRetentionPeriods" JSONB DEFAULT '{}',
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stores configuration and credentials for exporting data to Google Sheets.
+CREATE TABLE "GoogleSheetIntegration" (
+    "googleSheetIntegrationId" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    "tenantId" UUID NOT NULL UNIQUE,
+    "googleSheetId" VARCHAR(255) NOT NULL,
+    "encryptedRefreshToken" TEXT NOT NULL,
+    "status" integration_status NOT NULL DEFAULT 'active',
+    "lastSyncTimestamp" TIMESTAMPTZ,
+    "lastSyncError" TEXT,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Pre-aggregated daily summary data for a user to speed up reporting.
+CREATE TABLE "DailyUserSummary" (
+    "summaryDate" DATE NOT NULL,
+    "userId" UUID NOT NULL,
+    "tenantId" UUID NOT NULL,
+    "totalHoursWorked" DECIMAL(5, 2) DEFAULT 0.00,
+    "firstCheckIn" TIMESTAMPTZ,
+    "lastCheckOut" TIMESTAMPTZ,
+    "isLateArrival" BOOLEAN DEFAULT false,
+    "isEarlyDeparture" BOOLEAN DEFAULT false,
+    "exceptionsCount" INTEGER DEFAULT 0,
+    "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("summaryDate", "userId")
+);
+
+-- Foreign Key Constraints
+
+ALTER TABLE "Tenant" ADD CONSTRAINT "FK_Tenant_SubscriptionPlan" FOREIGN KEY ("subscriptionPlanId") REFERENCES "SubscriptionPlan"("subscriptionPlanId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "FK_User_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "FK_User_Supervisor" FOREIGN KEY ("supervisorId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Team" ADD CONSTRAINT "FK_Team_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Team" ADD CONSTRAINT "FK_Team_Supervisor" FOREIGN KEY ("supervisorId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserTeamMembership" ADD CONSTRAINT "FK_UserTeamMembership_User" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserTeamMembership" ADD CONSTRAINT "FK_UserTeamMembership_Team" FOREIGN KEY ("teamId") REFERENCES "Team"("teamId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Event" ADD CONSTRAINT "FK_Event_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Event" ADD CONSTRAINT "FK_Event_CreatedByUser" FOREIGN KEY ("createdByUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "EventAssignment" ADD CONSTRAINT "FK_EventAssignment_Event" FOREIGN KEY ("eventId") REFERENCES "Event"("eventId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AttendanceRecord" ADD CONSTRAINT "FK_AttendanceRecord_User" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AttendanceRecord" ADD CONSTRAINT "FK_AttendanceRecord_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AttendanceRecord" ADD CONSTRAINT "FK_AttendanceRecord_Supervisor" FOREIGN KEY ("supervisorId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "AttendanceRecord" ADD CONSTRAINT "FK_AttendanceRecord_Event" FOREIGN KEY ("eventId") REFERENCES "Event"("eventId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "AuditLog" ADD CONSTRAINT "FK_AuditLog_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AuditLog" ADD CONSTRAINT "FK_AuditLog_ActingUser" FOREIGN KEY ("actingUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "TenantConfiguration" ADD CONSTRAINT "FK_TenantConfiguration_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "GoogleSheetIntegration" ADD CONSTRAINT "FK_GoogleSheetIntegration_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "DailyUserSummary" ADD CONSTRAINT "FK_DailyUserSummary_User" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "DailyUserSummary" ADD CONSTRAINT "FK_DailyUserSummary_Tenant" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("tenantId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Indexes for Performance Optimization
+
+-- Tenant Indexes
+CREATE INDEX "IX_Tenant_Status" ON "Tenant" ("status");
+CREATE INDEX "IX_Tenant_SubscriptionPlanId" ON "Tenant" ("subscriptionPlanId");
+CREATE INDEX "IX_Tenant_CreatedAt" ON "Tenant" ("createdAt");
+
+-- User Indexes
+CREATE INDEX "IX_User_TenantId" ON "User" ("tenantId");
+CREATE INDEX "IX_User_SupervisorId" ON "User" ("supervisorId");
+CREATE INDEX "IX_User_Tenant_Status" ON "User" ("tenantId", "status");
+CREATE INDEX "IX_User_Status_DeactivatedAt_ForAnonymization" ON "User" ("status", "deactivatedAt");
+CREATE INDEX "IX_User_HierarchyPath" ON "User" ("hierarchyPath");
+CREATE INDEX "IX_User_Email" ON "User" ("email");
+CREATE INDEX "IX_User_Name" ON "User" ("lastName", "firstName");
+CREATE INDEX "IX_User_Role" ON "User" ("role");
+
+-- Team Indexes
+CREATE INDEX "IX_Team_TenantId" ON "Team" ("tenantId");
+CREATE INDEX "IX_Team_SupervisorId" ON "Team" ("supervisorId");
+
+-- UserTeamMembership Indexes
+CREATE INDEX "IX_UserTeamMembership_UserId" ON "UserTeamMembership" ("userId");
+CREATE INDEX "IX_UserTeamMembership_TeamId" ON "UserTeamMembership" ("teamId");
+
+-- AttendanceRecord Indexes
+CREATE INDEX "IX_AttendanceRecord_User_CheckInTime" ON "AttendanceRecord" ("userId", "checkInTime");
+CREATE INDEX "IX_AttendanceRecord_Tenant_Status_Supervisor" ON "AttendanceRecord" ("tenantId", "status", "supervisorId");
+CREATE INDEX "IX_AttendanceRecord_EventId" ON "AttendanceRecord" ("eventId");
+CREATE INDEX "IX_Attendance_Tenant_Status_UpdatedAt_ForExport" ON "AttendanceRecord" ("tenantId", "status", "updatedAt");
+CREATE INDEX "SP_AttendanceRecord_CheckInLocation" ON "AttendanceRecord" USING GIST (ST_MakePoint("checkInLongitude", "checkInLatitude"));
+
+-- Event Indexes
+CREATE INDEX "IX_Event_Tenant_StartTime" ON "Event" ("tenantId", "startTime");
+CREATE INDEX "IX_Event_CreatedByUserId" ON "Event" ("createdByUserId");
+
+-- EventAssignment Indexes
+CREATE INDEX "IX_EventAssignment_EventId" ON "EventAssignment" ("eventId");
+CREATE INDEX "IX_EventAssignment_Assignee" ON "EventAssignment" ("assigneeId", "assigneeType");
+
+-- AuditLog Indexes
+CREATE INDEX "IX_AuditLog_Tenant_Timestamp" ON "AuditLog" ("tenantId", "timestamp");
+CREATE INDEX "IX_AuditLog_TargetEntity" ON "AuditLog" ("targetEntity", "targetEntityId");
+CREATE INDEX "IX_AuditLog_ActingUserId" ON "AuditLog" ("actingUserId");
+
+-- GoogleSheetIntegration Indexes
+CREATE INDEX "IX_GoogleSheetIntegration_Status" ON "GoogleSheetIntegration" ("status");
+
+-- DailyUserSummary Indexes
+CREATE INDEX "IX_DailySummary_Tenant_Date" ON "DailyUserSummary" ("tenantId", "summaryDate");

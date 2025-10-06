@@ -1,0 +1,589 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-UJ-017
+
+## 1.2 Name
+
+Admin Views and Filters Attendance Reports
+
+## 1.3 Description
+
+An Admin uses the web dashboard to view various attendance reports. They can apply filters such as date range, user, or team to refine the data presented.
+
+## 1.4 Type
+
+🔹 UserJourney
+
+## 1.5 Purpose
+
+To provide administrators with the tools to analyze attendance data, identify trends, and manage their workforce effectively.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- presentation-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- Admin navigates to the reporting section of the web dashboard.
+- User selects a report type (e.g., 'Daily Summary').
+- The dashboard queries Firestore for the relevant attendance data, applying default filters (e.g., current week).
+- The UI displays the report data in a table or chart.
+- Admin applies a new filter (e.g., selects a specific team).
+- The dashboard re-queries Firestore with the updated filter parameters and refreshes the UI.
+
+## 1.11 Triggers
+
+- Admin accessing the reporting dashboard.
+
+## 1.12 Outcomes
+
+- Admin can view and interact with attendance data in an aggregated and filtered manner.
+
+## 1.13 Business Rules
+
+- Admins can view data for all users within their tenant.
+- Report queries must be optimized using composite indexes to ensure performance.
+
+## 1.14 Error Scenarios
+
+- A complex query with a large date range times out or performs poorly.
+- The user applies filters that result in no data.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-UJ-017-IMPL
+
+## 2.2 Name
+
+Implementation: Admin Views and Filters Attendance Reports via Web Dashboard
+
+## 2.3 Description
+
+Detailed technical sequence for an Admin user interacting with the Flutter Web Dashboard to query and filter attendance reports from Firestore. This sequence is designed for a reactive UI using Riverpod for state management, where changes in filter state automatically trigger new data streams from Firestore.
+
+## 2.4 Participants
+
+### 2.4.1 Client Application
+
+#### 2.4.1.1 Repository Id
+
+presentation-layer
+
+#### 2.4.1.2 Display Name
+
+Admin Web Dashboard (Flutter)
+
+#### 2.4.1.3 Type
+
+🔹 Client Application
+
+#### 2.4.1.4 Technology
+
+Flutter for Web, Riverpod 2.x
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4285F4 |
+| Stereotype | UI/ViewModel |
+
+### 2.4.2.0 Database
+
+#### 2.4.2.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.2.2 Display Name
+
+Firestore Database
+
+#### 2.4.2.3 Type
+
+🔹 Database
+
+#### 2.4.2.4 Technology
+
+Firebase Firestore
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFCA28 |
+| Stereotype | BaaS |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Internal State Change
+
+#### 2.5.1.1 Source Id
+
+presentation-layer
+
+#### 2.5.1.2 Target Id
+
+presentation-layer
+
+#### 2.5.1.3 Message
+
+1. Admin navigates to '/reports'. ReportsScreen initializes its State Management Provider (Riverpod).
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Internal State Change
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+Provider enters 'loading' state.
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Method Call |
+| Method | Provider initialization |
+| Parameters | Initial state: { isLoading: true, data: [], error:... |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | Should be instantaneous. |
+
+### 2.5.2.0 Database Query (Stream)
+
+#### 2.5.2.1 Source Id
+
+presentation-layer
+
+#### 2.5.2.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.2.3 Message
+
+2. Riverpod provider executes `AttendanceRepository.getAttendanceReportStream(filters: defaultFilters)`. A Firestore listener is attached.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Database Query (Stream)
+
+#### 2.5.2.6 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7 Return Message
+
+Stream of QuerySnapshots
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK (gRPC/WebChannel) |
+| Method | FirebaseFirestore.instance.collection(...).where(.... |
+| Parameters | Query constructed with tenantId and default date r... |
+| Authentication | Firebase Auth JWT automatically attached by SDK. F... |
+| Error Handling | SDK handles transient network issues. Permission e... |
+| Performance | Depends on composite index existence (e.g., on ten... |
+
+### 2.5.3.0 Data Stream
+
+#### 2.5.3.1 Source Id
+
+data-persistence-layer
+
+#### 2.5.3.2 Target Id
+
+presentation-layer
+
+#### 2.5.3.3 Message
+
+3. Firestore evaluates security rules, executes indexed query, and streams back the initial dataset.
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Data Stream
+
+#### 2.5.3.6 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7 Return Message
+
+QuerySnapshot with initial report documents.
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK (gRPC/WebChannel) |
+| Method | N/A |
+| Parameters | Serialized document data. |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | Latency target < 500ms. |
+
+### 2.5.4.0 Internal State Change
+
+#### 2.5.4.1 Source Id
+
+presentation-layer
+
+#### 2.5.4.2 Target Id
+
+presentation-layer
+
+#### 2.5.4.3 Message
+
+4. Repository maps Firestore documents to Domain Models. Provider updates state with data and sets loading to false.
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 Internal State Change
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+Provider enters 'data' state. UI rebuilds to display the report.
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+❌ No
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Method Call |
+| Method | state.copyWith(isLoading: false, data: mappedData) |
+| Parameters | List<AttendanceRecord> |
+| Authentication | N/A |
+| Error Handling | Handles empty snapshots by setting state to an emp... |
+| Performance | Mapping should be efficient to avoid UI jank. |
+
+### 2.5.5.0 User Interaction
+
+#### 2.5.5.1 Source Id
+
+presentation-layer
+
+#### 2.5.5.2 Target Id
+
+presentation-layer
+
+#### 2.5.5.3 Message
+
+5. Admin interacts with a filter UI component (e.g., team Dropdown), triggering a state update.
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 User Interaction
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Return Message
+
+Filter state is updated in the provider.
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+❌ No
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | UI Event (onChanged) |
+| Method | ref.read(provider.notifier).setFilter(newFilter) |
+| Parameters | Filter object with updated teamId. |
+| Authentication | N/A |
+| Error Handling | Client-side validation on filter inputs if necessa... |
+| Performance | UI should provide immediate feedback. |
+
+### 2.5.6.0 Database Query (Stream)
+
+#### 2.5.6.1 Source Id
+
+presentation-layer
+
+#### 2.5.6.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.6.3 Message
+
+6. The change in filter state causes the Riverpod provider to re-execute, tearing down the old stream and creating a new one with updated query parameters.
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 Database Query (Stream)
+
+#### 2.5.6.6 Is Synchronous
+
+❌ No
+
+#### 2.5.6.7 Return Message
+
+New stream of QuerySnapshots.
+
+#### 2.5.6.8 Has Return
+
+✅ Yes
+
+#### 2.5.6.9 Is Activation
+
+✅ Yes
+
+#### 2.5.6.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK (gRPC/WebChannel) |
+| Method | FirebaseFirestore.instance.collection(...).where(.... |
+| Parameters | Query now includes the additional `where('teamId',... |
+| Authentication | Firebase Auth JWT automatically attached by SDK. |
+| Error Handling | Same as step 2. The provider will transition to an... |
+| Performance | Requires a specific composite index for the new qu... |
+
+### 2.5.7.0 Data Stream
+
+#### 2.5.7.1 Source Id
+
+data-persistence-layer
+
+#### 2.5.7.2 Target Id
+
+presentation-layer
+
+#### 2.5.7.3 Message
+
+7. Firestore streams back the new, filtered dataset.
+
+#### 2.5.7.4 Sequence Number
+
+7
+
+#### 2.5.7.5 Type
+
+🔹 Data Stream
+
+#### 2.5.7.6 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7 Return Message
+
+QuerySnapshot with filtered report documents.
+
+#### 2.5.7.8 Has Return
+
+✅ Yes
+
+#### 2.5.7.9 Is Activation
+
+❌ No
+
+#### 2.5.7.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK (gRPC/WebChannel) |
+| Method | N/A |
+| Parameters | Serialized document data. |
+| Authentication | N/A |
+| Error Handling | N/A |
+| Performance | Latency target < 500ms. |
+
+### 2.5.8.0 Internal State Change
+
+#### 2.5.8.1 Source Id
+
+presentation-layer
+
+#### 2.5.8.2 Target Id
+
+presentation-layer
+
+#### 2.5.8.3 Message
+
+8. Provider updates its state with the new filtered data, triggering a UI rebuild.
+
+#### 2.5.8.4 Sequence Number
+
+8
+
+#### 2.5.8.5 Type
+
+🔹 Internal State Change
+
+#### 2.5.8.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7 Return Message
+
+UI now displays the filtered report.
+
+#### 2.5.8.8 Has Return
+
+✅ Yes
+
+#### 2.5.8.9 Is Activation
+
+❌ No
+
+#### 2.5.8.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal Method Call |
+| Method | state.copyWith(data: newFilteredData) |
+| Parameters | List<AttendanceRecord> |
+| Authentication | N/A |
+| Error Handling | Same as step 4. |
+| Performance | UI should smoothly transition to the new data stat... |
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+The reactive nature of Riverpod is key. The UI doesn't explicitly 're-fetch' data. It updates the filter state, and the provider, which depends on that state, automatically re-runs its logic to establish a new Firestore stream.
+
+#### 2.6.1.2 Position
+
+top
+
+#### 2.6.1.3 Participant Id
+
+presentation-layer
+
+#### 2.6.1.4 Sequence Number
+
+5
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+Performance is critically dependent on having the correct composite indexes defined in 'firestore.indexes.json'. Without them, queries on multiple fields will be rejected by Firestore.
+
+#### 2.6.2.2 Position
+
+bottom
+
+#### 2.6.2.3 Participant Id
+
+data-persistence-layer
+
+#### 2.6.2.4 Sequence Number
+
+2
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Firestore Security Rules are the primary enforceme... |
+| Performance Targets | Initial report load should complete in under 2 sec... |
+| Error Handling Strategy | The `ReportsViewModel` (Riverpod Provider) must ma... |
+| Testing Considerations | 1. **Unit Tests (ViewModel)**: Test the state tran... |
+| Monitoring Requirements | Use Firebase Performance Monitoring to track the r... |
+| Deployment Considerations | Any new filters added to the UI must have a corres... |
+

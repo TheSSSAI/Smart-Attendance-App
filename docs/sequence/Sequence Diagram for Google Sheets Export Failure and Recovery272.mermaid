@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant "Google Cloud Scheduler" as GoogleCloudScheduler
+    participant "Application Services" as ApplicationServices
+    participant "Data & Persistence" as DataPersistence
+    actor "Google Sheets API" as GoogleSheetsAPI
+    participant "Presentation Layer" as PresentationLayer
+
+    activate ApplicationServices
+    GoogleCloudScheduler->>ApplicationServices: 1. 1. Trigger scheduled job: exportAttendanceData()
+    ApplicationServices->>DataPersistence: 1.1. 1a. GetIntegrationConfig(tenantId)
+    DataPersistence-->>ApplicationServices: Return { refreshToken, sheetId }
+    ApplicationServices->>DataPersistence: 1.2. 1b. GetUnexportedRecords(lastExportTimestamp)
+    DataPersistence-->>ApplicationServices: Return AttendanceRecord[]
+    ApplicationServices->>GoogleSheetsAPI: 2. 2. Append data to spreadsheet
+    GoogleSheetsAPI-->>ApplicationServices: 3. Return HTTP 403 Forbidden: 'The caller does not have permission.'
+    ApplicationServices->>ApplicationServices: 4. 4. Catch non-transient error and initiate failure protocol
+    ApplicationServices->>DataPersistence: 5. 5. Update integration status to 'error'
+    DataPersistence-->>ApplicationServices: Acknowledge write success
+    PresentationLayer->>DataPersistence: 6. 6. Admin loads dashboard; subscribe to integration status
+    DataPersistence-->>PresentationLayer: 7. Push update: { status: 'error', ... }
+    PresentationLayer->>PresentationLayer: 8. 8. Render non-dismissible error banner
+    PresentationLayer->>ApplicationServices: 9. 9. Admin clicks 'Re-authenticate'; send new auth code via saveNewGoogleToken()
+    ApplicationServices-->>PresentationLayer: 10. Return { success: true }
+    ApplicationServices->>DataPersistence: 9.1. 9a. Exchange auth code for new token and update integration status to 'active'
+    DataPersistence-->>ApplicationServices: Acknowledge write success
+    DataPersistence->>PresentationLayer: 11. 11. Push update: { status: 'active', ... }
+    PresentationLayer->>PresentationLayer: 12. 12. Hide error banner
+
+    note over ApplicationServices: Data Integrity: The function terminates after step 5 without modifying any attendance records. Th...
+    note over GoogleCloudScheduler: Next Successful Run: The next time the scheduled job in step 1 runs, it will find the 'active' st...
+
+    deactivate ApplicationServices

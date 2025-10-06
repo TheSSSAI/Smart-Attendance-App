@@ -1,0 +1,35 @@
+// This module contains security rules for the 'auditLog' collection.
+// Its primary purpose is to enforce immutability, as required by REQ-1-028.
+
+// Helper function to validate incoming audit log data.
+function isValidAuditLogData(logData) {
+    return logData.actingUserId is string
+        && logData.actionType is string
+        && logData.targetEntityId is string
+        && logData.timestamp is timestamp
+        && logData.tenantId is string
+        && ('details' in logData ? logData.details is map : true)
+        && ('justification' in logData ? logData.justification is string : true)
+        && logData.keys().hasOnly(['actingUserId', 'actionType', 'targetEntityId', 'targetEntity', 'timestamp', 'tenantId', 'details', 'justification']);
+}
+
+match /auditLog/{logId} {
+    // READ:
+    // - Only Admins can read the audit log for compliance and investigation purposes. (US-051, US-063)
+    allow read: if isTenantMember(tenantId) && isAdmin();
+
+    // CREATE:
+    // - Creation is allowed for any authenticated tenant member.
+    //   This is because audit logs are created by secure Cloud Functions in response to user actions.
+    //   The function itself validates the user's role before performing the action that gets logged.
+    //   Restricting create here would require the Cloud Function to impersonate a user or have a special role,
+    //   which is overly complex. The critical rule is preventing updates/deletes.
+    allow create: if isTenantMember(tenantId)
+                  && isSignedIn()
+                  && isValidAuditLogData(request.resource.data)
+                  && request.resource.data.tenantId == tenantId;
+
+    // UPDATE & DELETE:
+    // - Absolutely forbidden for all clients to ensure the log is immutable. (REQ-1-028)
+    allow update, delete: if false;
+}

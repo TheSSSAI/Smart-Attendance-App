@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "dev": "attendancetracker-dev",
+    "staging": "attendancetracker-staging",
+    "prod": "attendancetracker-prod"
+  }
+}

@@ -1,0 +1,48 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+/out/
+
+# VS Code
+.vscode/
+launch.json
+settings.json
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/ios/
+/android/
+
+# Environment variables
+# These files contain secrets and should NEVER be checked into version control.
+env/.env.dev
+env/.env.staging
+env/.env.prod
+.env
+
+# Generated files
+lib/firebase_options.dart
+lib/**/*.g.dart
+lib/**/*.freezed.dart
+
+# Mobile-specific tooling
+fastlane/

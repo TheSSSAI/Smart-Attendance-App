@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor "Mobile Application (Flutter)" as MobileApplicationFlutter
+    participant "Firestore Database" as FirestoreDatabase
+    participant "Cloud Functions" as CloudFunctions
+
+    activate MobileApplicationFlutter
+    MobileApplicationFlutter->>MobileApplicationFlutter: 1. Subordinate initiates correction request for an attendance record, enters corrected times and justification.
+    MobileApplicationFlutter->>FirestoreDatabase: 2. Update attendance record to pending state. [REQ-FUN-014]
+    FirestoreDatabase-->>MobileApplicationFlutter: Write acknowledgment
+    MobileApplicationFlutter->>MobileApplicationFlutter: 3. Supervisor views pending correction request on their dashboard and taps 'Approve'.
+    activate CloudFunctions
+    MobileApplicationFlutter->>CloudFunctions: 4. Invoke server-side approval logic.
+    CloudFunctions-->>MobileApplicationFlutter: { success: true } or error
+    CloudFunctions->>FirestoreDatabase: 5. Authorize Supervisor and initiate transaction.
+    FirestoreDatabase-->>CloudFunctions: subordinateUser, attendanceRecord
+    CloudFunctions->>FirestoreDatabase: 6. Atomically update record and create audit log. [REQ-3.3.3]
+    FirestoreDatabase-->>CloudFunctions: Transaction commit result
+    CloudFunctions->>MobileApplicationFlutter: 7. Return success response.
+
+    note over MobileApplicationFlutter: Implicit Step: After step 2, the Supervisor's mobile app, which is subscribed to a Firestore quer...
+    note over CloudFunctions: The backend update (step 6) is wrapped in a Firestore Transaction to ensure that updating the att...
+    note over FirestoreDatabase: Firestore Security Rules for the /auditLog collection are configured to allow create; but deny up...
+
+    deactivate CloudFunctions
+    deactivate MobileApplicationFlutter

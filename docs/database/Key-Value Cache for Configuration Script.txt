@@ -1,0 +1,23 @@
+# Redis / Google Cloud Memorystore Commands for TenantConfigurationCache
+# This is a usage example, as key-value stores are schema-less.
+
+# SET: Stores a new tenant configuration or updates an existing one.
+# The key follows the format 'config:tenant:{tenantId}'.
+# The value is the JSON string representation of the configuration.
+# 'EX 3600' sets an expiration time of 1 hour (3600 seconds) on the key.
+
+SET config:tenant:12345 '{"theme":"dark","activeModules":["reports","analytics"],"rateLimit":1000}' EX 3600
+
+# GET: Retrieves the configuration for a specific tenant by its key.
+# Returns the JSON string if the key exists, or (nil) if it does not.
+
+GET config:tenant:12345
+
+# DEL: Deletes a tenant's cached configuration, forcing a refresh from the primary data source on the next request.
+
+DEL config:tenant:12345
+
+# EXISTS: Checks for the existence of a configuration key.
+# Returns 1 if the key exists, 0 otherwise.
+
+EXISTS config:tenant:12345

@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant "Google Cloud Scheduler" as GoogleCloudScheduler
+    participant "Application Services" as ApplicationServices
+    participant "Data & Persistence Layer" as DataPersistenceLayer
+    participant "Google Secret Manager" as GoogleSecretManager
+    actor "Google OAuth 2.0 API" as GoogleOAuth20API
+    actor "Google Sheets API" as GoogleSheetsAPI
+
+    activate ApplicationServices
+    GoogleCloudScheduler->>ApplicationServices: 1. Triggers 'exportAttendanceToSheets' function via Pub/Sub message at configured interval (e.g., daily at 02:00 UTC).
+    ApplicationServices->>DataPersistenceLayer: 2. Queries /linkedSheets collection for all tenants with an active Google Sheets integration.
+    DataPersistenceLayer-->>ApplicationServices: Returns a list of documents, each containing tenantId, encrypted refreshToken, and sheetId.
+    ApplicationServices->>ApplicationServices: 3. LOOP: For each active tenant integration
+    ApplicationServices->>GoogleSecretManager: 4. Fetches Google OAuth Client ID and Secret needed for token exchange.
+    GoogleSecretManager-->>ApplicationServices: Returns the secret payload.
+    activate GoogleOAuth20API
+    ApplicationServices->>GoogleOAuth20API: 5. POST to exchange the tenant's stored refresh token for a new access token.
+    GoogleOAuth20API-->>ApplicationServices: 200 OK with { access_token, expires_in, scope, token_type } or a 400/401 with an error code.
+    ApplicationServices->>DataPersistenceLayer: 5.1. ALT [On OAuth Failure]: Sets the integration status to 'error' and logs the reason (e.g., 'Token Revoked').
+    ApplicationServices->>DataPersistenceLayer: 6. Queries for a batch of approved, non-exported attendance records for the tenant.
+    DataPersistenceLayer-->>ApplicationServices: Returns a collection of up to 500 attendance documents.
+    activate GoogleSheetsAPI
+    ApplicationServices->>GoogleSheetsAPI: 7. Appends transformed attendance data to the configured Google Sheet.
+    GoogleSheetsAPI-->>ApplicationServices: 200 OK on success, or an error object (e.g., 404 if sheet not found).
+    ApplicationServices->>DataPersistenceLayer: 8. Batched write to update all successfully exported records with isExported: true.
+    DataPersistenceLayer-->>ApplicationServices: Confirmation of batch commit.
+
+    note over ApplicationServices: Data Transformation: The function must transform Firestore documents (nested JSON with Timestamps...
+    note over ApplicationServices: Idempotency: The isExported flag is crucial. If the function fails after exporting but before upd...
+
+    deactivate GoogleSheetsAPI
+    deactivate GoogleOAuth20API
+    deactivate ApplicationServices

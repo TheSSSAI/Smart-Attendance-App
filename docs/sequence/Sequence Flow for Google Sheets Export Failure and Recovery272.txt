@@ -1,0 +1,1058 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-ER-008
+
+## 1.2 Name
+
+Google Sheets Export Failure and Recovery
+
+## 1.3 Description
+
+The automated Google Sheets export job fails due to a non-transient error (e.g., revoked permissions). The system flags the integration as failed, notifies the Admin via the UI, and queues the un-exported data for a future successful run.
+
+## 1.4 Type
+
+🔹 ErrorHandling
+
+## 1.5 Purpose
+
+To ensure data is not lost during export failures and to provide a clear recovery path for the administrator.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- application-services-layer
+- data-persistence-layer
+- presentation-layer
+
+## 1.10 Key Interactions
+
+- The scheduled export function receives a permanent error (e.g., 403 Forbidden) from the Google Sheets API.
+- The function catches the error and updates the tenant's integration status document in Firestore to `{ status: 'error', errorDetails: '...' }`.
+- The function terminates without marking the current batch of attendance records as exported.
+- The Admin web dashboard, upon loading, reads the integration status from Firestore.
+- The UI displays a prominent, non-dismissible alert banner about the sync failure.
+- The alert prompts the Admin to re-authenticate, which triggers the OAuth 2.0 flow to get a new refresh token.
+- Once successful, the integration status is set back to `{ status: 'active' }`.
+- The next scheduled run will pick up all previously un-exported records and process them.
+
+## 1.11 Triggers
+
+- The Google Sheets API returns a permanent error during a scheduled export.
+
+## 1.12 Outcomes
+
+- The tenant Admin is clearly notified of the integration failure.
+- No attendance data is lost.
+- The system gracefully handles the error and waits for user intervention to resolve it.
+
+## 1.13 Business Rules
+
+- Records that failed to sync must be queued and exported on the next successful run (REQ-3.5.3).
+- Duplicates must not be created during the recovery process.
+
+## 1.14 Error Scenarios
+
+- Admin repeatedly fails to re-authenticate, leaving the integration in a broken state.
+- The error is transient but is mistakenly handled as permanent.
+
+## 1.15 Integration Points
+
+- Google Sheets API
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-ER-008
+
+## 2.2 Name
+
+Google Sheets Export Failure and Recovery Workflow
+
+## 2.3 Description
+
+Technical sequence demonstrating the system's resilience to permanent failures during the automated Google Sheets data export process. The sequence covers error detection, state management for failure, user notification, and the administrator-led recovery path, ensuring data integrity and providing a clear resolution workflow as per REQ-3.5.3.
+
+## 2.4 Participants
+
+### 2.4.1 External System
+
+#### 2.4.1.1 Repository Id
+
+EXTERNAL-GCP-SCHEDULER
+
+#### 2.4.1.2 Display Name
+
+Google Cloud Scheduler
+
+#### 2.4.1.3 Type
+
+🔹 External System
+
+#### 2.4.1.4 Technology
+
+GCP Pub/Sub Scheduler
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #D1E2FF |
+| Stereotype | Scheduler |
+
+### 2.4.2.0 Serverless Function
+
+#### 2.4.2.1 Repository Id
+
+application-services-layer
+
+#### 2.4.2.2 Display Name
+
+Application Services
+
+#### 2.4.2.3 Type
+
+🔹 Serverless Function
+
+#### 2.4.2.4 Technology
+
+Firebase Cloud Function (TypeScript)
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #FFF2CC |
+| Stereotype | Cloud Function |
+
+### 2.4.3.0 Database
+
+#### 2.4.3.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.3.2 Display Name
+
+Data & Persistence
+
+#### 2.4.3.3 Type
+
+🔹 Database
+
+#### 2.4.3.4 Technology
+
+Firestore
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FADEE7 |
+| Stereotype | Firestore |
+
+### 2.4.4.0 External API
+
+#### 2.4.4.1 Repository Id
+
+EXTERNAL-GOOGLE-SHEETS-API
+
+#### 2.4.4.2 Display Name
+
+Google Sheets API
+
+#### 2.4.4.3 Type
+
+🔹 External API
+
+#### 2.4.4.4 Technology
+
+Google Sheets API v4
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | boundary |
+| Color | #D4EDDA |
+| Stereotype | External API |
+
+### 2.4.5.0 Web Application
+
+#### 2.4.5.1 Repository Id
+
+presentation-layer
+
+#### 2.4.5.2 Display Name
+
+Presentation Layer
+
+#### 2.4.5.3 Type
+
+🔹 Web Application
+
+#### 2.4.5.4 Technology
+
+Flutter for Web (Admin Dashboard)
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #E2E3E5 |
+| Stereotype | Web Dashboard |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Invocation
+
+#### 2.5.1.1 Source Id
+
+EXTERNAL-GCP-SCHEDULER
+
+#### 2.5.1.2 Target Id
+
+application-services-layer
+
+#### 2.5.1.3 Message
+
+1. Trigger scheduled job: exportAttendanceData()
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Invocation
+
+#### 2.5.1.6 Is Synchronous
+
+❌ No
+
+#### 2.5.1.7 Has Return
+
+❌ No
+
+#### 2.5.1.8 Is Activation
+
+✅ Yes
+
+#### 2.5.1.9 Technical Details
+
+##### 2.5.1.9.1 Protocol
+
+Pub/Sub
+
+##### 2.5.1.9.2 Method
+
+onMessagePublished
+
+##### 2.5.1.9.3 Parameters
+
+- {'name': 'topic', 'value': 'daily-attendance-export'}
+
+##### 2.5.1.9.4 Authentication
+
+GCP IAM
+
+##### 2.5.1.9.5 Error Handling
+
+Function will be retried by GCP on transient infrastructure errors.
+
+##### 2.5.1.9.6 Performance
+
+###### 2.5.1.9.6.1 Notes
+
+Triggered on a configurable schedule (e.g., daily).
+
+#### 2.5.1.10.0.0 Nested Interactions
+
+##### 2.5.1.10.1.0 Query
+
+###### 2.5.1.10.1.1 Source Id
+
+application-services-layer
+
+###### 2.5.1.10.1.2 Target Id
+
+data-persistence-layer
+
+###### 2.5.1.10.1.3 Message
+
+1a. GetIntegrationConfig(tenantId)
+
+###### 2.5.1.10.1.4 Sequence Number
+
+1.1
+
+###### 2.5.1.10.1.5 Type
+
+🔹 Query
+
+###### 2.5.1.10.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.1.10.1.7 Return Message
+
+Return { refreshToken, sheetId }
+
+###### 2.5.1.10.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.1.10.1.9 Is Activation
+
+❌ No
+
+###### 2.5.1.10.1.10 Technical Details
+
+####### 2.5.1.10.1.10.1 Protocol
+
+Firestore SDK
+
+####### 2.5.1.10.1.10.2 Method
+
+getDoc
+
+####### 2.5.1.10.1.10.3 Parameters
+
+- {'name': 'path', 'value': '/tenants/{tenantId}/integrations/googleSheets'}
+
+####### 2.5.1.10.1.10.4 Authentication
+
+Service Account with IAM Role
+
+####### 2.5.1.10.1.10.5 Error Handling
+
+Function fails and logs error if config is missing.
+
+####### 2.5.1.10.1.10.6 Performance
+
+######## 2.5.1.10.1.10.6.1 Latency
+
+< 50ms
+
+##### 2.5.1.10.2.0.0.0 Query
+
+###### 2.5.1.10.2.1.0.0 Source Id
+
+application-services-layer
+
+###### 2.5.1.10.2.2.0.0 Target Id
+
+data-persistence-layer
+
+###### 2.5.1.10.2.3.0.0 Message
+
+1b. GetUnexportedRecords(lastExportTimestamp)
+
+###### 2.5.1.10.2.4.0.0 Sequence Number
+
+1.2
+
+###### 2.5.1.10.2.5.0.0 Type
+
+🔹 Query
+
+###### 2.5.1.10.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.1.10.2.7.0.0 Return Message
+
+Return AttendanceRecord[]
+
+###### 2.5.1.10.2.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.1.10.2.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.1.10.2.10.0.0 Technical Details
+
+####### 2.5.1.10.2.10.1.0 Protocol
+
+Firestore SDK
+
+####### 2.5.1.10.2.10.2.0 Method
+
+getDocs
+
+####### 2.5.1.10.2.10.3.0 Parameters
+
+- {'name': 'query', 'value': "collection('attendance').where('status', '==', 'approved').where('exportedAt', '==', null)"}
+
+####### 2.5.1.10.2.10.4.0 Authentication
+
+Service Account with IAM Role
+
+####### 2.5.1.10.2.10.5.0 Error Handling
+
+Proceeds with empty array if no records found.
+
+####### 2.5.1.10.2.10.6.0 Performance
+
+######## 2.5.1.10.2.10.6.1 Latency
+
+< 200ms
+
+### 2.5.2.0.0.0.0.0 API Call
+
+#### 2.5.2.1.0.0.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.2.2.0.0.0.0 Target Id
+
+EXTERNAL-GOOGLE-SHEETS-API
+
+#### 2.5.2.3.0.0.0.0 Message
+
+2. Append data to spreadsheet
+
+#### 2.5.2.4.0.0.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0.0.0 Type
+
+🔹 API Call
+
+#### 2.5.2.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0.0.0 Return Message
+
+3. Return HTTP 403 Forbidden: 'The caller does not have permission.'
+
+#### 2.5.2.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0.0.0 Technical Details
+
+##### 2.5.2.10.1.0.0.0 Protocol
+
+HTTPS
+
+##### 2.5.2.10.2.0.0.0 Method
+
+POST /v4/spreadsheets/{spreadsheetId}/values/{range}:append
+
+##### 2.5.2.10.3.0.0.0 Parameters
+
+- {'name': 'body', 'value': '{ values: [...] }'}
+
+##### 2.5.2.10.4.0.0.0 Authentication
+
+OAuth 2.0 Bearer Token (from refreshed token)
+
+##### 2.5.2.10.5.0.0.0 Error Handling
+
+Catch block specifically for non-transient HTTP status codes (401, 403, 404).
+
+##### 2.5.2.10.6.0.0.0 Performance
+
+###### 2.5.2.10.6.1.0.0 Timeout
+
+30s
+
+### 2.5.3.0.0.0.0.0 Self-invocation
+
+#### 2.5.3.1.0.0.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.3.2.0.0.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.3.3.0.0.0.0 Message
+
+4. Catch non-transient error and initiate failure protocol
+
+#### 2.5.3.4.0.0.0.0 Sequence Number
+
+4
+
+#### 2.5.3.5.0.0.0.0 Type
+
+🔹 Self-invocation
+
+#### 2.5.3.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.8.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.9.0.0.0.0 Technical Details
+
+##### 2.5.3.9.1.0.0.0 Protocol
+
+Internal Logic
+
+##### 2.5.3.9.2.0.0.0 Method
+
+catch (error)
+
+##### 2.5.3.9.3.0.0.0 Parameters
+
+- {'name': 'errorClassification', 'value': 'Permanent API Failure'}
+
+##### 2.5.3.9.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.3.9.5.0.0.0 Error Handling
+
+Logs the full error object with severity 'ERROR' to Google Cloud Logging.
+
+##### 2.5.3.9.6.0.0.0 Performance
+
+###### 2.5.3.9.6.1.0.0 Notes
+
+This block prevents the function from crashing.
+
+### 2.5.4.0.0.0.0.0 Command
+
+#### 2.5.4.1.0.0.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.4.2.0.0.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.4.3.0.0.0.0 Message
+
+5. Update integration status to 'error'
+
+#### 2.5.4.4.0.0.0.0 Sequence Number
+
+5
+
+#### 2.5.4.5.0.0.0.0 Type
+
+🔹 Command
+
+#### 2.5.4.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0.0.0 Return Message
+
+Acknowledge write success
+
+#### 2.5.4.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0.0.0 Technical Details
+
+##### 2.5.4.10.1.0.0.0 Protocol
+
+Firestore SDK
+
+##### 2.5.4.10.2.0.0.0 Method
+
+updateDoc
+
+##### 2.5.4.10.3.0.0.0 Parameters
+
+###### 2.5.4.10.3.1.0.0 path
+
+####### 2.5.4.10.3.1.1.0 Name
+
+path
+
+####### 2.5.4.10.3.1.2.0 Value
+
+/tenants/{tenantId}/integrations/googleSheets
+
+###### 2.5.4.10.3.2.0.0 data
+
+####### 2.5.4.10.3.2.1.0 Name
+
+data
+
+####### 2.5.4.10.3.2.2.0 Value
+
+{ status: 'error', errorDetails: 'API Permission Revoked', lastAttempt: serverTimestamp() }
+
+##### 2.5.4.10.4.0.0.0 Authentication
+
+Service Account with IAM Role
+
+##### 2.5.4.10.5.0.0.0 Error Handling
+
+If this write fails, the function will throw, resulting in a retry or DLQ.
+
+##### 2.5.4.10.6.0.0.0 Performance
+
+###### 2.5.4.10.6.1.0.0 Latency
+
+< 50ms
+
+### 2.5.5.0.0.0.0.0 Subscription
+
+#### 2.5.5.1.0.0.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.5.2.0.0.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.5.3.0.0.0.0 Message
+
+6. Admin loads dashboard; subscribe to integration status
+
+#### 2.5.5.4.0.0.0.0 Sequence Number
+
+6
+
+#### 2.5.5.5.0.0.0.0 Type
+
+🔹 Subscription
+
+#### 2.5.5.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7.0.0.0.0 Return Message
+
+7. Push update: { status: 'error', ... }
+
+#### 2.5.5.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0.0.0 Technical Details
+
+##### 2.5.5.10.1.0.0.0 Protocol
+
+Firestore SDK
+
+##### 2.5.5.10.2.0.0.0 Method
+
+onSnapshot
+
+##### 2.5.5.10.3.0.0.0 Parameters
+
+- {'name': 'path', 'value': '/tenants/{tenantId}/integrations/googleSheets'}
+
+##### 2.5.5.10.4.0.0.0 Authentication
+
+Firebase Auth JWT with tenantId claim
+
+##### 2.5.5.10.5.0.0.0 Error Handling
+
+UI displays a generic error if the listener fails.
+
+##### 2.5.5.10.6.0.0.0 Performance
+
+###### 2.5.5.10.6.1.0.0 Notes
+
+Real-time listener for immediate UI updates.
+
+### 2.5.6.0.0.0.0.0 UI Update
+
+#### 2.5.6.1.0.0.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.6.2.0.0.0.0 Target Id
+
+presentation-layer
+
+#### 2.5.6.3.0.0.0.0 Message
+
+8. Render non-dismissible error banner
+
+#### 2.5.6.4.0.0.0.0 Sequence Number
+
+8
+
+#### 2.5.6.5.0.0.0.0 Type
+
+🔹 UI Update
+
+#### 2.5.6.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.8.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.9.0.0.0.0 Technical Details
+
+##### 2.5.6.9.1.0.0.0 Protocol
+
+DOM Render
+
+##### 2.5.6.9.2.0.0.0 Method
+
+setState
+
+##### 2.5.6.9.3.0.0.0 Parameters
+
+###### 2.5.6.9.3.1.0.0 component
+
+####### 2.5.6.9.3.1.1.0 Name
+
+component
+
+####### 2.5.6.9.3.1.2.0 Value
+
+AlertBanner
+
+###### 2.5.6.9.3.2.0.0 props
+
+####### 2.5.6.9.3.2.1.0 Name
+
+props
+
+####### 2.5.6.9.3.2.2.0 Value
+
+{ visible: true, message: 'Google Sheets sync failed. Please re-authenticate.' }
+
+##### 2.5.6.9.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.6.9.5.0.0.0 Error Handling
+
+N/A
+
+##### 2.5.6.9.6.0.0.0 Performance
+
+###### 2.5.6.9.6.1.0.0 Notes
+
+Component state update is triggered by the Firestore listener.
+
+### 2.5.7.0.0.0.0.0 API Call
+
+#### 2.5.7.1.0.0.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.7.2.0.0.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.7.3.0.0.0.0 Message
+
+9. Admin clicks 'Re-authenticate'; send new auth code via saveNewGoogleToken()
+
+#### 2.5.7.4.0.0.0.0 Sequence Number
+
+9
+
+#### 2.5.7.5.0.0.0.0 Type
+
+🔹 API Call
+
+#### 2.5.7.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0.0.0 Return Message
+
+10. Return { success: true }
+
+#### 2.5.7.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.7.10.0.0.0.0 Technical Details
+
+##### 2.5.7.10.1.0.0.0 Protocol
+
+HTTPS (Callable Function)
+
+##### 2.5.7.10.2.0.0.0 Method
+
+onCall
+
+##### 2.5.7.10.3.0.0.0 Parameters
+
+- {'name': 'authCode', 'value': '4/0A...'}
+
+##### 2.5.7.10.4.0.0.0 Authentication
+
+Firebase Auth JWT
+
+##### 2.5.7.10.5.0.0.0 Error Handling
+
+UI shows an error toast if the function fails.
+
+##### 2.5.7.10.6.0.0.0 Performance
+
+###### 2.5.7.10.6.1.0.0 Latency
+
+< 500ms
+
+#### 2.5.7.11.0.0.0.0 Nested Interactions
+
+- {'sourceId': 'application-services-layer', 'targetId': 'data-persistence-layer', 'message': "9a. Exchange auth code for new token and update integration status to 'active'", 'sequenceNumber': '9.1', 'type': 'Command', 'isSynchronous': True, 'returnMessage': 'Acknowledge write success', 'hasReturn': True, 'isActivation': False, 'technicalDetails': {'protocol': 'Firestore SDK', 'method': 'updateDoc', 'parameters': [{'name': 'path', 'value': '/tenants/{tenantId}/integrations/googleSheets'}, {'name': 'data', 'value': "{ status: 'active', refreshToken: 'ENCRYPTED_NEW_TOKEN', errorDetails: null }"}], 'authentication': 'Firebase Auth JWT (via function context)', 'errorHandling': 'Function returns an error to the client on failure.', 'performance': {'latency': '< 50ms'}}}
+
+### 2.5.8.0.0.0.0.0 Data Push
+
+#### 2.5.8.1.0.0.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.8.2.0.0.0.0 Target Id
+
+presentation-layer
+
+#### 2.5.8.3.0.0.0.0 Message
+
+11. Push update: { status: 'active', ... }
+
+#### 2.5.8.4.0.0.0.0 Sequence Number
+
+11
+
+#### 2.5.8.5.0.0.0.0 Type
+
+🔹 Data Push
+
+#### 2.5.8.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.8.8.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.9.0.0.0.0 Technical Details
+
+##### 2.5.8.9.1.0.0.0 Protocol
+
+Firestore SDK (onSnapshot)
+
+##### 2.5.8.9.2.0.0.0 Method
+
+N/A
+
+##### 2.5.8.9.3.0.0.0 Parameters
+
+*No items available*
+
+##### 2.5.8.9.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.8.9.5.0.0.0 Error Handling
+
+N/A
+
+##### 2.5.8.9.6.0.0.0 Performance
+
+###### 2.5.8.9.6.1.0.0 Notes
+
+Real-time update triggered by step 9a.
+
+### 2.5.9.0.0.0.0.0 UI Update
+
+#### 2.5.9.1.0.0.0.0 Source Id
+
+presentation-layer
+
+#### 2.5.9.2.0.0.0.0 Target Id
+
+presentation-layer
+
+#### 2.5.9.3.0.0.0.0 Message
+
+12. Hide error banner
+
+#### 2.5.9.4.0.0.0.0 Sequence Number
+
+12
+
+#### 2.5.9.5.0.0.0.0 Type
+
+🔹 UI Update
+
+#### 2.5.9.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.8.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.9.0.0.0.0 Technical Details
+
+##### 2.5.9.9.1.0.0.0 Protocol
+
+DOM Render
+
+##### 2.5.9.9.2.0.0.0 Method
+
+setState
+
+##### 2.5.9.9.3.0.0.0 Parameters
+
+###### 2.5.9.9.3.1.0.0 component
+
+####### 2.5.9.9.3.1.1.0 Name
+
+component
+
+####### 2.5.9.9.3.1.2.0 Value
+
+AlertBanner
+
+###### 2.5.9.9.3.2.0.0 props
+
+####### 2.5.9.9.3.2.1.0 Name
+
+props
+
+####### 2.5.9.9.3.2.2.0 Value
+
+{ visible: false }
+
+##### 2.5.9.9.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.9.9.5.0.0.0 Error Handling
+
+N/A
+
+##### 2.5.9.9.6.0.0.0 Performance
+
+###### 2.5.9.9.6.1.0.0 Notes
+
+Recovery is complete from the user's perspective.
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+Data Integrity: The function terminates after step 5 without modifying any attendance records. This ensures the un-exported records remain in the queue (where 'exportedAt' is null) and will be picked up by the next successful run, preventing data loss and fulfilling REQ-3.5.3.
+
+#### 2.6.1.2.0.0.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0.0.0 Participant Id
+
+application-services-layer
+
+#### 2.6.1.4.0.0.0.0 Sequence Number
+
+5
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+Next Successful Run: The next time the scheduled job in step 1 runs, it will find the 'active' status, successfully write to the Google Sheets API, and then update the 'exportedAt' field on the attendance records, completing the data sync.
+
+#### 2.6.2.2.0.0.0.0 Position
+
+bottom
+
+#### 2.6.2.3.0.0.0.0 Participant Id
+
+EXTERNAL-GCP-SCHEDULER
+
+#### 2.6.2.4.0.0.0.0 Sequence Number
+
+12
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The Google OAuth Refresh Token must be encrypted a... |
+| Performance Targets | Recovery Time Objective (RTO): The system's respon... |
+| Error Handling Strategy | The `exportAttendanceData` function must different... |
+| Testing Considerations | Integration tests should use a mock of the Google ... |
+| Monitoring Requirements | A log-based metric should be created in Google Clo... |
+| Deployment Considerations | The IAM permissions for the Cloud Function service... |
+

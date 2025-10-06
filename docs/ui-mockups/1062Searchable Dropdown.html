@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component: Searchable Dropdown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM FOUNDATION & BASE STYLES --- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --color-error: #DC2626;
+            --color-error-bg: #FEF2F2;
+
+            /* Typography */
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-50);
+            color: var(--color-gray-700);
+            margin: 0;
+            padding: var(--spacing-xl);
+        }
+        .showcase-container { max-width: 900px; margin: auto; }
+        .showcase-header { text-align: center; margin-bottom: var(--spacing-xl); }
+        .component-section { background-color: var(--color-white); border-radius: var(--border-radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-xl); }
+        .component-section > h2 { font-size: 24px; border-bottom: 1px solid var(--color-gray-200); padding-bottom: var(--spacing-md); margin-bottom: var(--spacing-lg); color: var(--color-gray-900); }
+        .state-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-xl); align-items: start; }
+        .state-item > h3 { font-size: 16px; font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-sm); color: var(--color-gray-800); }
+        .form-field__label { display: block; font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-sm); color: var(--color-gray-700); }
+        .form-field__error-text { color: var(--color-error); font-size: var(--font-size-caption); margin-top: var(--spacing-xs); }
+
+        /* --- COMPONENT: SEARCHABLE DROPDOWN --- */
+
+        .s-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .s-dropdown__combobox {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            padding: 6px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--border-radius-md);
+            background-color: var(--color-white);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            min-height: 48px;
+        }
+
+        .s-dropdown__input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            padding: 6px;
+            font-size: var(--font-size-body);
+            font-family: var(--font-family-primary);
+            background: transparent;
+            min-width: 120px;
+        }
+
+        .s-dropdown__input::placeholder { color: var(--color-gray-400); }
+
+        .s-dropdown__arrow {
+            margin-left: auto;
+            color: var(--color-gray-400);
+            transition: transform 0.2s ease;
+            padding: 6px;
+        }
+
+        /* Dropdown List */
+        .s-dropdown__listbox {
+            position: absolute;
+            top: calc(100% + var(--spacing-sm));
+            left: 0;
+            right: 0;
+            background-color: var(--color-white);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 10;
+            list-style: none;
+            padding: var(--spacing-xs) 0;
+            margin: 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+
+        .s-dropdown__option {
+            padding: 10px var(--spacing-md);
+            cursor: pointer;
+            font-size: var(--font-size-body);
+        }
+
+        .s-dropdown__option:hover, .s-dropdown__option.pseudo-hover {
+            background-color: var(--color-gray-100);
+        }
+
+        .s-dropdown__option[aria-selected="true"], .s-dropdown__option.is-selected {
+            background-color: var(--color-primary-50);
+            color: var(--color-primary-600);
+            font-weight: 600;
+        }
+
+        .s-dropdown__option:focus-visible {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: -2px;
+            background-color: var(--color-gray-100);
+        }
+
+        .s-dropdown__empty, .s-dropdown__loading {
+            padding: var(--spacing-md);
+            color: var(--color-gray-500);
+            text-align: center;
+        }
+
+        /* Multi-select Tags */
+        .s-dropdown__tag {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background-color: var(--color-primary-50);
+            color: var(--color-primary-600);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-md);
+            font-size: var(--font-size-caption);
+            font-weight: 600;
+        }
+
+        .s-dropdown__tag-remove {
+            background: none; border: none; cursor: pointer; color: var(--color-primary-600); opacity: 0.7; padding: 0; display: flex;
+        }
+        .s-dropdown__tag-remove:hover { opacity: 1; }
+
+        /* Component States */
+        .s-dropdown[data-state="open"] .s-dropdown__combobox,
+        .s-dropdown .s-dropdown__combobox.pseudo-focus {
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 3px var(--color-primary-50);
+        }
+
+        .s-dropdown[data-state="open"] .s-dropdown__arrow { transform: rotate(180deg); }
+
+        .s-dropdown[data-state="open"] .s-dropdown__listbox {
+            opacity: 1; visibility: visible; transform: translateY(0);
+        }
+
+        .s-dropdown[data-state="error"] .s-dropdown__combobox {
+            border-color: var(--color-error);
+        }
+
+        .s-dropdown[data-state="error"] .s-dropdown__combobox.pseudo-focus {
+           box-shadow: 0 0 0 3px var(--color-error-bg);
+        }
+
+        .s-dropdown__loading-spinner {
+            display: flex; justify-content: center; align-items: center; padding: var(--spacing-md);
+        }
+
+        .spinner--small {
+            width: 24px; height: 24px; border: 2px solid var(--color-gray-200);
+            border-top-color: var(--color-primary-500); border-radius: 50%;
+            animation: spinner-spin 1s linear infinite;
+        }
+        @keyframes spinner-spin { to { transform: rotate(360deg); } }
+
+        /* Responsive Adaptations for Mobile */
+        @media (max-width: 768px) {
+            .s-dropdown[data-state="open"] .s-dropdown__listbox {
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                width: 100vw; height: 100vh; max-height: none;
+                border-radius: 0; border: none;
+                display: flex; flex-direction: column; transform: none;
+            }
+
+            /* These elements are only created for the mobile modal view */
+            .s-dropdown__listbox-header { display: none; }
+            .s-dropdown[data-state="open"] .s-dropdown__listbox-header {
+                display: flex; align-items: center;
+                padding: var(--spacing-md);
+                border-bottom: 1px solid var(--color-gray-300);
+            }
+            .s-dropdown[data-state="open"] .s-dropdown__listbox-header .s-dropdown__input {
+                flex-grow: 1; padding-left: var(--spacing-sm);
+            }
+            .s-dropdown[data-state="open"] .s-dropdown__listbox-close-btn {
+                background: none; border: none; font-size: 24px; font-weight: 300;
+                color: var(--color-gray-700); cursor: pointer; margin-left: var(--spacing-md);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="showcase-container">
+    <header class="showcase-header">
+        <h1>Molecular Component: Searchable Dropdown</h1>
+    </header>
+
+    <section class="component-section">
+        <h2>Single Select</h2>
+        <div class="state-group">
+            <div class="state-item">
+                <h3>Default State</h3>
+                <label for="supervisor-default" class="form-field__label">Assign Supervisor</label>
+                <div id="dropdown-single-default" class="s-dropdown">
+                    <div class="s-dropdown__combobox" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="listbox-single-default">
+                        <input id="supervisor-default" class="s-dropdown__input" type="text" placeholder="Select a supervisor...">
+                        <div class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="state-item">
+                <h3>Open / Focused State</h3>
+                <label for="supervisor-open" class="form-field__label">Assign Supervisor</label>
+                <div id="dropdown-single-open" class="s-dropdown" data-state="open">
+                    <div class="s-dropdown__combobox" role="combobox" aria-haspopup="listbox" aria-expanded="true" aria-controls="listbox-single-open">
+                        <input id="supervisor-open" class="s-dropdown__input" type="text" placeholder="Search supervisors...">
+                        <div class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                    <ul id="listbox-single-open" class="s-dropdown__listbox" role="listbox">
+                        <!-- JS would generate a header for mobile view -->
+                        <li class="s-dropdown__option" role="option" aria-selected="false">Jane Doe</li>
+                        <li class="s-dropdown__option is-selected" role="option" aria-selected="true">John Smith</li>
+                        <li class="s-dropdown__option pseudo-hover" role="option" aria-selected="false">Priya Sharma</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="state-item">
+                <h3>With Selection</h3>
+                <label for="supervisor-selected" class="form-field__label">Assign Supervisor</label>
+                <div id="dropdown-single-selected" class="s-dropdown">
+                    <div class="s-dropdown__combobox" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                        <input id="supervisor-selected" class="s-dropdown__input" type="text" value="John Smith" readonly>
+                        <div class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="state-item">
+                <h3>Loading State</h3>
+                <label for="supervisor-loading" class="form-field__label">Assign Supervisor</label>
+                <div id="dropdown-single-loading" class="s-dropdown" data-state="open">
+                    <div class="s-dropdown__combobox pseudo-focus" role="combobox" aria-haspopup="listbox" aria-expanded="true">
+                        <input id="supervisor-loading" class="s-dropdown__input" type="text" value="Ja...">
+                        <div class="s-dropdown__arrow">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                    <div class="s-dropdown__listbox">
+                        <div class="s-dropdown__loading-spinner">
+                            <div class="spinner--small"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="state-item">
+                <h3>Error State</h3>
+                <label for="supervisor-error" class="form-field__label">Assign Supervisor</label>
+                <div id="dropdown-single-error" class="s-dropdown" data-state="error">
+                    <div class="s-dropdown__combobox" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-describedby="error-msg">
+                        <input id="supervisor-error" class="s-dropdown__input" type="text" placeholder="Select a supervisor...">
+                        <div class="s-dropdown__arrow">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <p id="error-msg" class="form-field__error-text">A supervisor is required.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="component-section">
+        <h2>Multi Select</h2>
+        <div class="state-group">
+             <div class="state-item">
+                <h3>Default State</h3>
+                <label for="team-default" class="form-field__label">Select Team Members</label>
+                <div id="dropdown-multi-default" class="s-dropdown">
+                    <div class="s-dropdown__combobox" role="combobox" aria-expanded="false">
+                        <input id="team-default" class="s-dropdown__input" type="text" placeholder="Select members...">
+                        <div class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="state-item">
+                <h3>With Selections</h3>
+                <label for="team-selected" class="form-field__label">Select Team Members</label>
+                <div id="dropdown-multi-selected" class="s-dropdown">
+                    <div class="s-dropdown__combobox pseudo-focus" role="combobox" aria-expanded="false">
+                        <span class="s-dropdown__tag">
+                            Jane Doe
+                            <button class="s-dropdown__tag-remove" aria-label="Remove Jane Doe">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+                            </button>
+                        </span>
+                         <span class="s-dropdown__tag">
+                            Priya Sharma
+                            <button class="s-dropdown__tag-remove" aria-label="Remove Priya Sharma">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+                            </button>
+                        </span>
+                        <input id="team-selected" class="s-dropdown__input" type="text" placeholder="Select more members...">
+                        <div class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="state-item">
+                <h3>Open with No results</h3>
+                <label for="team-no-results" class="form-field__label">Select Team Members</label>
+                <div id="dropdown-multi-no-results" class="s-dropdown" data-state="open">
+                    <div class="s-dropdown__combobox" role="combobox" aria-expanded="true">
+                        <input id="team-no-results" class="s-dropdown__input" type="text" value="Nonexistent User">
+                        <div class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </div>
+                    </div>
+                     <ul class="s-dropdown__listbox">
+                         <li class="s-dropdown__empty" role="status">No results found</li>
+                     </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="component-section">
+        <h2>Mobile Modal View (Conceptual)</h2>
+        <p>On viewports under 768px, the `data-state="open"` will trigger a full-screen modal instead of a dropdown. The following is a conceptual mockup of how the listbox would be structured for the mobile view.</p>
+        <div style="border: 1px solid #ccc; padding: 16px; border-radius: 8px;">
+            <div class="s-dropdown__listbox-header">
+                <input class="s-dropdown__input" type="text" placeholder="Search members...">
+                <button class="s-dropdown__listbox-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <ul class="s-dropdown__listbox" style="position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: none; max-height: 150px;">
+                <li class="s-dropdown__option" role="option">Jane Doe</li>
+                <li class="s-dropdown__option" role="option">John Smith</li>
+                <li class="s-dropdown__option is-selected" role="option" aria-selected="true">Priya Sharma</li>
+            </ul>
+        </div>
+    </section>
+
+</div>
+
+<div> 
+    <h2>Component Variations</h2>
+    <div>
+        <h3>Variant Name : "single_select"</h3>
+        <normal> Allows the user to select only one option from the list. Upon selection, the dropdown closes and the input value is updated with the selected item's label. </normal>
+    </div>
+    <div>
+        <h3>Variant Name : "multi_select"</h3>
+        <normal> Allows the user to select multiple options. Each selected item is displayed as a 'tag' or 'chip' in the input area. The dropdown remains open to allow for further selections. </normal>
+    </div>
+</div>
+</body>
+</html>

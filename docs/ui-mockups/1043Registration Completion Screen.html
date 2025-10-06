@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--color-neutral-100);
+      color: var(--color-neutral-700);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, picture, video, canvas, svg {
+      display: block;
+      max-width: 100%;
+    }
+    input, button, textarea, select {
+      font: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+    a {
+      color: var(--color-primary-500);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Design System Tokens */
+    :root {
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      --color-primary-50: #E6F0FF;
+
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+
+      --color-semantic-success: #16A34A;
+      --color-semantic-error: #DC2626;
+
+      --font-size-h3: 28px;
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-weight-bold: 700;
+      --font-weight-semibold: 600;
+
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      --border-radius-lg: 12px;
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+    
+    /* Screen Layout */
+    .screen-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--spacing-md);
+    }
+    
+    .registration-card {
+      background-color: white;
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--spacing-xl);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .card-header h1 {
+      font-size: var(--font-size-h3);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-neutral-900);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .card-header p {
+      color: var(--color-neutral-500);
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .form-label {
+      display: block;
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-700);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* Text Input Field Component */
+    .input-wrapper {
+      position: relative;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--color-neutral-300);
+      border-radius: 8px;
+      font-size: var(--font-size-body);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border: 2px solid var(--color-primary-500);
+      padding: 11px 15px; /* Adjust padding to keep size consistent */
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+    
+    .form-input.is-invalid {
+        border-color: var(--color-semantic-error);
+    }
+    .form-input.is-invalid:focus {
+        box-shadow: 0 0 0 3px #fecaca;
+    }
+
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 4px;
+      color: var(--color-neutral-400);
+    }
+
+    .password-toggle svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .validation-message {
+      font-size: var(--font-size-caption);
+      color: var(--color-semantic-error);
+      margin-top: var(--spacing-xs);
+    }
+    
+    /* Password Policy Checklist */
+    .password-policy {
+        list-style: none;
+        margin-top: var(--spacing-sm);
+        font-size: var(--font-size-caption);
+    }
+    .policy-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-xs);
+        color: var(--color-neutral-500);
+        transition: color 0.2s;
+    }
+    .policy-item svg {
+        width: 16px;
+        height: 16px;
+        margin-right: var(--spacing-sm);
+        stroke-width: 2.5;
+    }
+    .policy-item.valid {
+        color: var(--color-semantic-success);
+    }
+    .policy-item.invalid {
+        color: var(--color-semantic-error);
+    }
+
+    /* Checkbox Component */
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      margin-top: var(--spacing-lg);
+    }
+
+    .checkbox-input {
+      width: 1.3em;
+      height: 1.3em;
+      margin-top: 0.2em;
+      margin-right: 0.7em;
+      accent-color: var(--color-primary-500);
+    }
+    .checkbox-input:focus {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+
+    .checkbox-label {
+      font-size: var(--font-size-caption);
+      color: var(--color-neutral-500);
+    }
+
+    /* Primary Button Component */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      font-weight: var(--font-weight-semibold);
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      transition: background-color 0.2s, transform 0.1s;
+      margin-top: var(--spacing-lg);
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: white;
+    }
+
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--primary:active {
+      background-color: var(--color-primary-700);
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      background-color: var(--color-neutral-200);
+      color: var(--color-neutral-400);
+      cursor: not-allowed;
+    }
+    
+    .btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+    
+    /* Loading Spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Alert Banner */
+    .alert-banner {
+      display: none; /* Hidden by default */
+      padding: var(--spacing-md);
+      border-radius: 8px;
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+    }
+    .alert-banner--error {
+        background-color: #FEF2F2;
+        color: #991B1B;
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      .screen-container {
+        padding: 0;
+        align-items: flex-start;
+      }
+      .registration-card {
+        border-radius: 0;
+        box-shadow: none;
+        padding: var(--spacing-xl) var(--spacing-lg);
+        min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-container">
+    <div id="default-card" class="registration-card">
+      <div class="card-header">
+        <h1>Complete Your Registration</h1>
+        <p>Welcome to AcmeCorp! Set a secure password to activate your account.</p>
+      </div>
+
+      <div id="error-banner" class="alert-banner alert-banner--error">
+          <span id="error-message"></span>
+      </div>
+
+      <form id="registration-form" onsubmit="handleFormSubmit(event)">
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" class="form-input" aria-describedby="password-policy-list password-mismatch" required>
+            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', 'password-icon')" aria-label="Show password">
+              <svg id="password-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+          <ul class="password-policy" id="password-policy-list" aria-live="polite">
+            <li class="policy-item" id="policy-length">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>Minimum 8 characters</span>
+            </li>
+            <li class="policy-item" id="policy-uppercase">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>At least one uppercase letter (A-Z)</span>
+            </li>
+            <li class="policy-item" id="policy-lowercase">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>At least one lowercase letter (a-z)</span>
+            </li>
+            <li class="policy-item" id="policy-number">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>At least one number (0-9)</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirm-password" class="form-label">Confirm Password</label>
+           <div class="input-wrapper">
+            <input type="password" id="confirm-password" class="form-input" required>
+            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password', 'confirm-password-icon')" aria-label="Show confirm password">
+              <svg id="confirm-password-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+          <p id="password-mismatch" class="validation-message" style="display: none;">Passwords do not match.</p>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="terms" name="terms" class="checkbox-input">
+          <label for="terms" class="checkbox-label">I have read and agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>.</label>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn--primary" disabled>
+          <span id="btn-text">Activate Account</span>
+          <div id="btn-spinner" class="spinner" style="display: none;"></div>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="screen-variations" style="display:none;">
+    <h2>Screen Variations</h2>
+    <div class="variation-group">
+      <h3>Variant Name: "Default"</h3>
+      <p>The initial state of the screen when loaded by the user.</p>
+      <!-- The default live mockup above serves as this variant. -->
+    </div>
+    <div class="variation-group">
+      <h3>Variant Name: "Loading"</h3>
+      <p>The state after the user clicks 'Activate Account' while the system is processing the request.</p>
+    </div>
+    <div class="variation-group">
+      <h3>Variant Name: "Error - Password Mismatch"</h3>
+      <p>The state when the 'Password' and 'Confirm Password' fields do not match.</p>
+    </div>
+     <div class="variation-group">
+      <h3>Variant Name: "Error - Server"</h3>
+      <p>The state after form submission fails due to a server-side error.</p>
+    </div>
+  </div>
+
+<script>
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    const termsCheckbox = document.getElementById('terms');
+    const submitBtn = document.getElementById('submit-btn');
+    const form = document.getElementById('registration-form');
+
+    const policyLength = document.getElementById('policy-length');
+    const policyUppercase = document.getElementById('policy-uppercase');
+    const policyLowercase = document.getElementById('policy-lowercase');
+    const policyNumber = document.getElementById('policy-number');
+    const mismatchError = document.getElementById('password-mismatch');
+
+    const validIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+    const invalidIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+    let passwordIsValid = false;
+
+    function validatePassword() {
+      const value = passwordInput.value;
+      
+      const hasLength = value.length >= 8;
+      const hasUpper = /[A-Z]/.test(value);
+      const hasLower = /[a-z]/.test(value);
+      const hasNumber = /[0-9]/.test(value);
+
+      updatePolicyItem(policyLength, hasLength);
+      updatePolicyItem(policyUppercase, hasUpper);
+      updatePolicyItem(policyLowercase, hasLower);
+      updatePolicyItem(policyNumber, hasNumber);
+      
+      passwordIsValid = hasLength && hasUpper && hasLower && hasNumber;
+      validateForm();
+    }
+
+    function updatePolicyItem(element, isValid) {
+        element.classList.toggle('valid', isValid);
+        element.classList.toggle('invalid', !isValid);
+        element.firstElementChild.outerHTML = isValid ? validIcon : invalidIcon;
+    }
+
+    function validateConfirmPassword() {
+        const passwordsMatch = passwordInput.value === confirmPasswordInput.value && confirmPasswordInput.value.length > 0;
+        mismatchError.style.display = passwordsMatch || confirmPasswordInput.value.length === 0 ? 'none' : 'block';
+        confirmPasswordInput.classList.toggle('is-invalid', !passwordsMatch && confirmPasswordInput.value.length > 0);
+        validateForm();
+    }
+    
+    function validateForm() {
+      const passwordsMatch = passwordInput.value === confirmPasswordInput.value;
+      const termsAccepted = termsCheckbox.checked;
+      submitBtn.disabled = !(passwordIsValid && passwordsMatch && termsAccepted);
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        icon.innerHTML = isPassword 
+            ? `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>` // Eye open
+            : `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`; // Eye closed
+    }
+
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const btnText = document.getElementById('btn-text');
+        const spinner = document.getElementById('btn-spinner');
+        const errorBanner = document.getElementById('error-banner');
+        const errorMessage = document.getElementById('error-message');
+
+        // --- Simulate Loading State ---
+        submitBtn.disabled = true;
+        btnText.textContent = 'Activating...';
+        spinner.style.display = 'inline-block';
+        errorBanner.style.display = 'none';
+
+        // Simulate a network request
+        setTimeout(() => {
+            // --- Simulate Server Error State ---
+            if (passwordInput.value.includes('fail')) {
+                 spinner.style.display = 'none';
+                 btnText.textContent = 'Activate Account';
+                 submitBtn.disabled = false; // Re-enable for retry
+                 errorMessage.textContent = 'An unexpected error occurred. Please try again.';
+                 errorBanner.style.display = 'block';
+
+            } else {
+                 // --- Simulate Success State ---
+                 form.innerHTML = `<div style="text-align: center; color: var(--color-semantic-success);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width: 64px; height: 64px; margin: 0 auto 16px; stroke-width: 1.5;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">Account Activated!</h2>
+                    <p>Redirecting you to your dashboard...</p>
+                 </div>`;
+                 setTimeout(() => {
+                     // In a real app, you would redirect here.
+                     // alert('Redirecting to dashboard...');
+                 }, 2000);
+            }
+        }, 1500);
+    }
+    
+    passwordInput.addEventListener('input', validatePassword);
+    confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+    termsCheckbox.addEventListener('change', validateForm);
+
+</script>
+</body>
+</html>

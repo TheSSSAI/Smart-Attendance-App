@@ -1,0 +1,45 @@
+flowchart TD
+    subgraph "Frontend: Web Application"
+        A[User navigates to Registration Page] --> B[Fills out form: Org Name, Admin Email, Password]
+        B --> C{Client-Side Validation (Format, Password Policy)}
+        C -->|Invalid| D[Show inline validation errors]
+        D --> B
+        C -->|Valid| E[Show loading state & Submit to Backend]
+    end
+
+    subgraph "Backend: 'registerOrganization' Cloud Function"
+        E --> F{1. Check Org Name Uniqueness}
+        F -->|Taken| G[Return 'name-already-taken' error]
+        F -->|Unique| H[Start Atomic Operation]
+        
+        subgraph "Atomic Transaction"
+            I[2. Create Firebase Auth User] --> J[3. Create Tenant Document in Firestore]
+            J --> K[4. Create Admin User Document in Firestore]
+        end
+        H --> I
+        
+        K --> L{Transaction Succeeded?}
+        L -->|No| M[Compensate: Delete Auth User] --> N[Return 'internal-error']
+        L -->|Yes| O[5. Set Custom Claims on Auth User (role, tenantId)]
+    end
+
+    subgraph "Frontend: Post-Submission"
+        G --> P[Display 'Name Taken' error to user]
+        P --> B
+        
+        N --> Q[Display generic 'Registration Failed' error]
+        Q --> B
+
+        O --> R[Return Success to Client]
+        R --> S[Client SDK automatically logs in user]
+        S --> T[Redirect to Admin Web Dashboard]
+    end
+
+    %% Styling
+    classDef errorNode fill:#ffebee,stroke:#c62828,color:#c62828
+    classDef successNode fill:#e8f5e9,stroke:#2e7d32,color:#2e7d32
+    classDef processNode fill:#e3f2fd,stroke:#1565c0,color:#1565c0
+    
+    class D,G,N,P,Q errorNode
+    class S,T successNode
+    class B,C,E,F,H,I,J,K,L,O,R processNode

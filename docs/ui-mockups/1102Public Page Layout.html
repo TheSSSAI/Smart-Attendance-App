@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Page Layout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, picture, video, canvas, svg {
+      display: block;
+      max-width: 100%;
+    }
+    input, button, textarea, select {
+      font: inherit;
+    }
+    p, h1, h2, h3, h4, h5, h6 {
+      overflow-wrap: break-word;
+    }
+
+    /* Design System Tokens */
+    :root {
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --fs-h3: 28px;
+      --fs-body: 16px;
+      --fs-caption: 14px;
+      --fw-normal: 400;
+      --fw-semibold: 600;
+      --fw-bold: 700;
+
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+      --color-white: #FFFFFF;
+
+      --color-error-500: #DC2626;
+
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+      --space-48: 48px;
+
+      /* Borders & Shadows */
+      --border-radius-lg: 12px;
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* Base Styles */
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-neutral-100);
+      color: var(--color-neutral-700);
+      font-size: var(--fs-body);
+    }
+
+    /* Public Page Layout */
+    .public-layout {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: var(--space-24);
+    }
+    
+    .public-layout__logo {
+        margin-bottom: var(--space-32);
+        display: flex;
+        align-items: center;
+        gap: var(--space-12);
+        font-size: 1.5rem;
+        font-weight: var(--fw-bold);
+        color: var(--color-neutral-900);
+    }
+
+    .public-layout__logo svg {
+        width: 32px;
+        height: 32px;
+        color: var(--color-primary-500);
+    }
+
+    .public-layout__footer {
+      margin-top: var(--space-48);
+      text-align: center;
+      font-size: var(--fs-caption);
+      color: var(--color-neutral-500);
+    }
+    .public-layout__footer a {
+        color: var(--color-primary-600);
+        text-decoration: none;
+        font-weight: var(--fw-semibold);
+    }
+    .public-layout__footer a:hover {
+        text-decoration: underline;
+    }
+
+    /* Card Component (Dependency) */
+    .card {
+      background-color: var(--color-white);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-32);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    /* Placeholder Content Styles for Demonstration */
+    .form-content h2 {
+        font-size: var(--fs-h3);
+        font-weight: var(--fw-bold);
+        color: var(--color-neutral-900);
+        text-align: center;
+        margin-bottom: var(--space-8);
+    }
+    .form-content p {
+        text-align: center;
+        color: var(--color-neutral-500);
+        margin-bottom: var(--space-32);
+    }
+
+    .form-group {
+        margin-bottom: var(--space-16);
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: var(--fw-semibold);
+        margin-bottom: var(--space-8);
+        color: var(--color-neutral-700);
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: var(--space-12) var(--space-16);
+        border: 1px solid var(--color-neutral-300);
+        border-radius: 8px;
+        font-size: var(--fs-body);
+    }
+    
+    .form-group input:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+        border-color: var(--color-primary-500);
+    }
+
+    .btn {
+        display: inline-block;
+        font-weight: var(--fw-semibold);
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        border: 1px solid transparent;
+        padding: var(--space-12) var(--space-24);
+        font-size: var(--fs-body);
+        border-radius: 8px;
+        transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+        width: 100%;
+    }
+    
+    .btn--primary {
+        background-color: var(--color-primary-500);
+        color: var(--color-white);
+    }
+
+    .btn--primary:hover {
+        background-color: var(--color-primary-600);
+    }
+
+    .btn--primary:active {
+        background-color: var(--color-primary-700);
+        transform: scale(0.98);
+    }
+    
+    .btn--primary:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+
+
+    /* Responsive Adaptations */
+    @media (max-width: 767px) {
+      .public-layout {
+        justify-content: flex-start;
+        padding: var(--space-16);
+      }
+      .public-layout__logo {
+          margin-top: var(--space-24);
+      }
+      .card {
+        padding: var(--space-24);
+      }
+    }
+
+    /* For Variations Showcase */
+    .screen-variations {
+        padding: 40px;
+        background-color: #f0f0f0;
+        margin-top: 40px;
+    }
+    .variation-group {
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .variation-group h3 {
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    .variation-group normal {
+        font-style: italic;
+        color: #555;
+    }
+  </style>
+</head>
+<body>
+  
+  <main class="public-layout">
+    <div class="public-layout__logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd"></path></svg>
+        <span>AttendanceApp</span>
+    </div>
+
+    <div class="card">
+      <!-- Child screen content (e.g., Login, Register) will be injected here -->
+      <div class="form-content">
+        <h2>Welcome Back</h2>
+        <p>Enter your credentials to access your account.</p>
+        
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••">
+        </div>
+
+        <div class="form-group" style="margin-top: 24px;">
+          <button type="submit" class="btn btn--primary">Log In</button>
+        </div>
+      </div>
+    </div>
+    
+    <footer class="public-layout__footer">
+        <p>© 2025 AttendanceApp. All rights reserved. <a href="#">Privacy Policy</a></p>
+    </footer>
+  </main>
+
+  <div class="screen-variations">
+    <h2>Screen Variations</h2>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Default State"</h3>
+      <normal>This is the standard and only state for this layout component. It provides a centered, responsive container for other screens. The mockup above demonstrates this default state by embedding a sample login form within the layout.</normal>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Import Module</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Design System Tokens */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-50: #E6F0FF;
+      --color-secondary-500: #00C2A1;
+
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+
+      --semantic-success: #16A34A;
+      --semantic-warning: #F59E0B;
+      --semantic-error: #DC2626;
+      --semantic-success-light: #F0FDF4;
+      --semantic-error-light: #FEF2F2;
+      --semantic-warning-light: #FFFBEB;
+
+      /* Typography */
+      --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-h3: 28px;
+      --font-size-h4: 20px;
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-weight-bold: 700;
+      --font-weight-semibold: 600;
+      --font-weight-regular: 400;
+      --line-height-body: 1.5;
+
+      /* Spacing */
+      --spacing-4: 4px;
+      --spacing-8: 8px;
+      --spacing-16: 16px;
+      --spacing-24: 24px;
+      --spacing-32: 32px;
+
+      /* Borders & Shadows */
+      --border-radius-lg: 12px;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Base Styles */
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-700);
+      line-height: var(--line-height-body);
+      font-size: var(--font-size-body);
+    }
+
+    /* Screen Layout */
+    .screen-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--spacing-32);
+      min-height: 100vh;
+      width: 100%;
+    }
+    .screen-header {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: var(--spacing-32);
+      text-align: center;
+    }
+    .screen-header h1 {
+        font-size: var(--font-size-h3);
+        color: var(--color-neutral-900);
+    }
+
+    /* Card Component */
+    .card {
+      background-color: var(--color-neutral-white);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--spacing-32);
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* --- IDLE STATE --- */
+    .file-upload-container {
+      text-align: center;
+    }
+    .file-upload-container h2 {
+      font-size: var(--font-size-h4);
+      color: var(--color-neutral-900);
+      margin-bottom: var(--spacing-8);
+    }
+    .file-upload-container .subtitle {
+      color: var(--color-neutral-500);
+      margin-bottom: var(--spacing-24);
+    }
+    .file-drop-zone {
+      border: 2px dashed var(--color-neutral-300);
+      border-radius: var(--border-radius-lg);
+      padding: var(--spacing-32);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .file-drop-zone.--is-dragging {
+      background-color: var(--color-primary-50);
+      border-color: var(--color-primary-500);
+    }
+    .file-drop-zone:hover {
+        background-color: var(--color-neutral-100);
+    }
+    .drop-zone-icon {
+      font-size: 48px;
+      color: var(--color-primary-500);
+      margin-bottom: var(--spacing-16);
+    }
+    .drop-zone-text {
+      color: var(--color-neutral-700);
+      font-weight: var(--font-weight-semibold);
+    }
+    .drop-zone-text span {
+      color: var(--color-primary-500);
+      font-weight: var(--font-weight-bold);
+    }
+    .drop-zone-hint {
+      color: var(--color-neutral-500);
+      font-size: var(--font-size-caption);
+      margin-top: var(--spacing-8);
+    }
+    .file-upload-container .template-link {
+        margin-top: var(--spacing-24);
+        font-size: var(--font-size-caption);
+    }
+    .template-link a {
+        color: var(--color-primary-500);
+        text-decoration: none;
+        font-weight: var(--font-weight-semibold);
+    }
+    .template-link a:hover {
+        text-decoration: underline;
+    }
+    #file-input {
+        display: none;
+    }
+    
+    /* --- UPLOADING STATE --- */
+    .uploading-container {
+      text-align: center;
+    }
+    .uploading-container p {
+      margin-bottom: var(--spacing-16);
+      font-weight: var(--font-weight-semibold);
+    }
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background-color: var(--color-neutral-200);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      width: 0%; /* JS will update this */
+      background-color: var(--color-primary-500);
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+
+    /* --- PROCESSING STATE --- */
+    .processing-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-16);
+      padding: var(--spacing-32) 0;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 5px solid var(--color-neutral-200);
+      border-top-color: var(--color-primary-500);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .processing-container p {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-700);
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* --- COMPLETE STATE (SUMMARY REPORT) --- */
+    .summary-report-container {
+        width: 100%;
+    }
+    .summary-report-header {
+      text-align: center;
+      margin-bottom: var(--spacing-24);
+    }
+    .summary-report-header h2 {
+      font-size: var(--font-size-h4);
+      color: var(--color-neutral-900);
+      margin-bottom: var(--spacing-4);
+    }
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--spacing-16);
+      margin-bottom: var(--spacing-32);
+      text-align: center;
+    }
+    .stat-card {
+      padding: var(--spacing-16);
+      border: 1px solid var(--color-neutral-200);
+      border-radius: var(--border-radius-lg);
+    }
+    .stat-card .value {
+      font-size: var(--font-size-h3);
+      font-weight: var(--font-weight-bold);
+    }
+    .stat-card .label {
+      font-size: var(--font-size-caption);
+      color: var(--color-neutral-500);
+    }
+    .stat-card.--success .value { color: var(--semantic-success); }
+    .stat-card.--error .value { color: var(--semantic-error); }
+    .stat-card.--warning .value { color: var(--semantic-warning); }
+
+    .error-details h3 {
+      font-size: var(--font-size-h4);
+      margin-bottom: var(--spacing-16);
+      color: var(--color-neutral-900);
+    }
+    .error-table-wrapper {
+        overflow-x: auto;
+    }
+    .error-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .error-table th, .error-table td {
+      padding: var(--spacing-16);
+      text-align: left;
+      border-bottom: 1px solid var(--color-neutral-200);
+    }
+    .error-table th {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-500);
+      font-size: var(--font-size-caption);
+      text-transform: uppercase;
+    }
+    .error-table td {
+        font-size: var(--font-size-caption);
+    }
+    .error-table .row-number {
+      font-weight: var(--font-weight-semibold);
+    }
+    .error-table .error-message {
+      color: var(--semantic-error);
+    }
+    .summary-actions {
+      margin-top: var(--spacing-32);
+      display: flex;
+      gap: var(--spacing-16);
+      justify-content: flex-end;
+    }
+    .alert {
+        padding: var(--spacing-16);
+        border-radius: var(--border-radius-lg);
+        margin-bottom: var(--spacing-24);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-16);
+    }
+    .alert.--success { background-color: var(--semantic-success-light); color: var(--semantic-success); }
+    .alert.--warning { background-color: var(--semantic-warning-light); color: var(--semantic-warning); }
+
+    /* Button Component */
+    .btn {
+      padding: 12px 24px;
+      font-size: var(--font-size-body);
+      font-weight: var(--font-weight-semibold);
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-8);
+    }
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .btn--secondary {
+      background-color: var(--color-neutral-100);
+      color: var(--color-neutral-700);
+      border: 1px solid var(--color-neutral-200);
+    }
+    .btn--secondary:hover {
+      background-color: var(--color-neutral-200);
+    }
+
+    /* Screen Variations Styles */
+    .screen-variations {
+        margin-top: var(--spacing-32);
+        width: 100%;
+        max-width: 800px;
+    }
+    .variation-group {
+        margin-top: var(--spacing-32);
+        border-top: 2px solid var(--color-neutral-200);
+        padding-top: var(--spacing-32);
+    }
+    .variation-group h3 {
+        margin-bottom: var(--spacing-8);
+    }
+    .variation-group normal {
+        color: var(--color-neutral-500);
+        display: block;
+        margin-bottom: var(--spacing-16);
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-container">
+    <header class="screen-header">
+      <h1>Bulk Import Users & Teams</h1>
+    </header>
+    
+    <main class="card">
+        <!-- This is the main implementation. The variants below are for demonstration -->
+        <div id="idle-state">
+            <div class="file-upload-container">
+                <h2>Upload your file</h2>
+                <p class="subtitle">Drag & drop a CSV file or select a file from your computer.</p>
+                <label for="file-input" class="file-drop-zone" id="drop-zone">
+                    <div class="drop-zone-icon">📥</div>
+                    <p class="drop-zone-text"><span>Click to upload</span> or drag and drop</p>
+                    <p class="drop-zone-hint">CSV file up to 10MB</p>
+                </label>
+                <input type="file" id="file-input" accept=".csv">
+                <p class="template-link">Don't have a template? <a href="#" download>Download the CSV template</a></p>
+            </div>
+        </div>
+    </main>
+  </div>
+  
+  <div class="screen-variations screen-container">
+    <h2>Screen Variations</h2>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Idle"</h3>
+      <normal>The default state when the user first visits the page, prompting for file upload.</normal>
+      <div class="card">
+        <div class="file-upload-container">
+            <h2>Upload your file</h2>
+            <p class="subtitle">Drag & drop a CSV file or select a file from your computer.</p>
+            <label for="file-input-idle" class="file-drop-zone">
+                <div class="drop-zone-icon">📥</div>
+                <p class="drop-zone-text"><span>Click to upload</span> or drag and drop</p>
+                <p class="drop-zone-hint">CSV file up to 10MB</p>
+            </label>
+            <input type="file" id="file-input-idle" accept=".csv">
+            <p class="template-link">Don't have a template? <a href="#" download>Download the CSV template</a></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="variation-group">
+      <h3>Variant Name: "Uploading"</h3>
+      <normal>Shown immediately after a file is selected, displaying upload progress.</normal>
+      <div class="card">
+        <div class="uploading-container">
+            <p>Uploading "user_data_q1.csv"...</p>
+            <div class="progress-bar">
+                <div class="progress-bar-inner" style="width: 65%;"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="variation-group">
+        <h3>Variant Name: "Processing"</h3>
+        <normal>Shown after the file is uploaded, while the backend is processing and validating the data.</normal>
+        <div class="card">
+            <div class="processing-container">
+                <div class="spinner"></div>
+                <p>Processing your file... This may take a moment.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="variation-group">
+        <h3>Variant Name: "Complete - All Success"</h3>
+        <normal>The summary report shown when all rows in the CSV are imported successfully.</normal>
+        <div class="card">
+            <div class="summary-report-container">
+                <div class="summary-report-header">
+                    <h2>Import Complete</h2>
+                </div>
+                <div class="alert --success">
+                    <span>✔️</span>
+                    <p><strong>All 257 records were imported successfully.</strong></p>
+                </div>
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <p class="value">257</p>
+                        <p class="label">Total Records Processed</p>
+                    </div>
+                    <div class="stat-card --success">
+                        <p class="value">257</p>
+                        <p class="label">Successful Imports</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="value">0</p>
+                        <p class="label">Failed Imports</p>
+                    </div>
+                </div>
+                <div class="summary-actions">
+                    <button class="btn btn--primary" type="button">Import Another File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="variation-group">
+        <h3>Variant Name: "Complete - Partial Failure"</h3>
+        <normal>The summary report shown when some rows failed to import, providing details and a download link.</normal>
+        <div class="card">
+            <div class="summary-report-container">
+                <div class="summary-report-header">
+                    <h2>Import Complete</h2>
+                </div>
+                <div class="alert --warning">
+                    <span>⚠️</span>
+                    <p><strong>Import completed with some errors.</strong> 254 records were imported successfully, but 3 failed.</p>
+                </div>
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <p class="value">257</p>
+                        <p class="label">Total Records Processed</p>
+                    </div>
+                    <div class="stat-card --success">
+                        <p class="value">254</p>
+                        <p class="label">Successful Imports</p>
+                    </div>
+                    <div class="stat-card --error">
+                        <p class="value">3</p>
+                        <p class="label">Failed Imports</p>
+                    </div>
+                </div>
+                <div class="error-details">
+                    <h3>Failed Records</h3>
+                    <div class="error-table-wrapper">
+                        <table class="error-table">
+                            <thead>
+                                <tr>
+                                    <th>Row</th>
+                                    <th>Error Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="row-number">12</td>
+                                    <td class="error-message">Email 'john.doe@acme.com' already exists in this organization.</td>
+                                </tr>
+                                <tr>
+                                    <td class="row-number">45</td>
+                                    <td class="error-message">Invalid role 'Intern'. Must be 'Supervisor' or 'Subordinate'.</td>
+                                </tr>
+                                <tr>
+                                    <td class="row-number">103</td>
+                                    <td class="error-message">Supervisor with email 'manager@acme.com' not found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="summary-actions">
+                    <button class="btn btn--secondary" type="button">Download Failed Records (.csv)</button>
+                    <button class="btn btn--primary" type="button">Import Another File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Simple script for drag-and-drop visual feedback demonstration.
+    const dropZone = document.getElementById('drop-zone');
+    if (dropZone) {
+      dropZone.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('--is-dragging');
+      });
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+      dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('--is-dragging');
+      });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('--is-dragging');
+        // In a real app, you'd handle the file upload here.
+      });
+    }
+  </script>
+</body>
+</html>

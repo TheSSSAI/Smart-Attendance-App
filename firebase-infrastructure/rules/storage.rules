@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Default deny all reads and writes
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // Allow authenticated Admins to upload CSV files for data migration.
+    // US-083: Admin uploads a CSV file to bulk-create users and teams.
+    // The path is restricted to a specific 'imports' folder, scoped by tenant and user.
+    // This provides a secure, isolated location for temporary file uploads.
+    match /tenants/{tenantId}/imports/{userId}/{fileName} {
+      // Only the user who owns this import path (and is an Admin) can write to it.
+      allow write: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.auth.token.tenantId == tenantId
+                    && request.auth.token.role == 'Admin'
+                    && request.resource.size < 5 * 1024 * 1024 // Max 5MB file size
+                    && request.resource.contentType == 'text/csv'; // Only allow CSV files
+                    
+      // Only the user who uploaded it can read or delete it.
+      allow read, delete: if request.auth != null
+                           && request.auth.uid == userId
+                           && request.auth.token.tenantId == tenantId
+                           && request.auth.token.role == 'Admin';
+    }
+  }
+}

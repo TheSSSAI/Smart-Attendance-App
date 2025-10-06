@@ -1,0 +1,120 @@
+name: Flutter Web Admin CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  analyze_and_test:
+    name: Analyze & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0' # Or your project's version
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+  deploy_staging:
+    name: Build & Deploy to Staging
+    needs: analyze_and_test
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Create staging environment file
+        run: |
+          echo "FIREBASE_API_KEY=${{ secrets.STAGING_FIREBASE_API_KEY }}" > env/.env.staging
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.STAGING_FIREBASE_AUTH_DOMAIN }}" >> env/.env.staging
+          echo "FIREBASE_PROJECT_ID=${{ secrets.STAGING_FIREBASE_PROJECT_ID }}" >> env/.env.staging
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.STAGING_FIREBASE_STORAGE_BUCKET }}" >> env/.env.staging
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.STAGING_FIREBASE_MESSAGING_SENDER_ID }}" >> env/.env.staging
+          echo "FIREBASE_APP_ID=${{ secrets.STAGING_FIREBASE_APP_ID }}" >> env/.env.staging
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.STAGING_FIREBASE_MEASUREMENT_ID }}" >> env/.env.staging
+
+      - name: Build for Web (Staging)
+        run: flutter build web --release --dart-define-from-file=env/.env.staging
+
+      - name: Deploy to Firebase Hosting (Staging)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ATTENDANCE_APP_STAGING }}'
+          channelId: live
+          projectId: '${{ secrets.STAGING_FIREBASE_PROJECT_ID }}'
+          target: app-web-admin # Optional: if you have multiple hosting sites
+
+  deploy_production:
+    name: Build & Deploy to Production
+    needs: analyze_and_test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create production environment file
+        run: |
+          echo "FIREBASE_API_KEY=${{ secrets.PROD_FIREBASE_API_KEY }}" > env/.env.prod
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.PROD_FIREBASE_AUTH_DOMAIN }}" >> env/.env.prod
+          echo "FIREBASE_PROJECT_ID=${{ secrets.PROD_FIREBASE_PROJECT_ID }}" >> env/.env.prod
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.PROD_FIREBASE_STORAGE_BUCKET }}" >> env/.env.prod
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.PROD_FIREBASE_MESSAGING_SENDER_ID }}" >> env/.env.prod
+          echo "FIREBASE_APP_ID=${{ secrets.PROD_FIREBASE_APP_ID }}" >> env/.env.prod
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.PROD_FIREBASE_MEASUREMENT_ID }}" >> env/.env.prod
+
+      - name: Build for Web (Production)
+        run: flutter build web --release --dart-define-from-file=env/.env.prod
+
+      - name: Deploy to Firebase Hosting (Production)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ATTENDANCE_APP_PROD }}'
+          channelId: live
+          projectId: '${{ secrets.PROD_FIREBASE_PROJECT_ID }}'
+          target: app-web-admin # Optional: if you have multiple hosting sites

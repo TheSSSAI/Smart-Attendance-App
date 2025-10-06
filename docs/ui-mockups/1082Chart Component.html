@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Chart Component</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM FOUNDATION & BASE STYLES --- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-100: #B9D7FF;
+            --color-primary-500: #0073FF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --color-white: #FFFFFF;
+            /* Typography */
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-weight-semibold: 600;
+            /* Spacing */
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            /* Borders & Shadows */
+            --border-radius-md: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-700);
+            margin: 0;
+            padding: var(--spacing-xl);
+        }
+        .showcase-header { text-align: center; margin-bottom: var(--spacing-xl); }
+        .showcase-header h1 { font-size: 32px; color: var(--color-gray-900); }
+        .component-grid { display: grid; grid-template-columns: 1fr; gap: var(--spacing-xl); max-width: 1200px; margin: auto; }
+        @media (min-width: 1024px) { .component-grid { grid-template-columns: repeat(2, 1fr); } }
+        .component-title { font-size: 20px; color: var(--color-gray-800); margin-bottom: var(--spacing-md); }
+
+        /* --- ORGANISM: CHART COMPONENT --- */
+        .chart-container {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-container__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            flex-shrink: 0;
+        }
+
+        .chart-container__title {
+            font-size: 20px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-900);
+        }
+
+        .chart-container__main {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* States */
+        .chart-container__loading-state,
+        .chart-container__empty-state,
+        .chart-container__chart {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-container[data-state="loading"] .chart-container__loading-state,
+        .chart-container[data-state="empty"] .chart-container__empty-state,
+        .chart-container[data-state="with_data"] .chart-container__chart {
+            display: flex;
+        }
+
+        .chart-container__empty-state {
+            flex-direction: column;
+            gap: var(--spacing-md);
+            color: var(--color-gray-500);
+            text-align: center;
+        }
+        
+        /* Loading Indicator (Dependency) */
+        .skeleton-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 5%; }
+        .skeleton-bar { background-color: var(--color-gray-200); border-radius: 4px; background-image: linear-gradient(90deg, var(--color-gray-200) 0%, var(--color-gray-100) 50%, var(--color-gray-200) 100%); background-size: 200% 100%; animation: skeleton-shimmer 1.5s infinite linear; }
+        @keyframes skeleton-shimmer { to { background-position-x: -200%; } }
+        .skeleton-bar-group { display: flex; justify-content: space-around; height: 100%; align-items: flex-end; gap: 4%; }
+        
+        /* Chart SVG Styling */
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+            font-family: var(--font-family-primary);
+            font-size: 12px;
+            overflow: visible;
+        }
+
+        .chart-grid-line { stroke: var(--color-gray-200); stroke-dasharray: 2 3; }
+        .chart-axis-line { stroke: var(--color-gray-300); }
+        .chart-axis-label { fill: var(--color-gray-500); }
+
+        /* Bar Chart */
+        .chart-bar { fill: var(--color-primary-100); transition: fill 0.2s ease; }
+        .chart-bar-group:hover .chart-bar, .chart-bar-group:focus-visible .chart-bar { fill: var(--color-primary-500); }
+
+        /* Line Chart */
+        .chart-line { fill: none; stroke: var(--color-primary-500); stroke-width: 2.5; }
+        .chart-point { fill: var(--color-white); stroke: var(--color-primary-500); stroke-width: 2; r: 4; transition: r 0.2s ease; cursor: pointer; }
+        .chart-point-group:hover .chart-point, .chart-point-group:focus-visible .chart-point { r: 6; }
+        
+        /* Tooltip (Dependency) */
+        .chart-tooltip { opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s; pointer-events: none; }
+        .chart-bar-group:hover .chart-tooltip, .chart-bar-group:focus-visible .chart-tooltip,
+        .chart-point-group:hover .chart-tooltip, .chart-point-group:focus-visible .chart-tooltip {
+            opacity: 1; visibility: visible;
+        }
+        .chart-tooltip__bg { fill: var(--color-gray-900); rx: 4; }
+        .chart-tooltip__label { fill: var(--color-gray-400); font-size: 10px; }
+        .chart-tooltip__value { fill: var(--color-white); font-weight: var(--font-weight-semibold); }
+        
+        /* Accessibility */
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+        .chart-bar-group, .chart-point-group { outline: none; cursor: pointer; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chart-bar, .chart-point, .chart-tooltip, .skeleton-bar { transition: none; animation: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-header">
+        <h1>Organism: Chart Component</h1>
+    </div>
+
+    <div class="component-grid">
+        
+        <!-- Bar Chart: With Data -->
+        <div>
+            <h2 class="component-title">Bar Chart: With Data</h2>
+            <div class="chart-container chart-container--bar" data-state="with_data">
+                <header class="chart-container__header">
+                    <h3 class="chart-container__title">Weekly Attendance</h3>
+                    <!-- Dropdown for date range would go here -->
+                </header>
+                <main class="chart-container__main">
+                    <div class="chart-container__chart">
+                        <svg class="chart-svg" viewBox="0 0 400 200" role="graphics-document" aria-label="Bar chart showing weekly attendance percentage." aria-describedby="bar-chart-data-table">
+                            <defs>
+                                <!-- This could be used for gradients, patterns, etc. -->
+                            </defs>
+
+                            <!-- Accessible Data Table -->
+                            <foreignObject class="sr-only">
+                                <table id="bar-chart-data-table">
+                                    <caption>Weekly Attendance Percentage</caption>
+                                    <thead><tr><th>Day</th><th>Attendance</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Mon</td><td>85%</td></tr>
+                                        <tr><td>Tue</td><td>92%</td></tr>
+                                        <tr><td>Wed</td><td>95%</td></tr>
+                                        <tr><td>Thu</td><td>88%</td></tr>
+                                        <tr><td>Fri</td><td>76%</td></tr>
+                                    </tbody>
+                                </table>
+                            </foreignObject>
+
+                            <!-- Y-Axis Grid Lines & Labels -->
+                            <g class="chart-axis-y">
+                                <text class="chart-axis-label" x="-5" y="5" dy="0.32em" text-anchor="end">100%</text>
+                                <line class="chart-grid-line" x1="0" x2="400" y1="0" y2="0"></line>
+                                <text class="chart-axis-label" x="-5" y="55" dy="0.32em" text-anchor="end">50%</text>
+                                <line class="chart-grid-line" x1="0" x2="400" y1="50" y2="50"></line>
+                                <text class="chart-axis-label" x="-5" y="105" dy="0.32em" text-anchor="end">0%</text>
+                            </g>
+                            
+                            <!-- Chart Content -->
+                            <g transform="translate(30, 0)">
+                                <!-- Data Bars -->
+                                <g class="chart-bar-group" tabindex="0" aria-label="Monday: 85% attendance.">
+                                    <rect class="chart-bar" x="20" y="15" width="40" height="85"></rect>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="12" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="40" y="-16" text-anchor="middle">Mon</text>
+                                        <text class="chart-tooltip__value" x="40" y="-2" text-anchor="middle">85%</text>
+                                    </g>
+                                </g>
+                                <g class="chart-bar-group" tabindex="0" aria-label="Tuesday: 92% attendance.">
+                                    <rect class="chart-bar" x="90" y="8" width="40" height="92"></rect>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="82" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="110" y="-16" text-anchor="middle">Tue</text>
+                                        <text class="chart-tooltip__value" x="110" y="-2" text-anchor="middle">92%</text>
+                                    </g>
+                                </g>
+                                <g class="chart-bar-group" tabindex="0" aria-label="Wednesday: 95% attendance.">
+                                    <rect class="chart-bar" x="160" y="5" width="40" height="95"></rect>
+                                     <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="152" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="180" y="-16" text-anchor="middle">Wed</text>
+                                        <text class="chart-tooltip__value" x="180" y="-2" text-anchor="middle">95%</text>
+                                    </g>
+                                </g>
+                                <g class="chart-bar-group" tabindex="0" aria-label="Thursday: 88% attendance.">
+                                    <rect class="chart-bar" x="230" y="12" width="40" height="88"></rect>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="222" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="250" y="-16" text-anchor="middle">Thu</text>
+                                        <text class="chart-tooltip__value" x="250" y="-2" text-anchor="middle">88%</text>
+                                    </g>
+                                </g>
+                                <g class="chart-bar-group" tabindex="0" aria-label="Friday: 76% attendance.">
+                                    <rect class="chart-bar" x="300" y="24" width="40" height="76"></rect>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="292" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="320" y="-16" text-anchor="middle">Fri</text>
+                                        <text class="chart-tooltip__value" x="320" y="-2" text-anchor="middle">76%</text>
+                                    </g>
+                                </g>
+                            </g>
+
+                            <!-- X-Axis -->
+                            <g class="chart-axis-x" transform="translate(30, 100)">
+                                <line class="chart-axis-line" x1="0" x2="370" y1="0" y2="0"></line>
+                                <text class="chart-axis-label" x="40" y="15" text-anchor="middle">Mon</text>
+                                <text class="chart-axis-label" x="110" y="15" text-anchor="middle">Tue</text>
+                                <text class="chart-axis-label" x="180" y="15" text-anchor="middle">Wed</text>
+                                <text class="chart-axis-label" x="250" y="15" text-anchor="middle">Thu</text>
+                                <text class="chart-axis-label" x="320" y="15" text-anchor="middle">Fri</text>
+                            </g>
+                        </svg>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Line Chart: With Data -->
+        <div>
+            <h2 class="component-title">Line Chart: With Data</h2>
+            <div class="chart-container chart-container--line" data-state="with_data">
+                <header class="chart-container__header">
+                    <h3 class="chart-container__title">Monthly Exceptions</h3>
+                </header>
+                <main class="chart-container__main">
+                     <div class="chart-container__chart">
+                        <svg class="chart-svg" viewBox="0 0 400 200" role="graphics-document" aria-label="Line chart showing monthly exception counts." aria-describedby="line-chart-data-table">
+                             <foreignObject class="sr-only">
+                                <table id="line-chart-data-table">
+                                    <caption>Monthly Exceptions</caption>
+                                    <thead><tr><th>Week</th><th>Exceptions</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Week 1</td><td>12</td></tr>
+                                        <tr><td>Week 2</td><td>8</td></tr>
+                                        <tr><td>Week 3</td><td>15</td></tr>
+                                        <tr><td>Week 4</td><td>10</td></tr>
+                                    </tbody>
+                                </table>
+                            </foreignObject>
+                             <!-- Y-Axis Grid Lines & Labels -->
+                            <g class="chart-axis-y">
+                                <text class="chart-axis-label" x="-5" y="5" dy="0.32em" text-anchor="end">20</text>
+                                <line class="chart-grid-line" x1="0" x2="400" y1="0" y2="0"></line>
+                                <text class="chart-axis-label" x="-5" y="55" dy="0.32em" text-anchor="end">10</text>
+                                <line class="chart-grid-line" x1="0" x2="400" y1="50" y2="50"></line>
+                                <text class="chart-axis-label" x="-5" y="105" dy="0.32em" text-anchor="end">0</text>
+                            </g>
+
+                            <g transform="translate(30, 0)">
+                                <path class="chart-line" d="M 40 40 L 125 60 L 210 25 L 295 50" />
+                                
+                                <g class="chart-point-group" tabindex="0" aria-label="Week 1: 12 exceptions.">
+                                    <circle class="chart-point" cx="40" cy="40"></circle>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="12" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="40" y="-16" text-anchor="middle">Week 1</text>
+                                        <text class="chart-tooltip__value" x="40" y="-2" text-anchor="middle">12</text>
+                                    </g>
+                                </g>
+                                <g class="chart-point-group" tabindex="0" aria-label="Week 2: 8 exceptions.">
+                                    <circle class="chart-point" cx="125" cy="60"></circle>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="97" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="125" y="-16" text-anchor="middle">Week 2</text>
+                                        <text class="chart-tooltip__value" x="125" y="-2" text-anchor="middle">8</text>
+                                    </g>
+                                </g>
+                                <g class="chart-point-group" tabindex="0" aria-label="Week 3: 15 exceptions.">
+                                    <circle class="chart-point" cx="210" cy="25"></circle>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="182" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="210" y="-16" text-anchor="middle">Week 3</text>
+                                        <text class="chart-tooltip__value" x="210" y="-2" text-anchor="middle">15</text>
+                                    </g>
+                                </g>
+                                <g class="chart-point-group" tabindex="0" aria-label="Week 4: 10 exceptions.">
+                                    <circle class="chart-point" cx="295" cy="50"></circle>
+                                    <g class="chart-tooltip">
+                                        <rect class="chart-tooltip__bg" x="267" y="-28" width="56" height="32"></rect>
+                                        <text class="chart-tooltip__label" x="295" y="-16" text-anchor="middle">Week 4</text>
+                                        <text class="chart-tooltip__value" x="295" y="-2" text-anchor="middle">10</text>
+                                    </g>
+                                </g>
+                            </g>
+
+                             <!-- X-Axis -->
+                            <g class="chart-axis-x" transform="translate(30, 100)">
+                                <line class="chart-axis-line" x1="0" x2="370" y1="0" y2="0"></line>
+                                <text class="chart-axis-label" x="40" y="15" text-anchor="middle">W1</text>
+                                <text class="chart-axis-label" x="125" y="15" text-anchor="middle">W2</text>
+                                <text class="chart-axis-label" x="210" y="15" text-anchor="middle">W3</text>
+                                <text class="chart-axis-label" x="295" y="15" text-anchor="middle">W4</text>
+                            </g>
+                        </svg>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div>
+            <h2 class="component-title">Chart: Loading State</h2>
+            <div class="chart-container" data-state="loading">
+                <header class="chart-container__header">
+                    <h3 class="chart-container__title">Weekly Attendance</h3>
+                </header>
+                <main class="chart-container__main">
+                    <div class="chart-container__loading-state" role="status" aria-label="Chart data is loading.">
+                        <div class="skeleton-wrapper">
+                            <div class="skeleton-bar-group">
+                                <div class="skeleton-bar" style="width: 15%; height: 70%;"></div>
+                                <div class="skeleton-bar" style="width: 15%; height: 90%;"></div>
+                                <div class="skeleton-bar" style="width: 15%; height: 95%;"></div>
+                                <div class="skeleton-bar" style="width: 15%; height: 75%;"></div>
+                                <div class="skeleton-bar" style="width: 15%; height: 60%;"></div>
+                            </div>
+                            <div style="height: 1px; background: var(--color-gray-200); margin-top: 8px;"></div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div>
+            <h2 class="component-title">Chart: Empty State</h2>
+            <div class="chart-container" data-state="empty">
+                <header class="chart-container__header">
+                    <h3 class="chart-container__title">Weekly Attendance</h3>
+                </header>
+                <main class="chart-container__main">
+                    <div class="chart-container__empty-state" role="status">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="color: var(--color-gray-400);"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5m3-1.5v1.5m3-1.5v1.5M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" /></svg>
+                        <p>No data available for the selected period.</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+	<div> 
+		<h2> Component Variations</h2>
+      	<div>
+        	<h3>Variant Name : bar_chart</h3>
+			<normal> A chart that uses vertical bars to represent data values for different categories. Ideal for comparing discrete sets of data. </normal>
+		</div>
+      	<div>
+        	<h3>Variant Name : line_chart</h3>
+			<normal> A chart that uses points connected by a line to show how a value changes over a continuous period. Ideal for visualizing trends over time. </normal>
+		</div>
+	 </div>
+</body>
+</html>

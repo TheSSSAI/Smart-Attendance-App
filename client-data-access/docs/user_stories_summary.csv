@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"87","381","31","23","6","[""Tenant & User Lifecycle Management"",""Administration & Reporting Dashboard"",""Core Attendance & Approval Workflow"",""Integrations & Event Management"",""Platform Foundation & DevOps""]","16","[""Firebase Project Setup"",""User Authentication Flow"",""Admin Dashboard Foundation""]"

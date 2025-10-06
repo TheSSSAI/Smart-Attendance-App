@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Settings Form Section</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM FOUNDATION & BASE STYLES --- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --color-error: #DC2626;
+            --color-error-bg: #FEF2F2;
+
+            /* Typography */
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-h4: 20px;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-700);
+            padding: var(--spacing-xl);
+        }
+
+        .showcase-container { max-width: 900px; margin: auto; display: flex; flex-direction: column; gap: var(--spacing-xl); }
+        .showcase-header { text-align: center; }
+        .showcase-header h1 { font-size: 32px; color: var(--color-gray-900); }
+
+        /* --- DEPENDENT COMPONENT STYLES --- */
+        /* Button */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-sm);
+            font-family: var(--font-family-primary); font-size: var(--font-size-body); font-weight: var(--font-weight-semibold);
+            padding: 10px var(--spacing-md); border-radius: var(--border-radius-md); border: 1px solid transparent;
+            cursor: pointer; text-decoration: none; transition: background-color 0.2s ease, transform 0.1s ease; min-height: 48px;
+        }
+        .btn:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+        .btn--primary { background-color: var(--color-primary-500); color: var(--color-white); }
+        .btn--primary:hover { background-color: var(--color-primary-600); }
+        .btn--secondary { background-color: var(--color-white); color: var(--color-gray-700); border-color: var(--color-gray-300); box-shadow: var(--shadow-sm); }
+        .btn--secondary:hover { background-color: var(--color-gray-50); }
+        .btn--destructive { background-color: var(--color-error); color: var(--color-white); }
+        .btn--destructive:hover { background-color: #b91c1c; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background-color: var(--color-gray-100); color: var(--color-gray-400); cursor: not-allowed; transform: none; }
+        .btn--loading { cursor: wait; position: relative; color: transparent !important; }
+        .btn--loading::after {
+            content: ''; position: absolute; width: 16px; height: 16px; top: 0; left: 0; right: 0; bottom: 0; margin: auto;
+            border: 2px solid rgba(255,255,255,0.5); border-top-color: var(--color-white);
+            border-radius: 50%; animation: btn-spinner 0.6s linear infinite;
+        }
+        .btn--secondary.btn--loading::after { border-color: rgba(0,0,0,0.2); border-top-color: var(--color-gray-700); }
+        @keyframes btn-spinner { to { transform: rotate(360deg); } }
+
+        /* Form Field Group & Input */
+        .form-field-group { display: flex; flex-direction: column; gap: var(--spacing-sm); width: 100%; }
+        .form-field-group__label { font-weight: var(--font-weight-semibold); color: var(--color-gray-700); font-size: var(--font-size-caption); }
+        .form-field-group__error-message { font-size: var(--font-size-caption); color: var(--color-error); display: none; }
+        .form-field-group--error .form-field-group__error-message { display: block; }
+        .input { width: 100%; padding: 10px 16px; border: 1px solid var(--color-gray-300); border-radius: var(--border-radius-md); font-size: var(--font-size-body); color: var(--color-gray-900); background-color: var(--color-white); transition: border-color 0.2s ease, box-shadow 0.2s ease; min-height: 48px; }
+        .input:focus { outline: none; border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-50); }
+        .input[disabled] { background-color: var(--color-gray-100); cursor: not-allowed; }
+        .input--error { border-color: var(--color-error); }
+        .input--error:focus { box-shadow: 0 0 0 3px var(--color-error-bg); }
+        .checkbox-group { display: flex; flex-direction: column; gap: var(--spacing-md); }
+        .checkbox-field { display: flex; align-items: center; gap: var(--spacing-sm); }
+        .checkbox-field label { font-size: var(--font-size-body); color: var(--color-gray-700); }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--color-gray-300); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: \"\"; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: var(--color-white); transition: .4s; border-radius: 50%; box-shadow: var(--shadow-sm); }
+        input:checked + .slider { background-color: var(--color-primary-500); }
+        input:focus-visible + .slider { box-shadow: 0 0 0 2px var(--color-primary-500); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        input:disabled + .slider { background-color: var(--color-gray-200); cursor: not-allowed; }
+
+        /* --- ORGANISM: SETTINGS FORM SECTION --- */
+        .settings-section {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .settings-section__header { padding: var(--spacing-lg); }
+        .settings-section__title { font-size: var(--font-size-h4); font-weight: var(--font-weight-bold); color: var(--color-gray-900); margin: 0; }
+        .settings-section__description { color: var(--color-gray-500); font-size: var(--font-size-caption); margin-top: var(--spacing-xs); }
+        .settings-section__content { padding: var(--spacing-lg); border-top: 1px solid var(--color-gray-200); display: flex; flex-direction: column; gap: var(--spacing-lg); }
+        .settings-section__row { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+        .settings-section__row-label { flex-basis: 250px; flex-shrink: 0; }
+        .settings-section__row-label h4 { font-weight: var(--font-weight-semibold); color: var(--color-gray-900); font-size: var(--font-size-body); margin: 0; }
+        .settings-section__row-label p { font-size: var(--font-size-caption); color: var(--color-gray-500); margin: 0; margin-top: var(--spacing-xs); }
+        .settings-section__row-control { flex-grow: 1; }
+        .settings-section__footer { display: flex; justify-content: flex-end; gap: var(--spacing-md); padding: var(--spacing-md) var(--spacing-lg); background-color: var(--color-gray-50); border-top: 1px solid var(--color-gray-200); }
+        
+        /* Variants */
+        .settings-section--danger .settings-section__header { border-left: 4px solid var(--color-error); }
+        .settings-section--danger .settings-section__title { color: var(--color-error); }
+        .settings-section--danger .settings-section__footer { justify-content: space-between; }
+        
+        /* States */
+        .settings-section--saving .input,
+        .settings-section--saving .btn,
+        .settings-section--saving .switch input { pointer-events: none; opacity: 0.7; }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .settings-section__row { flex-direction: row; gap: var(--spacing-xl); align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <header class="showcase-header">
+            <h1>Settings Form Section</h1>
+        </header>
+
+        <section id="timezone-variant">
+            <h2>Timezone Variant</h2>
+            <div class="settings-section">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">General Settings</h3>
+                    <p class="settings-section__description">Configure general settings for your organization.</p>
+                </div>
+                <div class="settings-section__content">
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Organization Timezone</h4>
+                            <p>Sets the default timezone for all reports and daily calculations.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                            <div class="form-field-group">
+                                <label for="timezone-select" class="form-field-group__label">Timezone</label>
+                                <select id="timezone-select" class="input">
+                                    <option>(UTC-05:00) Eastern Time (US & Canada)</option>
+                                    <option>(UTC-08:00) Pacific Time (US & Canada)</option>
+                                    <option>(UTC+00:00) Greenwich Mean Time : Dublin, London</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section__footer">
+                    <button class="btn btn--secondary" type="button">Cancel</button>
+                    <button class="btn btn--primary" type="button">Save Changes</button>
+                </div>
+            </div>
+        </section>
+        
+        <section id="password-policy-variant">
+            <h2>Password Policy Variant (Editing & Saving States)</h2>
+            <div class="settings-section settings-section--saving">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">Password Policy</h3>
+                    <p class="settings-section__description">Enforce password complexity requirements for all users in your organization.</p>
+                </div>
+                <div class="settings-section__content">
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Minimum Length</h4>
+                            <p>Set the minimum number of characters for passwords.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                           <div class="form-field-group">
+                               <label for="min-length" class="form-field-group__label">Minimum characters</label>
+                               <input type="number" id="min-length" class="input" value="12">
+                           </div>
+                        </div>
+                    </div>
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Complexity Requirements</h4>
+                            <p>Select which character types must be included.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                            <div class="checkbox-group">
+                                <label class="checkbox-field">
+                                    <input type="checkbox" checked> <span>Require uppercase letter (A-Z)</span>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input type="checkbox" checked> <span>Require lowercase letter (a-z)</span>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input type="checkbox" checked> <span>Require number (0-9)</span>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input type="checkbox"> <span>Require special character (!@#$%)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section__footer">
+                    <button class="btn btn--secondary" type="button" disabled>Cancel</button>
+                    <button class="btn btn--primary btn--loading" type="button" disabled>Save Changes</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="data-retention-variant">
+            <h2>Data Retention Variant</h2>
+            <div class="settings-section">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">Data Retention</h3>
+                    <p class="settings-section__description">Set how long to keep attendance and audit log data.</p>
+                </div>
+                <div class="settings-section__content">
+                     <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Auto-Checkout</h4>
+                            <p>Enable to automatically check out users who forget.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                           <label class="switch">
+                             <input type="checkbox" checked>
+                             <span class="slider"></span>
+                           </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section__footer">
+                    <button class="btn btn--secondary" type="button">Cancel</button>
+                    <button class="btn btn--primary" type="button" disabled>Save Changes</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="danger-zone-variant">
+            <h2>Danger Zone Variant</h2>
+            <div class="settings-section settings-section--danger">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">Danger Zone</h3>
+                    <p class="settings-section__description">These actions are destructive and cannot be undone.</p>
+                </div>
+                <div class="settings-section__content">
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Delete Organization</h4>
+                            <p>Permanently delete your organization and all associated data.</p>
+                        </div>
+                        <div class="settings-section__row-control" style="align-self: center;">
+                            <button class="btn btn--destructive" type="button">Delete this Organization</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+	
+	<div>
+      <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : timezone</h3>
+		<p>Standard settings section for configuring non-destructive options like timezone or auto-checkout time.</p>
+        <div class="settings-section">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">General Settings</h3>
+                    <p class="settings-section__description">Configure general settings for your organization.</p>
+                </div>
+                <div class="settings-section__content">
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Organization Timezone</h4>
+                            <p>Sets the default timezone for all reports and daily calculations.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                            <div class="form-field-group">
+                                <label for="timezone-select" class="form-field-group__label">Timezone</label>
+                                <select id="timezone-select" class="input">
+                                    <option>(UTC-05:00) Eastern Time (US & Canada)</option>
+                                    <option>(UTC-08:00) Pacific Time (US & Canada)</option>
+                                    <option>(UTC+00:00) Greenwich Mean Time : Dublin, London</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section__footer">
+                    <button class="btn btn--secondary" type="button">Cancel</button>
+                    <button class="btn btn--primary" type="button">Save Changes</button>
+                </div>
+            </div>    
+      </div>
+      <div>
+        <h3>Variant Name : password_policy</h3>
+		<p>A settings section for complex configurations, such as password rules, using multiple input types.</p>
+       <div class="settings-section settings-section--saving">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">Password Policy</h3>
+                    <p class="settings-section__description">Enforce password complexity requirements for all users in your organization.</p>
+                </div>
+                <div class="settings-section__content">
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Minimum Length</h4>
+                            <p>Set the minimum number of characters for passwords.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                           <div class="form-field-group">
+                               <label for="min-length" class="form-field-group__label">Minimum characters</label>
+                               <input type="number" id="min-length" class="input" value="12">
+                           </div>
+                        </div>
+                    </div>
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Complexity Requirements</h4>
+                            <p>Select which character types must be included.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                            <div class="checkbox-group">
+                                <label class="checkbox-field">
+                                    <input type="checkbox" checked=""> <span>Require uppercase letter (A-Z)</span>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input type="checkbox" checked=""> <span>Require lowercase letter (a-z)</span>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input type="checkbox" checked=""> <span>Require number (0-9)</span>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input type="checkbox"> <span>Require special character (!@#$%)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section__footer">
+                    <button class="btn btn--secondary" type="button" disabled="">Cancel</button>
+                    <button class="btn btn--primary btn--loading" type="button" disabled="">Save Changes</button>
+                </div>
+            </div>   
+      </div>
+	  <div>
+        <h3>Variant Name : data_retention</h3>
+		<p>A section that may contain simple toggle switches or other binary configuration options.</p>
+        <div class="settings-section">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">Data Retention</h3>
+                    <p class="settings-section__description">Set how long to keep attendance and audit log data.</p>
+                </div>
+                <div class="settings-section__content">
+                     <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Auto-Checkout</h4>
+                            <p>Enable to automatically check out users who forget.</p>
+                        </div>
+                        <div class="settings-section__row-control">
+                           <label class="switch">
+                             <input type="checkbox" checked="">
+                             <span class="slider"></span>
+                           </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section__footer">
+                    <button class="btn btn--secondary" type="button">Cancel</button>
+                    <button class="btn btn--primary" type="button" disabled="">Save Changes</button>
+                </div>
+            </div>
+      </div>
+	  <div>
+        <h3>Variant Name : danger_zone</h3>
+		<p>A visually distinct variant used for settings that involve destructive or irreversible actions, like deleting an account.</p>
+        <div class="settings-section settings-section--danger">
+                <div class="settings-section__header">
+                    <h3 class="settings-section__title">Danger Zone</h3>
+                    <p class="settings-section__description">These actions are destructive and cannot be undone.</p>
+                </div>
+                <div class="settings-section__content">
+                    <div class="settings-section__row">
+                        <div class="settings-section__row-label">
+                            <h4>Delete Organization</h4>
+                            <p>Permanently delete your organization and all associated data.</p>
+                        </div>
+                        <div class="settings-section__row-control" style="align-self: center;">
+                            <button class="btn btn--destructive" type="button">Delete this Organization</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+      </div>
+	</div>
+</body>
+</html>

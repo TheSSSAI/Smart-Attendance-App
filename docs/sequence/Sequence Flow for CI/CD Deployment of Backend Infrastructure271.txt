@@ -1,0 +1,813 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-OP-007
+
+## 1.2 Name
+
+CI/CD Deployment of Backend Infrastructure
+
+## 1.3 Description
+
+A developer pushes a change to the backend codebase (e.g., a new Cloud Function or Firestore rule). A CI/CD pipeline in GitHub Actions automatically lints, tests, and deploys the changes to the appropriate Firebase environment, following an Infrastructure as Code (IaC) approach.
+
+## 1.4 Type
+
+🔹 OperationalFlow
+
+## 1.5 Purpose
+
+To automate the deployment of backend resources, ensuring consistency, repeatability, and reducing the risk of manual configuration errors.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- application-services-layer
+- security-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- A developer commits and pushes code to the version control repository (GitHub).
+- The push triggers a GitHub Actions workflow defined in a YAML file.
+- The workflow environment checks out the code and installs dependencies (`npm install`).
+- It runs static analysis (`ESLint`) and automated tests (`Jest`).
+- Upon successful tests on the main branch, the workflow authenticates to Google Cloud using a service account.
+- It uses the Firebase CLI (`firebase deploy`) to apply the infrastructure changes defined in the code.
+- The CLI deploys Cloud Functions, `firestore.rules`, and `firestore.indexes.json`.
+
+## 1.11 Triggers
+
+- A code push to a designated branch in the source code repository.
+
+## 1.12 Outcomes
+
+- New or updated backend logic is deployed to the target environment (Dev, Staging, or Prod).
+- Infrastructure configurations like security rules and database indexes are updated.
+- The entire deployment process is audited and logged in the CI/CD system.
+
+## 1.13 Business Rules
+
+- Deployments to production must pass all automated tests before proceeding (REQ-5.5).
+- Infrastructure is managed as code (IaC) using the Firebase CLI (REQ-5.5).
+
+## 1.14 Error Scenarios
+
+- Automated tests fail, halting the deployment and notifying the developer.
+- The Firebase CLI fails to deploy due to permission issues or invalid configuration.
+- A deployment introduces a bug, requiring a rollback by deploying a previous commit.
+
+## 1.15 Integration Points
+
+- GitHub Actions
+- Firebase CLI
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-OP-007
+
+## 2.2 Name
+
+Automated IaC Backend Deployment via CI/CD Pipeline
+
+## 2.3 Description
+
+Implementation of an automated, GitOps-style deployment pipeline for backend infrastructure. A developer's `git push` to a protected branch triggers a GitHub Actions workflow. This workflow validates the code via linting and testing, then authenticates to Google Cloud using Workload Identity Federation. It subsequently uses the Firebase CLI to declaratively deploy Cloud Functions, Firestore Security Rules, and Firestore Indexes. This Infrastructure as Code (IaC) approach ensures all deployments are version-controlled, repeatable, and auditable, minimizing manual error and enforcing environment consistency as required by REQ-5.5.
+
+## 2.4 Participants
+
+### 2.4.1 Human Actor
+
+#### 2.4.1.1 Repository Id
+
+user-actor-developer
+
+#### 2.4.1.2 Display Name
+
+Developer
+
+#### 2.4.1.3 Type
+
+🔹 Human Actor
+
+#### 2.4.1.4 Technology
+
+Git Client
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #90A4AE |
+| Stereotype | Actor |
+
+### 2.4.2.0 Version Control System
+
+#### 2.4.2.1 Repository Id
+
+vcs-github
+
+#### 2.4.2.2 Display Name
+
+GitHub
+
+#### 2.4.2.3 Type
+
+🔹 Version Control System
+
+#### 2.4.2.4 Technology
+
+GitHub.com
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | boundary |
+| Color | #212121 |
+| Stereotype | VCS |
+
+### 2.4.3.0 CI/CD Environment
+
+#### 2.4.3.1 Repository Id
+
+cicd-pipeline-010
+
+#### 2.4.3.2 Display Name
+
+GitHub Actions Runner
+
+#### 2.4.3.3 Type
+
+🔹 CI/CD Environment
+
+#### 2.4.3.4 Technology
+
+GitHub Actions, Node.js, Firebase CLI
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #29B6F6 |
+| Stereotype | CI/CD |
+
+### 2.4.4.0 Serverless Platform
+
+#### 2.4.4.1 Repository Id
+
+application-services-layer
+
+#### 2.4.4.2 Display Name
+
+Application Services
+
+#### 2.4.4.3 Type
+
+🔹 Serverless Platform
+
+#### 2.4.4.4 Technology
+
+Firebase Cloud Functions
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FFA000 |
+| Stereotype | Backend |
+
+### 2.4.5.0 Security Policy Service
+
+#### 2.4.5.1 Repository Id
+
+security-layer
+
+#### 2.4.5.2 Display Name
+
+Security Layer
+
+#### 2.4.5.3 Type
+
+🔹 Security Policy Service
+
+#### 2.4.5.4 Technology
+
+Firestore Security Rules
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #D32F2F |
+| Stereotype | Security |
+
+### 2.4.6.0 Database Service
+
+#### 2.4.6.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.6.2 Display Name
+
+Data & Persistence
+
+#### 2.4.6.3 Type
+
+🔹 Database Service
+
+#### 2.4.6.4 Technology
+
+Firestore
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFCA28 |
+| Stereotype | Database |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Request
+
+#### 2.5.1.1 Source Id
+
+user-actor-developer
+
+#### 2.5.1.2 Target Id
+
+vcs-github
+
+#### 2.5.1.3 Message
+
+1. git push origin <branch-name>
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Request
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+Push confirmation
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+❌ No
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Git/SSH |
+| Method | push |
+| Parameters | Commits containing changes to functions, rules, or... |
+| Authentication | SSH Key or Personal Access Token (PAT) |
+| Error Handling | Git client handles connection errors or merge conf... |
+| Performance | Dependent on commit size and network speed. |
+
+### 2.5.2.0 Event Trigger
+
+#### 2.5.2.1 Source Id
+
+vcs-github
+
+#### 2.5.2.2 Target Id
+
+cicd-pipeline-010
+
+#### 2.5.2.3 Message
+
+2. Trigger Workflow [on: push: branches: 'main']
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Event Trigger
+
+#### 2.5.2.6 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7 Return Message
+
+
+
+#### 2.5.2.8 Has Return
+
+❌ No
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | GitHub Webhook |
+| Method | POST |
+| Parameters | Webhook payload containing commit SHA, branch, and... |
+| Authentication | Internal GitHub mechanism |
+| Error Handling | GitHub Actions service handles runner provisioning... |
+| Performance | Runner provision time typically < 1 minute. |
+
+### 2.5.3.0 Self-invocation
+
+#### 2.5.3.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.3.2 Target Id
+
+cicd-pipeline-010
+
+#### 2.5.3.3 Message
+
+3. Checkout Code, Setup Env, Install Deps (npm ci)
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Self-invocation
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+Environment ready
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Local Shell Command |
+| Method | actions/checkout@v4, actions/setup-node@v4, npm ci |
+| Parameters | N/A |
+| Authentication | Scoped `GITHUB_TOKEN` to access repository. |
+| Error Handling | Job fails if checkout or dependency installation f... |
+| Performance | Typically 1-2 minutes, dependent on cache and depe... |
+
+### 2.5.4.0 Self-invocation
+
+#### 2.5.4.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.4.2 Target Id
+
+cicd-pipeline-010
+
+#### 2.5.4.3 Message
+
+4. Run Validation Steps (Linting & Testing)
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 Self-invocation
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+Tests passed/failed
+
+#### 2.5.4.8 Has Return
+
+✅ Yes
+
+#### 2.5.4.9 Is Activation
+
+❌ No
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Local Shell Command |
+| Method | npm run lint, npm run test |
+| Parameters | Test files and configuration from `jest.config.js`... |
+| Authentication | N/A |
+| Error Handling | If linting errors occur or any test fails, the com... |
+| Performance | Dependent on codebase size and test suite complexi... |
+
+### 2.5.5.0 Self-invocation
+
+#### 2.5.5.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.5.2 Target Id
+
+cicd-pipeline-010
+
+#### 2.5.5.3 Message
+
+5. Authenticate to Google Cloud
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 Self-invocation
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Return Message
+
+Short-lived access token
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+❌ No
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | OIDC |
+| Method | google-github-actions/auth@v2 (Workload Identity F... |
+| Parameters | GCP Project ID, Service Account Email, Workload Id... |
+| Authentication | Federated trust between GitHub OIDC provider and G... |
+| Error Handling | Job fails if authentication fails due to misconfig... |
+| Performance | < 10 seconds. |
+
+### 2.5.6.0 Request
+
+#### 2.5.6.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.6.2 Target Id
+
+application-services-layer
+
+#### 2.5.6.3 Message
+
+6. Deploy Cloud Functions (`firebase deploy --only functions`)
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 Request
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Return Message
+
+Deployment status for functions
+
+#### 2.5.6.8 Has Return
+
+✅ Yes
+
+#### 2.5.6.9 Is Activation
+
+❌ No
+
+#### 2.5.6.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/gRPC |
+| Method | Firebase Management API (via CLI) |
+| Parameters | Function code, environment variables, trigger defi... |
+| Authentication | OAuth 2.0 Access Token from Step 5. |
+| Error Handling | CLI returns non-zero exit code on failure (e.g., b... |
+| Performance | Dependent on number and size of functions, typical... |
+
+### 2.5.7.0 Request
+
+#### 2.5.7.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.7.2 Target Id
+
+security-layer
+
+#### 2.5.7.3 Message
+
+7. Deploy Firestore Rules (`firebase deploy --only firestore:rules`)
+
+#### 2.5.7.4 Sequence Number
+
+7
+
+#### 2.5.7.5 Type
+
+🔹 Request
+
+#### 2.5.7.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7 Return Message
+
+Deployment status for rules
+
+#### 2.5.7.8 Has Return
+
+✅ Yes
+
+#### 2.5.7.9 Is Activation
+
+❌ No
+
+#### 2.5.7.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/gRPC |
+| Method | Firebase Management API (via CLI) |
+| Parameters | Contents of `firestore.rules` file. |
+| Authentication | OAuth 2.0 Access Token from Step 5. |
+| Error Handling | CLI returns non-zero exit code if rules have synta... |
+| Performance | < 30 seconds. |
+
+### 2.5.8.0 Request
+
+#### 2.5.8.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.8.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.8.3 Message
+
+8. Deploy Firestore Indexes (`firebase deploy --only firestore:indexes`)
+
+#### 2.5.8.4 Sequence Number
+
+8
+
+#### 2.5.8.5 Type
+
+🔹 Request
+
+#### 2.5.8.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.8.7 Return Message
+
+Deployment status for indexes
+
+#### 2.5.8.8 Has Return
+
+✅ Yes
+
+#### 2.5.8.9 Is Activation
+
+❌ No
+
+#### 2.5.8.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | HTTPS/gRPC |
+| Method | Firebase Management API (via CLI) |
+| Parameters | Contents of `firestore.indexes.json` file. |
+| Authentication | OAuth 2.0 Access Token from Step 5. |
+| Error Handling | CLI returns non-zero exit code for invalid index d... |
+| Performance | < 30 seconds. |
+
+### 2.5.9.0 Request
+
+#### 2.5.9.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.9.2 Target Id
+
+vcs-github
+
+#### 2.5.9.3 Message
+
+9. Report Deployment Status
+
+#### 2.5.9.4 Sequence Number
+
+9
+
+#### 2.5.9.5 Type
+
+🔹 Request
+
+#### 2.5.9.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.9.7 Return Message
+
+API confirmation
+
+#### 2.5.9.8 Has Return
+
+✅ Yes
+
+#### 2.5.9.9 Is Activation
+
+❌ No
+
+#### 2.5.9.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | GitHub REST API |
+| Method | POST /repos/{owner}/{repo}/statuses/{sha} |
+| Parameters | State: 'success' or 'failure', Target URL: Link to... |
+| Authentication | Scoped `GITHUB_TOKEN`. |
+| Error Handling | Logged in workflow output if API call fails. |
+| Performance | < 1 second. |
+
+### 2.5.10.0 Notification
+
+#### 2.5.10.1 Source Id
+
+cicd-pipeline-010
+
+#### 2.5.10.2 Target Id
+
+user-actor-developer
+
+#### 2.5.10.3 Message
+
+10. Notify Developer of Outcome
+
+#### 2.5.10.4 Sequence Number
+
+10
+
+#### 2.5.10.5 Type
+
+🔹 Notification
+
+#### 2.5.10.6 Is Synchronous
+
+❌ No
+
+#### 2.5.10.7 Return Message
+
+
+
+#### 2.5.10.8 Has Return
+
+❌ No
+
+#### 2.5.10.9 Is Activation
+
+❌ No
+
+#### 2.5.10.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Email/Slack (via GitHub Notifications) |
+| Method | N/A |
+| Parameters | Workflow success/failure status. |
+| Authentication | N/A |
+| Error Handling | Handled by GitHub's notification system. |
+| Performance | Near real-time. |
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+The workflow is configured with different jobs for different branches. A push to `develop` deploys to the Staging environment, while a push to `main` deploys to Production. This ensures isolation and safe testing.
+
+#### 2.6.1.2 Position
+
+top
+
+#### 2.6.1.3 Participant Id
+
+cicd-pipeline-010
+
+#### 2.6.1.4 Sequence Number
+
+2
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+A critical failure at any step (lint, test, or deploy) results in a 'fail-fast' termination of the entire workflow. The production environment remains untouched, preserving its stable state. Rollback is achieved by reverting the problematic commit in Git and pushing again.
+
+#### 2.6.2.2 Position
+
+bottom
+
+#### 2.6.2.3 Participant Id
+
+cicd-pipeline-010
+
+#### 2.6.2.4 Sequence Number
+
+4
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | A dedicated GCP Service Account with the principle... |
+| Performance Targets | The entire CI/CD pipeline, from push to successful... |
+| Error Handling Strategy | The pipeline is designed to be atomic; it either s... |
+| Testing Considerations | The Jest test suite must include unit tests for Cl... |
+| Monitoring Requirements | The success rate, failure rate, and average durati... |
+| Deployment Considerations | The system must use separate Firebase projects for... |
+

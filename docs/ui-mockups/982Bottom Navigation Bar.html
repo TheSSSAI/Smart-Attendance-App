@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Component: Bottom Navigation Bar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------------- */
+        /* --- 1. Design System Foundations --- */
+        /* ------------------------- */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-600: #475569;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --color-white: #FFFFFF;
+
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-48: 48px;
+
+            /* Borders */
+            --border-radius-sm: 4px;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+        }
+
+        /* ------------------------- */
+        /* --- 2. Base & Showcase Layout --- */
+        /* ------------------------- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-neutral-50);
+            color: var(--color-neutral-700);
+            padding: var(--space-24);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: var(--space-48);
+            text-align: center;
+        }
+
+        h1 { font-size: 2.5rem; font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-8); }
+        h2 { font-size: 1.75rem; font-weight: 600; margin-top: var(--space-48); margin-bottom: var(--space-16); }
+        p { margin-bottom: var(--space-16); max-width: 65ch; line-height: 1.6; }
+
+        .showcase-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-48);
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .phone-mockup {
+            width: 375px;
+            height: 667px;
+            border: 10px solid var(--color-neutral-900);
+            border-radius: 40px;
+            background-color: var(--color-white);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phone-mockup__content {
+            flex-grow: 1;
+            padding: var(--space-24);
+            overflow-y: auto;
+        }
+        
+        .phone-mockup__content h3 {
+             font-size: 1.5rem;
+             margin-bottom: var(--space-16);
+             color: var(--color-neutral-900);
+        }
+        
+        .variant-title {
+            text-align: center;
+            font-weight: 600;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-16);
+        }
+        
+        .docs {
+            margin-top: var(--space-48);
+            background: var(--color-white);
+            padding: var(--space-24);
+            border-radius: 8px;
+            border: 1px solid var(--color-neutral-200);
+        }
+        
+        code {
+            font-family: monospace;
+            background-color: var(--color-neutral-200);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        /* ------------------------- */
+        /* --- 3. Bottom Navigation Bar Component --- */
+        /* ------------------------- */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            /* In a real app, this would be fixed, but for the mockup it's at the end of the flex container */
+            margin-top: auto;
+            width: 100%;
+            background-color: var(--color-white);
+            border-top: 1px solid var(--color-neutral-200);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            /* Handles the home bar on iOS and gesture navigation on Android */
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .bottom-nav__list {
+            display: flex;
+            justify-content: space-around;
+            list-style: none;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        .bottom-nav__item {
+            flex: 1;
+        }
+
+        .bottom-nav__link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8) var(--space-4);
+            min-height: 56px;
+            text-decoration: none;
+            color: var(--color-neutral-600);
+            transition: color var(--transition-fast);
+            -webkit-tap-highlight-color: transparent; /* Removes tap highlight on mobile */
+        }
+
+        .bottom-nav__icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: var(--space-4);
+        }
+
+        .bottom-nav__label {
+            font-size: 12px;
+            font-weight: var(--font-weight-regular);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Component States */
+        .bottom-nav__link:hover {
+            color: var(--color-neutral-900);
+        }
+        
+        .bottom-nav__link:focus-visible {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: -2px;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .bottom-nav__link--active {
+            color: var(--color-primary-500);
+        }
+
+        .bottom-nav__link--active .bottom-nav__label {
+            font-weight: var(--font-weight-semibold);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Molecular Component: Bottom Navigation Bar</h1>
+            <p>The primary navigation component for the mobile application, providing access to top-level destinations.</p>
+        </header>
+
+        <div class="showcase-container">
+            <div>
+                <h2 class="variant-title">Subordinate Variant</h2>
+                <div class="phone-mockup">
+                    <div class="phone-mockup__content">
+                        <h3>Home Dashboard</h3>
+                        <p>This is the main content area for the Subordinate user. The navigation bar below remains fixed at the bottom of the screen.</p>
+                    </div>
+                    
+                    <nav class="bottom-nav" aria-label="Main navigation">
+                        <ul class="bottom-nav__list">
+                            <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link bottom-nav__link--active" aria-current="page">
+                                    <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" />
+                                    </svg>
+                                    <span class="bottom-nav__label">Home</span>
+                                </a>
+                            </li>
+                            <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link">
+                                    <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 12.75h.008v.008H12v-.008z" />
+                                    </svg>
+                                    <span class="bottom-nav__label">Calendar</span>
+                                </a>
+                            </li>
+                            <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link">
+                                    <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="bottom-nav__label">History</span>
+                                </a>
+                            </li>
+                            <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link">
+                                    <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span class="bottom-nav__label">Profile</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <div>
+                <h2 class="variant-title">Supervisor Variant</h2>
+                <div class="phone-mockup">
+                    <div class="phone-mockup__content">
+                        <h3>Team Approvals</h3>
+                        <p>The Supervisor's view has a different set of navigation items, prioritizing team management tasks.</p>
+                    </div>
+
+                    <nav class="bottom-nav" aria-label="Main navigation">
+                        <ul class="bottom-nav__list">
+                            <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link">
+                                    <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="bottom-nav__label">Approvals</span>
+                                </a>
+                            </li>
+                            <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link">
+                                     <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.513-.513.48-1.374.043-1.885a5.952 5.952 0 00-2.323-.885c-.445-.145-.89-.434-1.295-.84a5.94 5.94 0 00-1.884-1.295c-.446-.146-.891-.435-1.295-.84A5.952 5.952 0 003 6.452c-.445-.145-.89-.434-1.295-.84m13.5 12.019c-1.133.57-2.333.93-3.6.93-3.314 0-6-2.686-6-6s2.686-6 6-6c1.267 0 2.467.36 3.6.93m0 10.142a9.081 9.081 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.513-.513.48-1.374.043-1.885a5.952 5.952 0 00-2.323-.885c-.445-.145-.89-.434-1.295-.84a5.94 5.94 0 00-1.884-1.295c-.446-.146-.891-.435-1.295-.84A5.952 5.952 0 003 6.452c-.445-.145-.89-.434-1.295-.84" />
+                                    </svg>
+                                    <span class="bottom-nav__label">Team</span>
+                                </a>
+                            </li>
+                            <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link bottom-nav__link--active" aria-current="page">
+                                    <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 12.75h.008v.008H12v-.008z" />
+                                    </svg>
+                                    <span class="bottom-nav__label">Schedule</span>
+                                </a>
+                            </li>
+                             <li class="bottom-nav__item">
+                                <a href="#" class="bottom-nav__link">
+                                    <svg class="bottom-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span class="bottom-nav__label">Profile</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <div class="docs">
+            <h2>Implementation & Usage</h2>
+            <p>The Bottom Navigation Bar is implemented using a semantic <code>&lt;nav&gt;</code> element with a list of links. It is designed to be fixed to the bottom of the viewport.</p>
+            <h3>Key Features</h3>
+            <ul>
+                <li><strong>Role-Based Variants:</strong> The items in the navigation bar change depending on whether the user is a 'Subordinate' or 'Supervisor'.</li>
+                <li><strong>Active State:</strong> The currently viewed screen is indicated with a primary color and bolder text, using the <code>.bottom-nav__link--active</code> class and <code>aria-current="page"</code> for accessibility.</li>
+                <li><strong>Safe Area Aware:</strong> The component includes padding to account for the gesture navigation bar on modern iPhones and Android devices using <code>env(safe-area-inset-bottom)</code>.</li>
+            </ul>
+        </div>
+    </main>
+
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : subordinate_nav</h3>
+		<p>Navigation for the Subordinate user role, focusing on personal attendance and scheduling.</p>
+		
+      </div>
+	 </div>
+      <div>
+        <h3>Variant Name : supervisor_nav</h3>
+		<p>Navigation for the Supervisor user role, prioritizing team management and approval tasks.</p>
+		
+      </div>
+	 </div>    
+	
+	</body>
+</html>

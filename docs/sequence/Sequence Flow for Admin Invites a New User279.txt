@@ -1,0 +1,1287 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-FF-015
+
+## 1.2 Name
+
+Admin Invites a New User
+
+## 1.3 Description
+
+An Admin invites a new user to their tenant by providing an email address. The system sends a time-limited registration link, and the user completes the process by setting a password.
+
+## 1.4 Type
+
+🔹 FeatureFlow
+
+## 1.5 Purpose
+
+To securely add new users to an organization's tenant.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- presentation-layer
+- application-services-layer
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- Admin enters the new user's email and role in the web dashboard.
+- A callable Cloud Function is invoked.
+- The function creates a new user document in Firestore with a status of `invited`.
+- The function calls the SendGrid API to send an invitation email containing a unique, time-limited registration token.
+- The invited user clicks the link, is taken to a registration page, and sets their password.
+- Upon submission, the user's status is updated to `active`, and their Firebase Auth account is finalized.
+
+## 1.11 Triggers
+
+- Admin submits the 'Invite User' form.
+
+## 1.12 Outcomes
+
+- A new user is created and activated within the tenant.
+- The user can now log in with their credentials.
+
+## 1.13 Business Rules
+
+- Invitation links expire after 24 hours (REQ-3.1.3).
+
+## 1.14 Error Scenarios
+
+- User tries to register with an expired link.
+- Email delivery fails.
+- The user is already a member of the tenant.
+
+## 1.15 Integration Points
+
+- SendGrid API
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-FF-015-IMPL
+
+## 2.2 Name
+
+Admin Invites a New User - Implementation
+
+## 2.3 Description
+
+Implementation sequence for an Admin inviting a new user. A callable function creates a user document in an 'invited' state, generates a secure, time-limited registration token, and dispatches an invitation email via SendGrid. A second function handles the token validation and finalizes the user's registration by creating their Auth account and updating their document status.
+
+## 2.4 Participants
+
+### 2.4.1 Actor
+
+#### 2.4.1.1 Repository Id
+
+actor-admin
+
+#### 2.4.1.2 Display Name
+
+Admin User
+
+#### 2.4.1.3 Type
+
+🔹 Actor
+
+#### 2.4.1.4 Technology
+
+Human
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | Actor |
+| Color | #90A4AE |
+| Stereotype | Human |
+
+### 2.4.2.0 Web Application
+
+#### 2.4.2.1 Repository Id
+
+client-web-admin
+
+#### 2.4.2.2 Display Name
+
+Presentation Layer
+
+#### 2.4.2.3 Type
+
+🔹 Web Application
+
+#### 2.4.2.4 Technology
+
+Flutter for Web
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | Boundary |
+| Color | #1E88E5 |
+| Stereotype | Flutter Client |
+
+### 2.4.3.0 Serverless Functions
+
+#### 2.4.3.1 Repository Id
+
+backend-cloud-functions
+
+#### 2.4.3.2 Display Name
+
+Application Services
+
+#### 2.4.3.3 Type
+
+🔹 Serverless Functions
+
+#### 2.4.3.4 Technology
+
+Firebase Cloud Functions (TypeScript)
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | Control |
+| Color | #FFC107 |
+| Stereotype | Cloud Function |
+
+### 2.4.4.0 Database
+
+#### 2.4.4.1 Repository Id
+
+db-firestore
+
+#### 2.4.4.2 Display Name
+
+Data & Persistence
+
+#### 2.4.4.3 Type
+
+🔹 Database
+
+#### 2.4.4.4 Technology
+
+Firestore
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | Entity |
+| Color | #4CAF50 |
+| Stereotype | Firestore |
+
+### 2.4.5.0 External Service
+
+#### 2.4.5.1 Repository Id
+
+ext-sendgrid-api
+
+#### 2.4.5.2 Display Name
+
+SendGrid API
+
+#### 2.4.5.3 Type
+
+🔹 External Service
+
+#### 2.4.5.4 Technology
+
+HTTPS/REST API
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | Interface |
+| Color | #03A9F4 |
+| Stereotype | External API |
+
+### 2.4.6.0 Actor
+
+#### 2.4.6.1 Repository Id
+
+actor-invited-user
+
+#### 2.4.6.2 Display Name
+
+Invited User
+
+#### 2.4.6.3 Type
+
+🔹 Actor
+
+#### 2.4.6.4 Technology
+
+Human
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | Actor |
+| Color | #90A4AE |
+| Stereotype | Human |
+
+### 2.4.7.0 Authentication Service
+
+#### 2.4.7.1 Repository Id
+
+svc-firebase-auth
+
+#### 2.4.7.2 Display Name
+
+Authentication Service
+
+#### 2.4.7.3 Type
+
+🔹 Authentication Service
+
+#### 2.4.7.4 Technology
+
+Firebase Authentication
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | Entity |
+| Color | #F57C00 |
+| Stereotype | Firebase Auth |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+actor-admin
+
+#### 2.5.1.2 Target Id
+
+client-web-admin
+
+#### 2.5.1.3 Message
+
+Submits 'Invite User' form with { email, role }
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+HTTPS
+
+##### 2.5.1.10.2 Method
+
+UI Event
+
+##### 2.5.1.10.3 Parameters
+
+User input from form fields, validated client-side for format.
+
+##### 2.5.1.10.4 Authentication
+
+N/A
+
+##### 2.5.1.10.5 Error Handling
+
+Display form validation errors (e.g., invalid email format).
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+<100ms
+
+### 2.5.2.0.0.0 RPC
+
+#### 2.5.2.1.0.0 Source Id
+
+client-web-admin
+
+#### 2.5.2.2.0.0 Target Id
+
+backend-cloud-functions
+
+#### 2.5.2.3.0.0 Message
+
+invokeCallableFunction('inviteUser', { email, role })
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 RPC
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+Success or Error object
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+HTTPS
+
+##### 2.5.2.10.2.0 Method
+
+Firebase Callable Function
+
+##### 2.5.2.10.3.0 Parameters
+
+{ email: string, role: 'Supervisor' | 'Subordinate' }
+
+##### 2.5.2.10.4.0 Authentication
+
+Firebase Auth ID Token (JWT) in header. Function performs role check for 'Admin'.
+
+##### 2.5.2.10.5.0 Error Handling
+
+Client handles codes: 'unauthenticated', 'permission-denied', 'invalid-argument', 'already-exists', 'internal'. Displays user-friendly messages.
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+<500ms (p95)
+
+###### 2.5.2.10.6.2 Throughput
+
+Scales automatically
+
+#### 2.5.2.11.0.0 Nested Interactions
+
+##### 2.5.2.11.1.0 Database Query
+
+###### 2.5.2.11.1.1 Source Id
+
+backend-cloud-functions
+
+###### 2.5.2.11.1.2 Target Id
+
+db-firestore
+
+###### 2.5.2.11.1.3 Message
+
+query(users).where('email', '==', email).where('tenantId', '==', tenantId).limit(1)
+
+###### 2.5.2.11.1.4 Sequence Number
+
+2.1
+
+###### 2.5.2.11.1.5 Type
+
+🔹 Database Query
+
+###### 2.5.2.11.1.6 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.1.7 Return Message
+
+QuerySnapshot (0 or 1 document)
+
+###### 2.5.2.11.1.8 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.1.9 Is Activation
+
+❌ No
+
+###### 2.5.2.11.1.10 Technical Details
+
+####### 2.5.2.11.1.10.1 Protocol
+
+Firebase Admin SDK
+
+####### 2.5.2.11.1.10.2 Method
+
+get()
+
+####### 2.5.2.11.1.10.3 Parameters
+
+Filters based on email and tenantId from caller's custom claims.
+
+####### 2.5.2.11.1.10.4 Authentication
+
+Server-side admin privileges.
+
+####### 2.5.2.11.1.10.5 Error Handling
+
+Function catches query errors and returns an 'internal' error to the client.
+
+####### 2.5.2.11.1.10.6 Performance
+
+######## 2.5.2.11.1.10.6.1 Latency
+
+<50ms (with composite index)
+
+##### 2.5.2.11.2.0.0.0 Database Write
+
+###### 2.5.2.11.2.1.0.0 Source Id
+
+backend-cloud-functions
+
+###### 2.5.2.11.2.2.0.0 Target Id
+
+db-firestore
+
+###### 2.5.2.11.2.3.0.0 Message
+
+ALT [User Does Not Exist]: createDoc('users', userData)
+
+###### 2.5.2.11.2.4.0.0 Sequence Number
+
+2.2
+
+###### 2.5.2.11.2.5.0.0 Type
+
+🔹 Database Write
+
+###### 2.5.2.11.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.2.7.0.0 Return Message
+
+WriteResult
+
+###### 2.5.2.11.2.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.2.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.2.10.0.0 Technical Details
+
+####### 2.5.2.11.2.10.1.0 Protocol
+
+Firebase Admin SDK
+
+####### 2.5.2.11.2.10.2.0 Method
+
+add()
+
+####### 2.5.2.11.2.10.3.0 Parameters
+
+userData = { email, role, status: 'invited', tenantId, invitationToken, tokenExpiry }
+
+####### 2.5.2.11.2.10.4.0 Authentication
+
+Server-side admin privileges.
+
+####### 2.5.2.11.2.10.5.0 Error Handling
+
+Function catches write errors and returns an 'internal' error.
+
+####### 2.5.2.11.2.10.6.0 Performance
+
+######## 2.5.2.11.2.10.6.1 Latency
+
+<100ms
+
+##### 2.5.2.11.3.0.0.0 API Call
+
+###### 2.5.2.11.3.1.0.0 Source Id
+
+backend-cloud-functions
+
+###### 2.5.2.11.3.2.0.0 Target Id
+
+ext-sendgrid-api
+
+###### 2.5.2.11.3.3.0.0 Message
+
+POST /v3/mail/send with invitation link
+
+###### 2.5.2.11.3.4.0.0 Sequence Number
+
+2.3
+
+###### 2.5.2.11.3.5.0.0 Type
+
+🔹 API Call
+
+###### 2.5.2.11.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.2.11.3.7.0.0 Return Message
+
+202 Accepted or Error
+
+###### 2.5.2.11.3.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.2.11.3.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.2.11.3.10.0.0 Technical Details
+
+####### 2.5.2.11.3.10.1.0 Protocol
+
+HTTPS/REST
+
+####### 2.5.2.11.3.10.2.0 Method
+
+POST
+
+####### 2.5.2.11.3.10.3.0 Parameters
+
+SendGrid Mail Send v3 JSON payload, including a template ID and the generated registration URL: https://app.domain.com/register?token={invitationToken}
+
+####### 2.5.2.11.3.10.4.0 Authentication
+
+Bearer {SENDGRID_API_KEY} (loaded from Google Secret Manager).
+
+####### 2.5.2.11.3.10.5.0 Error Handling
+
+Implement retry with exponential backoff for 5xx errors. Log 4xx errors. If sending fails after retries, return 'internal' error to client.
+
+####### 2.5.2.11.3.10.6.0 Performance
+
+######## 2.5.2.11.3.10.6.1 Latency
+
+<1000ms
+
+### 2.5.3.0.0.0.0.0 UI Update
+
+#### 2.5.3.1.0.0.0.0 Source Id
+
+client-web-admin
+
+#### 2.5.3.2.0.0.0.0 Target Id
+
+actor-admin
+
+#### 2.5.3.3.0.0.0.0 Message
+
+Displays 'Invitation sent successfully' toast/message
+
+#### 2.5.3.4.0.0.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0.0.0 Type
+
+🔹 UI Update
+
+#### 2.5.3.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7.0.0.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0.0.0 Technical Details
+
+##### 2.5.3.10.1.0.0.0 Protocol
+
+N/A
+
+##### 2.5.3.10.2.0.0.0 Method
+
+UI Render
+
+##### 2.5.3.10.3.0.0.0 Parameters
+
+N/A
+
+##### 2.5.3.10.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.3.10.5.0.0.0 Error Handling
+
+If an error was returned, displays a specific error message instead.
+
+##### 2.5.3.10.6.0.0.0 Performance
+
+###### 2.5.3.10.6.1.0.0 Latency
+
+<16ms
+
+### 2.5.4.0.0.0.0.0 User Interaction
+
+#### 2.5.4.1.0.0.0.0 Source Id
+
+actor-invited-user
+
+#### 2.5.4.2.0.0.0.0 Target Id
+
+client-web-admin
+
+#### 2.5.4.3.0.0.0.0 Message
+
+Clicks registration link in email: GET /register?token=...
+
+#### 2.5.4.4.0.0.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0.0.0 Type
+
+🔹 User Interaction
+
+#### 2.5.4.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0.0.0 Return Message
+
+Registration Page HTML/JS
+
+#### 2.5.4.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0.0.0 Technical Details
+
+##### 2.5.4.10.1.0.0.0 Protocol
+
+HTTPS
+
+##### 2.5.4.10.2.0.0.0 Method
+
+GET
+
+##### 2.5.4.10.3.0.0.0 Parameters
+
+URL query parameter `token`
+
+##### 2.5.4.10.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.4.10.5.0.0.0 Error Handling
+
+Client application parses the token from the URL. If no token is present, it shows an error.
+
+##### 2.5.4.10.6.0.0.0 Performance
+
+###### 2.5.4.10.6.1.0.0 Latency
+
+<3s (cold start)
+
+### 2.5.5.0.0.0.0.0 User Interaction
+
+#### 2.5.5.1.0.0.0.0 Source Id
+
+actor-invited-user
+
+#### 2.5.5.2.0.0.0.0 Target Id
+
+client-web-admin
+
+#### 2.5.5.3.0.0.0.0 Message
+
+Submits registration form with { password }
+
+#### 2.5.5.4.0.0.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0.0.0 Type
+
+🔹 User Interaction
+
+#### 2.5.5.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0.0.0 Return Message
+
+
+
+#### 2.5.5.8.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.5.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0.0.0 Technical Details
+
+##### 2.5.5.10.1.0.0.0 Protocol
+
+HTTPS
+
+##### 2.5.5.10.2.0.0.0 Method
+
+UI Event
+
+##### 2.5.5.10.3.0.0.0 Parameters
+
+Password field, validated against complexity rules (REQ-2.6.3).
+
+##### 2.5.5.10.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.5.10.5.0.0.0 Error Handling
+
+Display password complexity errors client-side.
+
+##### 2.5.5.10.6.0.0.0 Performance
+
+###### 2.5.5.10.6.1.0.0 Latency
+
+<100ms
+
+### 2.5.6.0.0.0.0.0 RPC
+
+#### 2.5.6.1.0.0.0.0 Source Id
+
+client-web-admin
+
+#### 2.5.6.2.0.0.0.0 Target Id
+
+backend-cloud-functions
+
+#### 2.5.6.3.0.0.0.0 Message
+
+invokeCallableFunction('completeRegistration', { token, password })
+
+#### 2.5.6.4.0.0.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0.0.0 Type
+
+🔹 RPC
+
+#### 2.5.6.6.0.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0.0.0 Return Message
+
+Success or Error object
+
+#### 2.5.6.8.0.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.6.10.0.0.0.0 Technical Details
+
+##### 2.5.6.10.1.0.0.0 Protocol
+
+HTTPS
+
+##### 2.5.6.10.2.0.0.0 Method
+
+Firebase Callable Function
+
+##### 2.5.6.10.3.0.0.0 Parameters
+
+{ token: string, password: string }
+
+##### 2.5.6.10.4.0.0.0 Authentication
+
+Unauthenticated. The token serves as the authorization mechanism.
+
+##### 2.5.6.10.5.0.0.0 Error Handling
+
+Client handles codes: 'invalid-argument', 'not-found', 'deadline-exceeded', 'internal'.
+
+##### 2.5.6.10.6.0.0.0 Performance
+
+###### 2.5.6.10.6.1.0.0 Latency
+
+<1000ms (p95)
+
+#### 2.5.6.11.0.0.0.0 Nested Interactions
+
+##### 2.5.6.11.1.0.0.0 Database Query
+
+###### 2.5.6.11.1.1.0.0 Source Id
+
+backend-cloud-functions
+
+###### 2.5.6.11.1.2.0.0 Target Id
+
+db-firestore
+
+###### 2.5.6.11.1.3.0.0 Message
+
+query(users).where('invitationToken', '==', token).limit(1)
+
+###### 2.5.6.11.1.4.0.0 Sequence Number
+
+6.1
+
+###### 2.5.6.11.1.5.0.0 Type
+
+🔹 Database Query
+
+###### 2.5.6.11.1.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.6.11.1.7.0.0 Return Message
+
+QuerySnapshot with user document
+
+###### 2.5.6.11.1.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.6.11.1.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.6.11.1.10.0.0 Technical Details
+
+####### 2.5.6.11.1.10.1.0 Protocol
+
+Firebase Admin SDK
+
+####### 2.5.6.11.1.10.2.0 Method
+
+get()
+
+####### 2.5.6.11.1.10.3.0 Parameters
+
+N/A
+
+####### 2.5.6.11.1.10.4.0 Authentication
+
+Server-side admin privileges.
+
+####### 2.5.6.11.1.10.5.0 Error Handling
+
+If document not found, returns 'not-found' error to client. Checks if `tokenExpiry` < `now()`, returns 'deadline-exceeded' error.
+
+####### 2.5.6.11.1.10.6.0 Performance
+
+######## 2.5.6.11.1.10.6.1 Latency
+
+<50ms (with index)
+
+##### 2.5.6.11.2.0.0.0 Authentication Operation
+
+###### 2.5.6.11.2.1.0.0 Source Id
+
+backend-cloud-functions
+
+###### 2.5.6.11.2.2.0.0 Target Id
+
+svc-firebase-auth
+
+###### 2.5.6.11.2.3.0.0 Message
+
+ALT [Token is Valid]: admin.auth().createUser({ email, password })
+
+###### 2.5.6.11.2.4.0.0 Sequence Number
+
+6.2
+
+###### 2.5.6.11.2.5.0.0 Type
+
+🔹 Authentication Operation
+
+###### 2.5.6.11.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.6.11.2.7.0.0 Return Message
+
+UserRecord (with new uid)
+
+###### 2.5.6.11.2.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.6.11.2.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.6.11.2.10.0.0 Technical Details
+
+####### 2.5.6.11.2.10.1.0 Protocol
+
+Firebase Admin SDK
+
+####### 2.5.6.11.2.10.2.0 Method
+
+createUser()
+
+####### 2.5.6.11.2.10.3.0 Parameters
+
+Email from the fetched Firestore document, password from the client.
+
+####### 2.5.6.11.2.10.4.0 Authentication
+
+Server-side admin privileges.
+
+####### 2.5.6.11.2.10.5.0 Error Handling
+
+Catches 'email-already-exists' and other auth errors, returning an 'internal' error to client.
+
+####### 2.5.6.11.2.10.6.0 Performance
+
+######## 2.5.6.11.2.10.6.1 Latency
+
+<500ms
+
+##### 2.5.6.11.3.0.0.0 Authentication Operation
+
+###### 2.5.6.11.3.1.0.0 Source Id
+
+backend-cloud-functions
+
+###### 2.5.6.11.3.2.0.0 Target Id
+
+svc-firebase-auth
+
+###### 2.5.6.11.3.3.0.0 Message
+
+admin.auth().setCustomUserClaims(uid, { tenantId, role })
+
+###### 2.5.6.11.3.4.0.0 Sequence Number
+
+6.3
+
+###### 2.5.6.11.3.5.0.0 Type
+
+🔹 Authentication Operation
+
+###### 2.5.6.11.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.6.11.3.7.0.0 Return Message
+
+void
+
+###### 2.5.6.11.3.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.6.11.3.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.6.11.3.10.0.0 Technical Details
+
+####### 2.5.6.11.3.10.1.0 Protocol
+
+Firebase Admin SDK
+
+####### 2.5.6.11.3.10.2.0 Method
+
+setCustomUserClaims()
+
+####### 2.5.6.11.3.10.3.0 Parameters
+
+uid from createUser response, tenantId and role from Firestore document.
+
+####### 2.5.6.11.3.10.4.0 Authentication
+
+Server-side admin privileges.
+
+####### 2.5.6.11.3.10.5.0 Error Handling
+
+Part of the overall transaction; failure will roll back.
+
+####### 2.5.6.11.3.10.6.0 Performance
+
+######## 2.5.6.11.3.10.6.1 Latency
+
+<100ms
+
+##### 2.5.6.11.4.0.0.0 Database Write
+
+###### 2.5.6.11.4.1.0.0 Source Id
+
+backend-cloud-functions
+
+###### 2.5.6.11.4.2.0.0 Target Id
+
+db-firestore
+
+###### 2.5.6.11.4.3.0.0 Message
+
+updateDoc('users/{userId}', { status: 'active', uid, ... })
+
+###### 2.5.6.11.4.4.0.0 Sequence Number
+
+6.4
+
+###### 2.5.6.11.4.5.0.0 Type
+
+🔹 Database Write
+
+###### 2.5.6.11.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+###### 2.5.6.11.4.7.0.0 Return Message
+
+WriteResult
+
+###### 2.5.6.11.4.8.0.0 Has Return
+
+✅ Yes
+
+###### 2.5.6.11.4.9.0.0 Is Activation
+
+❌ No
+
+###### 2.5.6.11.4.10.0.0 Technical Details
+
+####### 2.5.6.11.4.10.1.0 Protocol
+
+Firebase Admin SDK
+
+####### 2.5.6.11.4.10.2.0 Method
+
+update()
+
+####### 2.5.6.11.4.10.3.0 Parameters
+
+Update data: { status: 'active', uid: newUid, invitationToken: FieldValue.delete(), tokenExpiry: FieldValue.delete() }
+
+####### 2.5.6.11.4.10.4.0 Authentication
+
+Server-side admin privileges.
+
+####### 2.5.6.11.4.10.5.0 Error Handling
+
+Entire registration finalization should be wrapped in a Firestore Transaction to ensure Auth creation and Firestore update are atomic.
+
+####### 2.5.6.11.4.10.6.0 Performance
+
+######## 2.5.6.11.4.10.6.1 Latency
+
+<100ms
+
+### 2.5.7.0.0.0.0.0 UI Update
+
+#### 2.5.7.1.0.0.0.0 Source Id
+
+client-web-admin
+
+#### 2.5.7.2.0.0.0.0 Target Id
+
+actor-invited-user
+
+#### 2.5.7.3.0.0.0.0 Message
+
+Redirects to login page with success message
+
+#### 2.5.7.4.0.0.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0.0.0 Type
+
+🔹 UI Update
+
+#### 2.5.7.6.0.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.7.7.0.0.0.0 Return Message
+
+
+
+#### 2.5.7.8.0.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.9.0.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0.0.0 Technical Details
+
+##### 2.5.7.10.1.0.0.0 Protocol
+
+N/A
+
+##### 2.5.7.10.2.0.0.0 Method
+
+Navigation
+
+##### 2.5.7.10.3.0.0.0 Parameters
+
+N/A
+
+##### 2.5.7.10.4.0.0.0 Authentication
+
+N/A
+
+##### 2.5.7.10.5.0.0.0 Error Handling
+
+If an error was returned, the registration page displays the relevant message (e.g., 'Link has expired').
+
+##### 2.5.7.10.6.0.0.0 Performance
+
+###### 2.5.7.10.6.1.0.0 Latency
+
+<50ms
+
+## 2.6.0.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0.0 Content
+
+A composite index on `users(tenantId, email)` is required for the initial existence check to be performant and adhere to Firestore query constraints.
+
+#### 2.6.1.2.0.0.0.0 Participant Id
+
+db-firestore
+
+#### 2.6.1.3.0.0.0.0 Sequence Number
+
+2.1
+
+### 2.6.2.0.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0.0 Content
+
+A single-field index on `users(invitationToken)` is required for the registration completion lookup.
+
+#### 2.6.2.2.0.0.0.0 Participant Id
+
+db-firestore
+
+#### 2.6.2.3.0.0.0.0 Sequence Number
+
+6.1
+
+### 2.6.3.0.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0.0 Content
+
+The entire `completeRegistration` function (steps 6.1 to 6.4) MUST be atomic. A Firestore Transaction should be used to read the user document and then commit the Auth changes and Firestore update. If any step fails, the entire operation should fail, leaving the system in a consistent state.
+
+#### 2.6.3.2.0.0.0.0 Participant Id
+
+backend-cloud-functions
+
+#### 2.6.3.3.0.0.0.0 Sequence Number
+
+6
+
+## 2.7.0.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | 1. Admin role is verified server-side using Fireba... |
+| Performance Targets | The 'inviteUser' function should respond in <500ms... |
+| Error Handling Strategy | Both callable functions must have robust error han... |
+| Testing Considerations | 1. Unit test the `inviteUser` and `completeRegistr... |
+| Monitoring Requirements | 1. Log all invitation and registration events with... |
+| Deployment Considerations | Deploy Firestore indexes and security rules before... |
+

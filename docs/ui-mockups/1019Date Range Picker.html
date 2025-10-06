@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Date Range Picker Component</title>
+  <style>
+    /* Design System Tokens */
+    :root {
+      /* Colors */
+      --color-primary-50: #E6F0FF;
+      --color-primary-500: #0073FF;
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+      /* Typography */
+      --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      /* Borders */
+      --border-radius-md: 8px;
+      --border-width-1: 1px;
+      --border-width-2: 2px;
+      /* Shadows */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* Base & Showcase Styles */
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: var(--font-family-sans);
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-700);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+    .showcase-section {
+      width: 100%;
+      max-width: 500px;
+      background-color: var(--color-neutral-white);
+      padding: 24px;
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-md);
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-900);
+      margin-bottom: 8px;
+    }
+    p {
+      font-size: var(--font-size-sm);
+      color: var(--color-neutral-500);
+      margin-bottom: 16px;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); border-radius: var(--border-radius-md); border: var(--border-width-1) solid transparent; cursor: pointer; text-decoration: none; transition: background-color 0.2s; }
+    .btn--primary { background-color: var(--color-primary-500); color: var(--color-neutral-white); }
+    .btn--primary:hover { background-color: #0062D9; }
+    .btn--secondary { background-color: var(--color-neutral-100); color: var(--color-neutral-700); border-color: var(--color-neutral-300); }
+    .btn--secondary:hover { background-color: var(--color-neutral-200); }
+
+
+    /* Component CSS: Date Range Picker */
+    .date-range-picker {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .date-range-picker__inputs {
+      display: flex;
+      align-items: center;
+      border: var(--border-width-1) solid var(--color-neutral-300);
+      border-radius: var(--border-radius-md);
+      background-color: var(--color-neutral-white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .date-range-picker:focus-within .date-range-picker__inputs,
+    .date-range-picker.is-open .date-range-picker__inputs {
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 var(--border-width-2) var(--color-primary-50);
+    }
+
+    .date-range-picker__input {
+      flex: 1;
+      border: none;
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--font-size-md);
+      background-color: transparent;
+      width: 100%;
+    }
+
+    .date-range-picker__input:focus {
+      outline: none;
+    }
+    
+    .date-range-picker__input::placeholder {
+        color: var(--color-neutral-400);
+    }
+
+    .date-range-picker__separator {
+      color: var(--color-neutral-400);
+      padding: 0 var(--space-2);
+    }
+
+    .date-range-picker__icon {
+      color: var(--color-neutral-500);
+      padding-right: var(--space-4);
+    }
+
+    .date-range-picker__popup {
+      position: absolute;
+      top: calc(100% + var(--space-2));
+      left: 0;
+      z-index: 10;
+      background-color: var(--color-neutral-white);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-4);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+      width: 320px;
+    }
+
+    .date-range-picker.is-open .date-range-picker__popup {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .calendar {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .calendar__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-2) 0;
+      margin-bottom: var(--space-3);
+    }
+
+    .calendar__month-year {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-900);
+    }
+
+    .calendar__nav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: var(--space-2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calendar__nav-btn:hover {
+      background-color: var(--color-neutral-100);
+    }
+    
+    .calendar__nav-btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 1px;
+    }
+
+    .calendar__grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--space-1);
+      text-align: center;
+    }
+
+    .calendar__day-name {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-neutral-500);
+      padding: var(--space-2) 0;
+    }
+
+    .calendar__day {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      height: 36px;
+      width: 36px;
+      margin: 0 auto;
+      border-radius: 50%;
+      transition: background-color 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calendar__day:not([disabled]):hover {
+      background-color: var(--color-neutral-100);
+    }
+
+    .calendar__day:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 1px;
+    }
+
+    .calendar__day--today {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-primary-500);
+      border: var(--border-width-1) solid var(--color-primary-500);
+    }
+
+    .calendar__day--in-range {
+      background-color: var(--color-primary-50);
+      border-radius: 0;
+    }
+
+    .calendar__day--selected-start,
+    .calendar__day--selected-end {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+    }
+
+    .calendar__day--selected-start {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .calendar__day--selected-end {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .calendar__day[disabled] {
+      color: var(--color-neutral-300);
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    .calendar__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: var(--border-width-1) solid var(--color-neutral-200);
+    }
+
+    /* Responsive Adaptations */
+    @media (max-width: 768px) {
+      .date-range-picker__popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        width: calc(100vw - 32px);
+      }
+      .date-range-picker.is-open .date-range-picker__popup {
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="showcase-section">
+    <h1>Date Range Picker</h1>
+    <p>A molecular component for selecting a start and end date.</p>
+    
+    <label for="start-date-1" id="date-range-label-1" class="sr-only">Select Date Range</label>
+    <div class="date-range-picker">
+      <div class="date-range-picker__inputs">
+        <input type="text" id="start-date-1" class="date-range-picker__input" placeholder="Start Date" aria-labelledby="date-range-label-1">
+        <span class="date-range-picker__separator">-</span>
+        <input type="text" id="end-date-1" class="date-range-picker__input" placeholder="End Date" aria-labelledby="date-range-label-1">
+        <span class="date-range-picker__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.8333 3.33331H4.16667C3.24619 3.33331 2.5 4.07951 2.5 4.99998V16.6666C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6666V4.99998C17.5 4.07951 16.7538 3.33331 15.8333 3.33331Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3333 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.66669 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 8.33331H17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="showcase-section">
+    <h1>Date Range Picker (Open State)</h1>
+    <p>This shows the component with the calendar popup visible.</p>
+
+    <label for="start-date-2" id="date-range-label-2" class="sr-only">Select Date Range</label>
+    <div class="date-range-picker is-open">
+      <div class="date-range-picker__inputs">
+        <input type="text" id="start-date-2" class="date-range-picker__input" value="2025-01-08" aria-labelledby="date-range-label-2" aria-expanded="true" aria-controls="calendar-popup">
+        <span class="date-range-picker__separator">-</span>
+        <input type="text" id="end-date-2" class="date-range-picker__input" value="2025-01-17" aria-labelledby="date-range-label-2">
+        <span class="date-range-picker__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.8333 3.33331H4.16667C3.24619 3.33331 2.5 4.07951 2.5 4.99998V16.6666C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6666V4.99998C17.5 4.07951 16.7538 3.33331 15.8333 3.33331Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3333 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.66669 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 8.33331H17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+      <div class="date-range-picker__popup" id="calendar-popup" role="dialog" aria-modal="true" aria-labelledby="calendar-heading">
+        <div class="calendar">
+          <div class="calendar__header">
+            <button class="calendar__nav-btn" aria-label="Previous month">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <h2 id="calendar-heading" class="calendar__month-year" aria-live="polite">January 2025</h2>
+            <button class="calendar__nav-btn" aria-label="Next month">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 8 8)"/></svg>
+            </button>
+          </div>
+          <div class="calendar__grid" role="grid">
+            <div class="calendar__day-name" role="columnheader" aria-label="Sunday">Su</div>
+            <div class="calendar__day-name" role="columnheader" aria-label="Monday">Mo</div>
+            <div class="calendar__day-name" role="columnheader" aria-label="Tuesday">Tu</div>
+            <div class="calendar__day-name" role="columnheader" aria-label="Wednesday">We</div>
+            <div class="calendar__day-name" role="columnheader" aria-label="Thursday">Th</div>
+            <div class="calendar__day-name" role="columnheader" aria-label="Friday">Fr</div>
+            <div class="calendar__day-name" role="columnheader" aria-label="Saturday">Sa</div>
+            
+            <button class="calendar__day" disabled role="gridcell">29</button>
+            <button class="calendar__day" disabled role="gridcell">30</button>
+            <button class="calendar__day" disabled role="gridcell">31</button>
+            <button class="calendar__day" role="gridcell">1</button>
+            <button class="calendar__day" role="gridcell">2</button>
+            <button class="calendar__day" role="gridcell">3</button>
+            <button class="calendar__day" role="gridcell">4</button>
+            <button class="calendar__day" role="gridcell">5</button>
+            <button class="calendar__day" role="gridcell">6</button>
+            <button class="calendar__day" role="gridcell">7</button>
+            <button class="calendar__day calendar__day--selected-start" role="gridcell" aria-selected="true">8</button>
+            <button class="calendar__day calendar__day--in-range" role="gridcell" aria-selected="true">9</button>
+            <button class="calendar__day calendar__day--in-range" role="gridcell" aria-selected="true">10</button>
+            <button class="calendar__day calendar__day--in-range" role="gridcell" aria-selected="true">11</button>
+            <button class="calendar__day calendar__day--in-range" role="gridcell" aria-selected="true">12</button>
+            <button class="calendar__day calendar__day--in-range" role="gridcell" aria-selected="true">13</button>
+            <button class="calendar__day calendar__day--in-range" role="gridcell" aria-selected="true">14</button>
+            <button class="calendar__day calendar__day--in-range calendar__day--today" role="gridcell" aria-selected="true" aria-current="date">15</button>
+            <button class="calendar__day calendar__day--in-range" role="gridcell" aria-selected="true">16</button>
+            <button class="calendar__day calendar__day--selected-end" role="gridcell" aria-selected="true">17</button>
+            <button class="calendar__day" role="gridcell">18</button>
+            <button class="calendar__day" role="gridcell">19</button>
+            <button class="calendar__day" role="gridcell">20</button>
+            <button class="calendar__day" role="gridcell">21</button>
+            <button class="calendar__day" role="gridcell">22</button>
+            <button class="calendar__day" role="gridcell">23</button>
+            <button class="calendar__day" role="gridcell">24</button>
+            <button class="calendar__day" role="gridcell">25</button>
+            <button class="calendar__day" role="gridcell">26</button>
+            <button class="calendar__day" role="gridcell">27</button>
+            <button class="calendar__day" role="gridcell">28</button>
+            <button class="calendar__day" role="gridcell">29</button>
+            <button class="calendar__day" role="gridcell">30</button>
+            <button class="calendar__day" role="gridcell">31</button>
+          </div>
+          <div class="calendar__actions">
+            <button class="btn btn--secondary">Cancel</button>
+            <button class="btn btn--primary">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="showcase-section">
+    <h2>Component Variations</h2>
+    <div>
+      <h3>Variant Name: default</h3>
+      <p>The standard implementation of the date range picker. It consists of two text inputs for start and end dates, which trigger a calendar popup on focus or click. This is the only variant required for the system.</p>
+    </div>
+  </div>
+
+</body>
+</html>

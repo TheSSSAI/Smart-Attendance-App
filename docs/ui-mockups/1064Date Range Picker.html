@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Component: Date Range Picker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM TOKENS --- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --color-error: #DC2626;
+
+            /* Typography */
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- BASE & SHOWCASE STYLES --- */
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-50);
+            color: var(--color-gray-700);
+            padding: var(--spacing-xl);
+        }
+
+        .showcase {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .component-display {
+            background-color: var(--color-white);
+            padding: var(--spacing-xl);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .component-display h2 {
+            font-size: 20px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-900);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .component-container {
+            max-width: 400px;
+        }
+        
+        .mobile-simulator {
+            width: 375px;
+            height: 667px;
+            border: 8px solid var(--color-gray-900);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        /* Component: Date Range Picker */
+        .date-range-picker {
+            position: relative;
+            font-family: var(--font-family-primary);
+        }
+
+        .date-range-picker__inputs-container {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--border-radius-md);
+            background-color: var(--color-white);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .date-range-picker:focus-within .date-range-picker__inputs-container,
+        .date-range-picker.pseudo-focus .date-range-picker__inputs-container {
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 3px var(--color-primary-50);
+        }
+
+        .date-range-picker__input-group {
+            position: relative;
+            flex: 1 1 50%;
+        }
+
+        .date-range-picker__input {
+            width: 100%;
+            padding: 10px var(--spacing-md);
+            border: none;
+            background-color: transparent;
+            font-size: var(--font-size-body);
+            color: var(--color-gray-900);
+            outline: none;
+        }
+        
+        /* Visually hidden but accessible label */
+        .date-range-picker__label {
+            border: 0;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+
+        .date-range-picker__input::placeholder {
+            color: var(--color-gray-400);
+        }
+
+        .date-range-picker__separator {
+            color: var(--color-gray-400);
+            padding: 0 var(--spacing-sm);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+        .date-range-picker__separator svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .date-range-picker__trigger-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .date-range-picker__trigger {
+            display: none; /* Hide the actual checkbox */
+        }
+
+        .date-range-picker__popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + var(--spacing-sm));
+            left: 0;
+            width: 100%;
+            max-width: 320px;
+            background-color: var(--color-white);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            z-index: 10;
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-gray-200);
+        }
+
+        .date-range-picker__trigger:checked ~ .date-range-picker__popup {
+            display: block;
+        }
+
+        /* Calendar Styles */
+        .calendar__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .calendar__month-year {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-900);
+        }
+
+        .calendar__nav {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            color: var(--color-gray-500);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .calendar__nav svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .calendar__nav:hover {
+            background-color: var(--color-gray-100);
+        }
+
+        .calendar__days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--spacing-xs);
+            text-align: center;
+        }
+
+        .calendar__day-name {
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-400);
+            padding: var(--spacing-xs);
+        }
+
+        .calendar__day {
+            font-size: var(--font-size-caption);
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .calendar__day:hover:not(:disabled) {
+            background-color: var(--color-primary-50);
+        }
+
+        .calendar__day--today {
+            border: 1px solid var(--color-primary-500);
+            color: var(--color-primary-500);
+        }
+
+        .calendar__day--selected {
+            background-color: var(--color-primary-500);
+            color: var(--color-white);
+        }
+        
+        .calendar__day--in-range {
+            background-color: var(--color-primary-50);
+            border-radius: 0;
+        }
+        
+        .calendar__day--range-start {
+            background-color: var(--color-primary-500);
+            color: var(--color-white);
+            border-top-left-radius: 50%;
+            border-bottom-left-radius: 50%;
+        }
+
+        .calendar__day--range-end {
+            background-color: var(--color-primary-500);
+            color: var(--color-white);
+            border-top-right-radius: 50%;
+            border-bottom-right-radius: 50%;
+        }
+
+        .calendar__day--other-month {
+            color: var(--color-gray-300);
+            cursor: default;
+        }
+        .calendar__day:disabled {
+            color: var(--color-gray-300);
+            cursor: not-allowed;
+        }
+
+        /* Responsive Adaptations for Mobile */
+        @media (max-width: 768px) {
+            .date-range-picker__popup {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                max-width: 100%;
+                height: 100%;
+                border-radius: 0;
+                display: none; /* Re-hide for toggle logic */
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: rgba(15, 23, 42, 0.8);
+                backdrop-filter: blur(4px);
+                padding: 0;
+            }
+
+            .date-range-picker__trigger:checked ~ .date-range-picker__popup {
+                display: flex;
+            }
+
+            .date-range-picker__popup-content {
+                background-color: var(--color-white);
+                border-radius: var(--border-radius-md);
+                padding: var(--spacing-lg);
+                width: calc(100% - var(--spacing-xl));
+                max-width: 360px;
+            }
+            
+            .calendar__day {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase">
+        <div class="component-display">
+            <h2>Date Range Picker</h2>
+
+            <div class="component-container" style="margin-bottom: 80px;">
+                <h3>Default State</h3>
+                <div class="date-range-picker">
+                    <label for="drp1-trigger" class="date-range-picker__trigger-label" aria-label="Open date range picker"></label>
+                    <input type="checkbox" id="drp1-trigger" class="date-range-picker__trigger">
+                    <div class="date-range-picker__inputs-container">
+                        <div class="date-range-picker__input-group">
+                            <label for="start-date-1" class="date-range-picker__label">Start Date</label>
+                            <input type="text" id="start-date-1" class="date-range-picker__input" placeholder="Start Date">
+                        </div>
+                        <div class="date-range-picker__separator">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.57.174 1.09.435 1.558.776.407.299.74.68.981 1.118A2.742 2.742 0 0117.25 8v.25a.75.75 0 01-1.5 0V8c0-.414-.336-.75-.75-.75H5a.75.75 0 00-.75.75v.25a.75.75 0 01-1.5 0V8c0-1.007.674-1.873 1.621-2.163.24-.09.487-.152.73-.199V3.75zm6.5 0v.135c.01.005.021.01.031.015.263.128.5.29.704.485.208.2.39.423.542.667.14.228.25.474.325.732.076.258.12.527.128.801V8c0 .414.336.75.75.75h.01a.75.75 0 01.75.75v.25a.75.75 0 01-1.5 0V8A2.25 2.25 0 0011.5 5.75V3.75c0-.414-.336-.75-.75-.75h-2.5a.75.75 0 00-.75.75v2c0 .414-.336.75-.75.75H5A2.25 2.25 0 002.75 8v.25a.75.75 0 01-1.5 0V8A2.75 2.75 0 014 5.25v-1.5A2.75 2.75 0 016.75 1h.5V3.75c0 .414.336.75.75.75h3.25a.75.75 0 00.75-.75zM5.5 10.25a.75.75 0 000 1.5h9a.75.75 0 000-1.5h-9z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="date-range-picker__input-group">
+                            <label for="end-date-1" class="date-range-picker__label">End Date</label>
+                            <input type="text" id="end-date-1" class="date-range-picker__input" placeholder="End Date">
+                        </div>
+                    </div>
+                    <!-- Calendar popup is here but hidden -->
+                </div>
+            </div>
+
+            <div class="component-container" style="margin-bottom: 280px;">
+                <h3>Open State (Desktop)</h3>
+                <div class="date-range-picker">
+                    <label for="drp2-trigger" class="date-range-picker__trigger-label" aria-label="Open date range picker"></label>
+                    <input type="checkbox" id="drp2-trigger" class="date-range-picker__trigger" checked>
+                    <div class="date-range-picker__inputs-container">
+                        <div class="date-range-picker__input-group">
+                            <label for="start-date-2" class="date-range-picker__label">Start Date</label>
+                            <input type="text" id="start-date-2" class="date-range-picker__input" value="10/05/2024">
+                        </div>
+                        <div class="date-range-picker__separator">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.57.174 1.09.435 1.558.776.407.299.74.68.981 1.118A2.742 2.742 0 0117.25 8v.25a.75.75 0 01-1.5 0V8c0-.414-.336-.75-.75-.75H5a.75.75 0 00-.75.75v.25a.75.75 0 01-1.5 0V8c0-1.007.674-1.873 1.621-2.163.24-.09.487-.152.73-.199V3.75zm6.5 0v.135c.01.005.021.01.031.015.263.128.5.29.704.485.208.2.39.423.542.667.14.228.25.474.325.732.076.258.12.527.128.801V8c0 .414.336.75.75.75h.01a.75.75 0 01.75.75v.25a.75.75 0 01-1.5 0V8A2.25 2.25 0 0011.5 5.75V3.75c0-.414-.336-.75-.75-.75h-2.5a.75.75 0 00-.75.75v2c0 .414-.336.75-.75.75H5A2.25 2.25 0 002.75 8v.25a.75.75 0 01-1.5 0V8A2.75 2.75 0 014 5.25v-1.5A2.75 2.75 0 016.75 1h.5V3.75c0 .414.336.75.75.75h3.25a.75.75 0 00.75-.75zM5.5 10.25a.75.75 0 000 1.5h9a.75.75 0 000-1.5h-9z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="date-range-picker__input-group">
+                            <label for="end-date-2" class="date-range-picker__label">End Date</label>
+                            <input type="text" id="end-date-2" class="date-range-picker__input" value="15/05/2024">
+                        </div>
+                    </div>
+                    <div class="date-range-picker__popup">
+                        <div class="calendar__header">
+                            <button class="calendar__nav" aria-label="Previous month"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg></button>
+                            <div class="calendar__month-year">May 2024</div>
+                            <button class="calendar__nav" aria-label="Next month"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg></button>
+                        </div>
+                        <div class="calendar__days-grid">
+                            <div class="calendar__day-name">Su</div><div class="calendar__day-name">Mo</div><div class="calendar__day-name">Tu</div><div class="calendar__day-name">We</div><div class="calendar__day-name">Th</div><div class="calendar__day-name">Fr</div><div class="calendar__day-name">Sa</div>
+                            <button class="calendar__day calendar__day--other-month" disabled>28</button>
+                            <button class="calendar__day calendar__day--other-month" disabled>29</button>
+                            <button class="calendar__day calendar__day--other-month" disabled>30</button>
+                            <button class="calendar__day">1</button>
+                            <button class="calendar__day">2</button>
+                            <button class="calendar__day">3</button>
+                            <button class="calendar__day">4</button>
+                            <button class="calendar__day">5</button>
+                            <button class="calendar__day">6</button>
+                            <button class="calendar__day">7</button>
+                            <button class="calendar__day">8</button>
+                            <button class="calendar__day">9</button>
+                            <button class="calendar__day calendar__day--range-start">10</button>
+                            <button class="calendar__day calendar__day--in-range">11</button>
+                            <button class="calendar__day calendar__day--in-range calendar__day--today">12</button>
+                            <button class="calendar__day calendar__day--in-range">13</button>
+                            <button class="calendar__day calendar__day--in-range">14</button>
+                            <button class="calendar__day calendar__day--range-end">15</button>
+                            <button class="calendar__day">16</button>
+                            <button class="calendar__day">17</button>
+                            <button class="calendar__day">18</button>
+                            <button class="calendar__day">19</button>
+                            <button class="calendar__day">20</button>
+                            <button class="calendar__day">21</button>
+                            <button class="calendar__day">22</button>
+                            <button class="calendar__day">23</button>
+                            <button class="calendar__day">24</button>
+                            <button class="calendar__day">25</button>
+                            <button class="calendar__day">26</button>
+                            <button class="calendar__day">27</button>
+                            <button class="calendar__day">28</button>
+                            <button class="calendar__day">29</button>
+                            <button class="calendar__day">30</button>
+                            <button class="calendar__day">31</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="component-container">
+                <h3>Open State (Mobile View)</h3>
+                <p>On screens < 768px wide, the picker opens in a full-screen modal.</p>
+                <div class="mobile-simulator">
+                    <div class="date-range-picker" style="padding: 16px;">
+                        <label for="drp3-trigger" class="date-range-picker__trigger-label" aria-label="Open date range picker"></label>
+                        <input type="checkbox" id="drp3-trigger" class="date-range-picker__trigger" checked>
+                        <div class="date-range-picker__inputs-container">
+                            <div class="date-range-picker__input-group">
+                                <label for="start-date-3" class="date-range-picker__label">Start Date</label>
+                                <input type="text" id="start-date-3" class="date-range-picker__input" value="10/05/2024">
+                            </div>
+                             <div class="date-range-picker__separator">
+                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.57.174 1.09.435 1.558.776.407.299.74.68.981 1.118A2.742 2.742 0 0117.25 8v.25a.75.75 0 01-1.5 0V8c0-.414-.336-.75-.75-.75H5a.75.75 0 00-.75.75v.25a.75.75 0 01-1.5 0V8c0-1.007.674-1.873 1.621-2.163.24-.09.487-.152.73-.199V3.75zm6.5 0v.135c.01.005.021.01.031.015.263.128.5.29.704.485.208.2.39.423.542.667.14.228.25.474.325.732.076.258.12.527.128.801V8c0 .414.336.75.75.75h.01a.75.75 0 01.75.75v.25a.75.75 0 01-1.5 0V8A2.25 2.25 0 0011.5 5.75V3.75c0-.414-.336-.75-.75-.75h-2.5a.75.75 0 00-.75.75v2c0 .414-.336.75-.75.75H5A2.25 2.25 0 002.75 8v.25a.75.75 0 01-1.5 0V8A2.75 2.75 0 014 5.25v-1.5A2.75 2.75 0 016.75 1h.5V3.75c0 .414.336.75.75.75h3.25a.75.75 0 00.75-.75zM5.5 10.25a.75.75 0 000 1.5h9a.75.75 0 000-1.5h-9z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <div class="date-range-picker__input-group">
+                                <label for="end-date-3" class="date-range-picker__label">End Date</label>
+                                <input type="text" id="end-date-3" class="date-range-picker__input" value="15/05/2024">
+                            </div>
+                        </div>
+                        <div class="date-range-picker__popup">
+                            <div class="date-range-picker__popup-content">
+                                <div class="calendar__header">
+                                    <button class="calendar__nav" aria-label="Previous month"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg></button>
+                                    <div class="calendar__month-year">May 2024</div>
+                                    <button class="calendar__nav" aria-label="Next month"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg></button>
+                                </div>
+                                <div class="calendar__days-grid">
+                                    <div class="calendar__day-name">Su</div><div class="calendar__day-name">Mo</div><div class="calendar__day-name">Tu</div><div class="calendar__day-name">We</div><div class="calendar__day-name">Th</div><div class="calendar__day-name">Fr</div><div class="calendar__day-name">Sa</div>
+                                    <button class="calendar__day" disabled>28</button>
+                                    <button class="calendar__day" disabled>29</button>
+                                    <button class="calendar__day" disabled>30</button>
+                                    <button class="calendar__day">1</button><button class="calendar__day">2</button><button class="calendar__day">3</button><button class="calendar__day">4</button><button class="calendar__day">5</button><button class="calendar__day">6</button><button class="calendar__day">7</button><button class="calendar__day">8</button><button class="calendar__day">9</button><button class="calendar__day calendar__day--range-start">10</button><button class="calendar__day calendar__day--in-range">11</button><button class="calendar__day calendar__day--in-range">12</button><button class="calendar__day calendar__day--in-range">13</button><button class="calendar__day calendar__day--in-range">14</button><button class="calendar__day calendar__day--range-end">15</button><button class="calendar__day">16</button><button class="calendar__day">17</button><button class="calendar__day">18</button><button class="calendar__day">19</button><button class="calendar__day">20</button><button class="calendar__day">21</button><button class="calendar__day">22</button><button class="calendar__day">23</button><button class="calendar__day">24</button><button class="calendar__day">25</button><button class="calendar__day">26</button><button class="calendar__day">27</button><button class="calendar__day">28</button><button class="calendar__day">29</button><button class="calendar__day">30</button><button class="calendar__day">31</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div> 
+            <h2> Component Variations</h2>
+            <div>
+                <style>
+                    .variant-card {
+                        background-color: #fff;
+                        border: 1px solid var(--color-gray-200);
+                        border-radius: var(--border-radius-md);
+                        padding: var(--spacing-lg);
+                        margin-bottom: var(--spacing-md);
+                    }
+                    .variant-card h3 {
+                        font-size: 18px;
+                        color: var(--color-primary-600);
+                        margin-bottom: var(--spacing-xs);
+                    }
+                    .variant-card p {
+                        font-size: var(--font-size-caption);
+                        color: var(--color-gray-500);
+                        margin-bottom: var(--spacing-md);
+                    }
+                </style>
+              <div class="variant-card">
+                <h3>Variant Name: default</h3>
+                <p>The standard date range picker component used in filter bars.</p>
+                <div class="component-container">
+                  <div class="date-range-picker">
+                    <label for="drp-var1-trigger" class="date-range-picker__trigger-label" aria-label="Open date range picker"></label>
+                    <input type="checkbox" id="drp-var1-trigger" class="date-range-picker__trigger">
+                    <div class="date-range-picker__inputs-container">
+                        <div class="date-range-picker__input-group">
+                            <label for="start-date-var1" class="date-range-picker__label">Start Date</label>
+                            <input type="text" id="start-date-var1" class="date-range-picker__input" placeholder="Start Date">
+                        </div>
+                        <div class="date-range-picker__separator">
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 3.75A2.75 2.75 0 018.75 1h2.5A2.75 2.75 0 0114 3.75v.443c.57.174 1.09.435 1.558.776.407.299.74.68.981 1.118A2.742 2.742 0 0117.25 8v.25a.75.75 0 01-1.5 0V8c0-.414-.336-.75-.75-.75H5a.75.75 0 00-.75.75v.25a.75.75 0 01-1.5 0V8c0-1.007.674-1.873 1.621-2.163.24-.09.487-.152.73-.199V3.75zm6.5 0v.135c.01.005.021.01.031.015.263.128.5.29.704.485.208.2.39.423.542.667.14.228.25.474.325.732.076.258.12.527.128.801V8c0 .414.336.75.75.75h.01a.75.75 0 01.75.75v.25a.75.75 0 01-1.5 0V8A2.25 2.25 0 0011.5 5.75V3.75c0-.414-.336-.75-.75-.75h-2.5a.75.75 0 00-.75.75v2c0 .414-.336.75-.75.75H5A2.25 2.25 0 002.75 8v.25a.75.75 0 01-1.5 0V8A2.75 2.75 0 014 5.25v-1.5A2.75 2.75 0 016.75 1h.5V3.75c0 .414.336.75.75.75h3.25a.75.75 0 00.75-.75zM5.5 10.25a.75.75 0 000 1.5h9a.75.75 0 000-1.5h-9z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div class="date-range-picker__input-group">
+                            <label for="end-date-var1" class="date-range-picker__label">End Date</label>
+                            <input type="text" id="end-date-var1" class="date-range-picker__input" placeholder="End Date">
+                        </div>
+                    </div>
+                  </div>
+                </div>        
+              </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

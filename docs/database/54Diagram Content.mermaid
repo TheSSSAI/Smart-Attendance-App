@@ -1,0 +1,96 @@
+erDiagram
+    Tenant {
+        String tenantId PK "Document ID"
+        String name
+        String status
+        String subscriptionPlanId FK
+    }
+
+    User {
+        String userId PK "Firebase Auth UID"
+        String email
+        String role
+        String supervisorId FK
+        Array_String_ teamIds
+    }
+
+    Team {
+        String teamId PK "Document ID"
+        String name
+        String supervisorId FK
+        Array_String_ memberIds
+    }
+
+    AttendanceRecord {
+        String attendanceRecordId PK "Document ID"
+        String userId FK
+        Timestamp checkInTime
+        String status
+        String supervisorId FK
+        String eventId FK
+    }
+
+    Event {
+        String eventId PK "Document ID"
+        String title
+        Timestamp startTime
+        String createdByUserId FK
+        Array_String_ assignedUserIds
+        Array_String_ assignedTeamIds
+    }
+
+    AuditLog {
+        String auditLogId PK "Document ID"
+        String actingUserId FK
+        String targetEntity
+        String targetEntityId
+        Timestamp timestamp
+    }
+
+    SubscriptionPlan {
+        String subscriptionPlanId PK "Document ID"
+        String name
+        Number price
+    }
+
+    TenantConfiguration {
+        String timezone
+        String autoCheckoutTime
+        Map dataRetentionPeriods
+    }
+
+    GoogleSheetIntegration {
+        String googleSheetId
+        String status
+        Timestamp lastSyncTimestamp
+    }
+
+    DailyUserSummary {
+        String summaryId PK "YYYY-MM-DD_userId"
+        String userId FK
+        Timestamp summaryDate
+        Number totalHoursWorked
+    }
+
+    Tenant ||--o{ User : "contains"
+    Tenant ||--o{ Team : "contains"
+    Tenant ||--o{ AttendanceRecord : "contains"
+    Tenant ||--o{ Event : "contains"
+    Tenant ||--o{ AuditLog : "contains"
+    Tenant ||--o{ DailyUserSummary : "contains"
+    Tenant ||--|| TenantConfiguration : "has settings"
+    Tenant ||--|| GoogleSheetIntegration : "has integration"
+
+    SubscriptionPlan ||--o{ Tenant : "applies to"
+
+    User }o--|| User : "supervises"
+    User }o--o{ Team : "is member of"
+    User ||--o{ AttendanceRecord : "creates"
+    User ||--o{ Event : "creates"
+    User }o--o{ Event : "is assigned to"
+    User ||--o{ AuditLog : "performs action"
+    User ||--o{ DailyUserSummary : "is summarized by"
+    User ||--o{ Team : "supervises"
+
+    Event ||--o{ AttendanceRecord : "relates to"
+    Team }o--o{ Event : "is assigned to"

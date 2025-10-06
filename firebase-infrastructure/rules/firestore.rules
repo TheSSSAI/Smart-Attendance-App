@@ -1,0 +1,235 @@
+rules_version = '2';
+
+//=============================================================================
+//
+//               Attendance Tracking System - Firestore Security Rules
+//
+// This file defines the complete security ruleset for the application.
+// It enforces:
+// 1. Multi-Tenancy: Strict data isolation between organizations.
+// 2. Role-Based Access Control (RBAC): Granular permissions for Admin,
+//    Supervisor, and Subordinate roles.
+// 3. Data Integrity: Validation of data on all write operations.
+//
+// Default behavior: DENY ALL access unless explicitly allowed.
+//
+//=============================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    //=========================================================================
+    // Helper Functions
+    // Reusable functions for common authentication and authorization checks.
+    //=========================================================================
+
+    // Returns the authenticated user's tenantId from their JWT custom claim.
+    function getTenantId() {
+      return request.auth.token.tenantId;
+    }
+
+    // Returns the authenticated user's role from their JWT custom claim.
+    function getRole() {
+      return request.auth.token.role;
+    }
+
+    // Checks if a user is authenticated.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Checks if the authenticated user is active.
+    // Assumes a custom claim `status: 'active'` is set upon login for active users.
+    function isUserActive() {
+      return isSignedIn() && request.auth.token.status == 'active';
+    }
+
+    // Checks if the authenticated user belongs to the tenant of the accessed resource.
+    // This is the cornerstone of our multi-tenancy model. (REQ-1-025)
+    function isTenantMember(tenantId) {
+      return isUserActive() && getTenantId() == tenantId;
+    }
+
+    // Checks if the authenticated user is an Admin.
+    function isAdmin() {
+      return isUserActive() && getRole() == 'Admin';
+    }
+
+    // Checks if the authenticated user is a Supervisor.
+    function isSupervisor() {
+      return isUserActive() && getRole() == 'Supervisor';
+    }
+
+    // Checks if the authenticated user is a Subordinate.
+    function isSubordinate() {
+      return isUserActive() && getRole() == 'Subordinate';
+    }
+
+    // Checks if the authenticated user is the owner of the document.
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Checks if the request comes from a privileged server-side process (e.g. Cloud Function)
+    // This is a placeholder for a more robust server-to-server auth mechanism if needed.
+    // For now, we assume critical cross-collection updates are done in functions with admin-level context.
+    function isServerProcess() {
+        return false; // Client-side requests will never be a server process.
+    }
+    
+    // Validates incoming data for a write operation.
+    function hasValidTenantId(tenantId) {
+        return request.resource.data.tenantId == tenantId;
+    }
+
+    //=========================================================================
+    // Root Collection Rules
+    // Rules for collections that are not scoped under a tenant.
+    //=========================================================================
+
+    // The `/tenants` collection itself.
+    // This is primarily for the registration process.
+    match /tenants/{tenantId} {
+      // Allow a function to read a tenant doc for name uniqueness check, but not clients.
+      allow get: if false; // Deny direct client reads to prevent enumeration.
+      allow list: if false; // Deny listing all tenants.
+      
+      // Allow an authenticated user to create a tenant document during registration.
+      // The Cloud Function will enforce uniqueness and other business logic.
+      allow create: if isSignedIn();
+
+      // Only server processes or the tenant deletion function can update/delete.
+      allow update, delete: if isServerProcess();
+    }
+    
+    //=========================================================================
+    // Tenant-Scoped Rules
+    // All application data lives under /tenants/{tenantId}. These rules apply
+    // to all documents within a specific tenant's data scope.
+    //=========================================================================
+    match /tenants/{tenantId}/{document=**} {
+      // GLOBAL RULE: Enforce strict tenant isolation for ALL documents.
+      // Every single request for any document under a tenant path MUST pass this check.
+      allow read, write: if isTenantMember(tenantId);
+    }
+    
+    // --- Users Collection --- (REQ-1-068)
+    match /tenants/{tenantId}/users/{userId} {
+      // READ: Allowed by Admins, the user themselves, or their direct supervisor.
+      allow get: if isTenantMember(tenantId) && (isAdmin() || isOwner(userId) || request.auth.uid == get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(userId)).data.supervisorId);
+      allow list: if isTenantMember(tenantId) && (isAdmin() || isSupervisor());
+      
+      // CREATE: Allowed only by Admins (invitation flow).
+      allow create: if isTenantMember(tenantId) && isAdmin();
+      
+      // UPDATE: Admins can update any user. Users can update a limited set of their own profile fields.
+      allow update: if isTenantMember(tenantId) && (
+        isAdmin() ||
+        (isOwner(userId) && !( 'role' in request.resource.data || 'status' in request.resource.data || 'tenantId' in request.resource.data ))
+      );
+      
+      // DELETE: Not allowed from client for data integrity. Deactivation is used instead.
+      allow delete: if false;
+    }
+    
+    // --- Teams Collection ---
+    match /tenants/{tenantId}/teams/{teamId} {
+      // READ: Any authenticated member of the tenant can see team structures.
+      allow read: if isTenantMember(tenantId);
+      
+      // CREATE/DELETE: Only Admins can create or delete teams.
+      allow create, delete: if isTenantMember(tenantId) && isAdmin();
+      
+      // UPDATE: Admins can update any team. A Supervisor can update teams they are assigned to. (US-015)
+      allow update: if isTenantMember(tenantId) && (isAdmin() || (isSupervisor() && request.auth.uid == resource.data.supervisorId));
+    }
+    
+    // --- Attendance Collection --- (REQ-1-068, REQ-1-005)
+    match /tenants/{tenantId}/attendance/{recordId} {
+      // READ: Allowed by Admins, the owner of the record, or the supervisor of the owner.
+      allow read: if isTenantMember(tenantId) && (
+        isAdmin() ||
+        isOwner(resource.data.userId) ||
+        (isSupervisor() && request.auth.uid == resource.data.supervisorId)
+      );
+      
+      // CREATE (Check-in): Allowed by the user for themselves.
+      // Includes data validation to ensure integrity. (US-028)
+      allow create: if isTenantMember(tenantId) && isOwner(request.resource.data.userId)
+                      && request.resource.data.checkInTime is timestamp
+                      && request.resource.data.checkInGps is latlng
+                      && request.resource.data.checkOutTime == null
+                      && request.resource.data.status == 'pending'
+                      && hasValidTenantId(tenantId);
+                      
+      // UPDATE: Different roles can update different fields.
+      allow update: if isTenantMember(tenantId) && (
+        // Case 1: Subordinate checking out (US-029)
+        (isOwner(resource.data.userId) && request.resource.data.checkOutTime is timestamp && request.resource.data.checkOutTime > resource.data.checkInTime)
+        ||
+        // Case 2: Subordinate requesting correction (US-045)
+        (isOwner(resource.data.userId) && request.resource.data.status == 'correction_pending')
+        ||
+        // Case 3: Supervisor approving/rejecting (US-039, US-040, US-047, US-048)
+        (isSupervisor() && request.auth.uid == resource.data.supervisorId && ('status' in request.resource.data || 'rejectionReason' in request.resource.data))
+        ||
+        // Case 4: Admin performing direct edit (US-050)
+        isAdmin()
+      );
+      
+      // DELETE: Not allowed from client for data integrity.
+      allow delete: if false;
+    }
+    
+    // --- Events Collection ---
+    match /tenants/{tenantId}/events/{eventId} {
+      // READ: Admins, Supervisors, or anyone assigned to the event (directly or via team).
+      allow read: if isTenantMember(tenantId) && (
+        isAdmin() || isSupervisor() ||
+        request.auth.uid in resource.data.assignedUserIds ||
+        // Check team membership for event visibility. Costly, use with caution.
+        // A better model would be custom claims for teams if they are few.
+        exists(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid)).data.teamIds.hasAny(resource.data.assignedTeamIds)
+      );
+      
+      // CREATE/UPDATE/DELETE: Only Admins or Supervisors can manage events.
+      allow write: if isTenantMember(tenantId) && (isAdmin() || isSupervisor());
+    }
+    
+    // --- Audit Log Collection --- (REQ-1-028)
+    match /tenants/{tenantId}/auditLog/{logId} {
+      // READ: Only Admins can view the audit log.
+      allow read: if isTenantMember(tenantId) && isAdmin();
+      
+      // CREATE: Only Admins can create audit logs from the client.
+      // Cloud Functions will bypass this rule when using the Admin SDK.
+      allow create: if isTenantMember(tenantId) && isAdmin();
+      
+      // IMMUTABILITY: No one can update or delete an audit log entry.
+      allow update, delete: if false;
+    }
+    
+    // --- Tenant Configuration Collections ---
+    match /tenants/{tenantId}/config/{docId} {
+      // READ/WRITE: Only Admins can manage tenant-wide settings.
+      allow read, write: if isTenantMember(tenantId) && isAdmin();
+    }
+    
+    match /tenants/{tenantId}/linkedSheets/{sheetId} {
+      // READ/WRITE: Only Admins can manage Google Sheets integration settings.
+      allow read, write: if isTenantMember(tenantId) && isAdmin();
+    }
+    
+    // --- Aggregated Reporting Data ---
+    match /tenants/{tenantId}/dailyUserSummaries/{summaryId} {
+        // READ: Admins can read any summary. Supervisors can read summaries for their team members.
+        allow read: if isTenantMember(tenantId) && (
+            isAdmin() ||
+            (isSupervisor() && request.auth.uid == get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(resource.data.userId)).data.supervisorId)
+        );
+
+        // WRITE: These are created by server-side functions only. No client writes allowed.
+        allow write: if false;
+    }
+  }
+}

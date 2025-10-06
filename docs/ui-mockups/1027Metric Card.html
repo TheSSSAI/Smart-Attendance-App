@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metric Card Component</title>
+    <style>
+        /* 1. FOUNDATION & DESIGN TOKENS */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-success-500: #16A34A;
+            --color-error-500: #DC2626;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+
+            /* Typography */
+            --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --line-height-body: 1.5;
+
+            /* Spacing */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-6: 24px;
+            --space-8: 32px;
+
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 12px;
+            --border-width-1: 1px;
+
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        /* 2. BASE & LAYOUT STYLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            background-color: var(--color-neutral-50);
+            padding: var(--space-8);
+        }
+
+        .showcase-container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        
+        .showcase-header {
+            margin-bottom: var(--space-8);
+        }
+
+        .showcase-header h1 {
+            font-size: 36px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-2);
+        }
+
+        .showcase-header p {
+            font-size: var(--font-size-md);
+            color: var(--color-neutral-500);
+        }
+        
+        .component-group h2 {
+            font-size: 24px;
+            color: var(--color-neutral-700);
+            margin-bottom: var(--space-6);
+            border-bottom: 1px solid var(--color-neutral-200);
+            padding-bottom: var(--space-2);
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--space-6);
+        }
+
+
+        /* 3. COMPONENT IMPLEMENTATION */
+        
+        /* Metric Card CSS */
+
+        /* Component Base */
+        .metric-card {
+          background-color: var(--color-neutral-white);
+          border-radius: var(--border-radius-md);
+          padding: var(--space-6);
+          box-shadow: var(--shadow-md);
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-2);
+          border: var(--border-width-1) solid var(--color-neutral-200);
+          transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Component Elements */
+        .metric-card__label {
+          font-size: var(--font-size-sm);
+          font-weight: var(--font-weight-medium);
+          color: var(--color-neutral-500);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .metric-card__main {
+            display: flex;
+            align-items: flex-end;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        .metric-card__value {
+          font-size: 36px;
+          font-weight: var(--font-weight-semibold);
+          color: var(--color-neutral-900);
+          line-height: 1.1;
+        }
+
+        .metric-card__delta {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-1);
+          font-size: var(--font-size-sm);
+          font-weight: var(--font-weight-semibold);
+          padding-bottom: 4px; /* Align with baseline of the value */
+        }
+
+        /* Delta Variants */
+        .metric-card__delta--positive {
+          color: var(--color-success-500);
+        }
+
+        .metric-card__delta--negative {
+          color: var(--color-error-500);
+        }
+
+        /* Component States */
+        .metric-card--loading .metric-card__label {
+            width: 60%;
+        }
+        .metric-card--loading .metric-card__value {
+            width: 40%;
+            margin-top: var(--space-2);
+        }
+
+        /* Skeleton (Dependency) */
+        .skeleton {
+            background-color: var(--color-neutral-200);
+            border-radius: var(--border-radius-sm);
+            position: relative;
+            overflow: hidden;
+            color: transparent;
+            user-select: none;
+        }
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: skeleton-shimmer 1.5s infinite;
+        }
+        @keyframes skeleton-shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .skeleton--text { height: 1em; }
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <header class="showcase-header">
+            <h1>Metric Card</h1>
+            <p>Displays a key performance indicator (KPI) with an optional change indicator.</p>
+        </header>
+
+        <main>
+            <div class="component-group">
+                <h2>Default State</h2>
+                <div class="grid-container">
+                    <div class="metric-card" role="region" aria-labelledby="card1-label">
+                        <div id="card1-label" class="metric-card__label">Total Users</div>
+                        <div class="metric-card__main">
+                            <div class="metric-card__value">1,482</div>
+                            <div class="metric-card__delta metric-card__delta--positive" aria-label="Increase of 12 percent">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                  <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
+                                </svg>
+                                <span>12%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card" role="region" aria-labelledby="card2-label">
+                        <div id="card2-label" class="metric-card__label">Attendance Rate</div>
+                        <div class="metric-card__main">
+                            <div class="metric-card__value">92.7%</div>
+                            <div class="metric-card__delta metric-card__delta--negative" aria-label="Decrease of 1.5 percent">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
+                                </svg>
+                                <span>1.5%</span>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="metric-card" role="region" aria-labelledby="card3-label">
+                        <div id="card3-label" class="metric-card__label">Pending Approvals</div>
+                        <div class="metric-card__main">
+                            <div class="metric-card__value">14</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="component-group">
+                <h2>Loading State</h2>
+                <div class="grid-container">
+                    <div class="metric-card metric-card--loading" aria-busy="true" aria-live="polite">
+                        <div class="metric-card__label skeleton skeleton--text">Loading Label</div>
+                        <div class="metric-card__main">
+                            <div class="metric-card__value skeleton skeleton--text">000</div>
+                        </div>
+                    </div>
+                     <div class="metric-card metric-card--loading" aria-busy="true" aria-live="polite">
+                        <div class="metric-card__label skeleton skeleton--text">Loading Label</div>
+                        <div class="metric-card__main">
+                            <div class="metric-card__value skeleton skeleton--text">000</div>
+                        </div>
+                    </div>
+                     <div class="metric-card metric-card--loading" aria-busy="true" aria-live="polite">
+                        <div class="metric-card__label skeleton skeleton--text">Loading Label</div>
+                        <div class="metric-card__main">
+                            <div class="metric-card__value skeleton skeleton--text">000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+	
+	<div style="margin-top: 48px; padding: 24px; background: #fff; border-radius: 12px;">
+		<h2>Component Variations</h2>
+		<div style="margin-top: 24px;">
+			<h3 style="font-size: 18px; margin-bottom: 8px;">Variant Name: Default</h3>
+			<p style="font-size: 14px; color: #64748B; margin-bottom: 16px;">The standard metric card used for displaying a KPI with an optional positive, negative, or neutral change indicator. This is the primary component for dashboards.</p>
+			<!-- Variant HTML -->
+            <div class="metric-card" role="region" aria-labelledby="var1-label">
+                <div id="var1-label" class="metric-card__label">Sample Metric</div>
+                <div class="metric-card__main">
+                    <div class="metric-card__value">123</div>
+                </div>
+            </div>
+		</div>
+	</div>
+
+</body>
+</html>

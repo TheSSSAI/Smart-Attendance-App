@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor User
+    participant UI as SearchableDropdown (UI)
+    participant State as StateProvider (Riverpod)
+    participant Backend as Backend (Firestore/Function)
+
+    User->>+UI: 1. Taps on the dropdown input field
+    UI->>+State: 2. Requests list of options
+
+    alt Data is not cached
+        State->>UI: 3a. Notifies UI to show loading state
+        UI->>User: Shows loading spinner
+        State->>+Backend: 3b. Fetches all options (e.g., users, teams)
+        Backend-->>-State: 3c. Returns list of options
+        State->>State: 3d. Caches the full list
+    else Data is cached
+        State->>State: 3. Uses cached list of options
+    end
+
+    State->>-UI: 4. Provides full list of options
+    UI->>User: Displays dropdown menu with options
+
+    User->>+UI: 5. Types search query ("John")
+    UI->>+State: 6. Updates search query state
+    State->>State: 7. Filters cached list based on query
+
+    alt Filter returns results
+        State->>-UI: 8a. Provides filtered list of options
+        UI->>User: Updates dropdown menu with filtered results
+    else Filter returns no results
+        State->>-UI: 8b. Provides an empty list
+        UI->>User: Displays 'No results found' message
+    end
+
+    User->>+UI: 9. Taps on a filtered option ("John Doe")
+    UI->>+State: 10. Updates selected value state
+    State-->>-UI: Confirms state update
+    UI-->>-User: 11. Closes dropdown & displays "John Doe" in input field

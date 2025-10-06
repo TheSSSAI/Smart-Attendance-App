@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Chart Component</title>
+    <style>
+        /* 1. FOUNDATION & DESIGN TOKENS */
+        :root {
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-sm: 12px;
+            --font-size-md: 14px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* 2. BASE & SHOWCASE STYLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            background-color: var(--color-neutral-50);
+            color: var(--color-neutral-700);
+            padding: var(--space-8);
+            margin: 0;
+        }
+
+        .showcase-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .showcase-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+
+        .showcase-header h1 {
+            font-size: 36px;
+            color: var(--color-neutral-900);
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--space-8);
+            align-items: start;
+        }
+
+        .showcase-section h2 {
+            font-size: 24px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-6);
+        }
+
+        /* 3. CHART COMPONENT IMPLEMENTATION */
+        .chart-container {
+            position: relative;
+            background-color: var(--color-neutral-white);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-neutral-200);
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            font-family: var(--font-family-sans);
+        }
+
+        .chart-container__header {
+            margin-bottom: var(--space-6);
+        }
+
+        .chart-container__title {
+            font-size: 18px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+        }
+
+        .chart-container__body {
+            flex-grow: 1;
+            position: relative;
+        }
+        
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .chart__grid-line {
+            stroke: var(--color-neutral-200);
+            stroke-width: 1;
+            stroke-dasharray: 2, 4;
+        }
+
+        .chart__axis-line {
+            stroke: var(--color-neutral-300);
+            stroke-width: 1;
+        }
+
+        .chart__axis-label {
+            font-size: var(--font-size-sm);
+            fill: var(--color-neutral-500);
+            text-anchor: middle;
+        }
+
+        .chart__axis-label--y {
+            text-anchor: end;
+        }
+
+        /* Bar Chart Variant */
+        .chart__bar {
+            fill: var(--color-primary-500);
+            transition: fill 0.2s ease;
+        }
+        
+        .chart__data-point:hover .chart__bar,
+        .chart__data-point:focus .chart__bar,
+        .chart__data-point:focus-visible .chart__bar {
+            fill: var(--color-primary-600);
+        }
+
+        /* Line Chart Variant */
+        .chart__line-area {
+            fill: var(--color-primary-50);
+            opacity: 0.5;
+        }
+
+        .chart__line {
+            stroke: var(--color-primary-500);
+            stroke-width: 2.5;
+            fill: none;
+        }
+
+        .chart__line-point {
+            fill: var(--color-neutral-white);
+            stroke: var(--color-primary-500);
+            stroke-width: 2;
+            r: 4;
+            transition: r 0.2s ease;
+        }
+
+        .chart__data-point:hover .chart__line-point,
+        .chart__data-point:focus .chart__line-point,
+        .chart__data-point:focus-visible .chart__line-point {
+            r: 6;
+        }
+
+        /* Tooltip (shared) */
+        .chart__data-point {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .chart__data-point:focus,
+        .chart__data-point:focus-visible {
+            outline: none;
+        }
+
+        .chart__tooltip {
+            background-color: var(--color-neutral-900);
+            color: var(--color-neutral-white);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        
+        .chart__data-point:hover .chart__tooltip,
+        .chart__data-point:focus .chart__tooltip,
+        .chart__data-point:focus-visible .chart__tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Component States */
+        .chart-container.is-loading .chart-container__body,
+        .chart-container.is-empty .chart-container__body {
+            visibility: hidden;
+        }
+        
+        .chart-container__state-overlay {
+            position: absolute;
+            inset: 0;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-6);
+        }
+
+        .chart-container.is-loading .chart-container__state-overlay,
+        .chart-container.is-empty .chart-container__state-overlay {
+            display: flex;
+        }
+        
+        /* Empty State */
+        .chart__empty-state-icon {
+            color: var(--color-neutral-400);
+            margin-bottom: var(--space-4);
+        }
+
+        .chart__empty-state-text {
+            color: var(--color-neutral-500);
+            font-weight: var(--font-weight-medium);
+        }
+
+        /* Loading State (Skeleton) */
+        .chart__skeleton {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 0 var(--space-4) var(--space-6);
+        }
+        
+        .skeleton__bar {
+            width: 8%;
+            background-color: var(--color-neutral-200);
+            border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton__bar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: skeleton-shimmer 1.5s infinite;
+        }
+
+        @keyframes skeleton-shimmer {
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <header class="showcase-header">
+            <h1>Chart Component</h1>
+        </header>
+
+        <div class="showcase-grid">
+            <section class="showcase-section">
+                <h2>Bar Chart</h2>
+                
+                <!-- Bar Chart: With Data -->
+                <div class="chart-container chart--bar">
+                    <header class="chart-container__header">
+                        <h3 id="bar-chart-title" class="chart-container__title">Monthly Attendance Rate</h3>
+                    </header>
+                    <div class="chart-container__body">
+                        <svg class="chart-svg" viewBox="0 0 500 250" role="figure" aria-labelledby="bar-chart-title" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <g id="bar-chart-axes">
+                                    <!-- Y-Axis Labels & Grid Lines -->
+                                    <text x="35" y="25" class="chart__axis-label chart__axis-label--y">100%</text>
+                                    <line x1="40" y1="25" x2="500" y2="25" class="chart__grid-line" />
+                                    <text x="35" y="75" class="chart__axis-label chart__axis-label--y">75%</text>
+                                    <line x1="40" y1="75" x2="500" y2="75" class="chart__grid-line" />
+                                    <text x="35" y="125" class="chart__axis-label chart__axis-label--y">50%</text>
+                                    <line x1="40" y1="125" x2="500" y2="125" class="chart__grid-line" />
+                                    <text x="35" y="175" class="chart__axis-label chart__axis-label--y">25%</text>
+                                    <line x1="40" y1="175" x2="500" y2="175" class="chart__grid-line" />
+                                    <!-- X-Axis Line -->
+                                    <line x1="40" y1="225" x2="500" y2="225" class="chart__axis-line" />
+                                    <!-- X-Axis Labels -->
+                                    <text x="85" y="245" class="chart__axis-label">Jan</text>
+                                    <text x="160" y="245" class="chart__axis-label">Feb</text>
+                                    <text x="235" y="245" class="chart__axis-label">Mar</text>
+                                    <text x="310" y="245" class="chart__axis-label">Apr</text>
+                                    <text x="385" y="245" class="chart__axis-label">May</text>
+                                    <text x="460" y="245" class="chart__axis-label">Jun</text>
+                                </g>
+                            </defs>
+                            <use href="#bar-chart-axes" />
+                            <g class="chart__data">
+                                <!-- Data points -->
+                                <g class="chart__data-point" tabindex="0" aria-label="January: 85% Attendance">
+                                    <title>January: 85%</title>
+                                    <rect x="70" y="55" width="30" height="170" class="chart__bar" />
+                                    <foreignObject x="70" y="35" width="100" height="40">
+                                        <div class="chart__tooltip">Value: 85%</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="February: 92% Attendance">
+                                    <title>February: 92%</title>
+                                    <rect x="145" y="31" width="30" height="194" class="chart__bar" />
+                                     <foreignObject x="145" y="11" width="100" height="40">
+                                        <div class="chart__tooltip">Value: 92%</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="March: 90% Attendance">
+                                    <title>March: 90%</title>
+                                    <rect x="220" y="35" width="30" height="190" class="chart__bar" />
+                                     <foreignObject x="220" y="15" width="100" height="40">
+                                        <div class="chart__tooltip">Value: 90%</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="April: 88% Attendance">
+                                    <title>April: 88%</title>
+                                    <rect x="295" y="41" width="30" height="184" class="chart__bar" />
+                                     <foreignObject x="295" y="21" width="100" height="40">
+                                        <div class="chart__tooltip">Value: 88%</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="May: 95% Attendance">
+                                    <title>May: 95%</title>
+                                    <rect x="370" y="27.5" width="30" height="197.5" class="chart__bar" />
+                                     <foreignObject x="370" y="7.5" width="100" height="40">
+                                        <div class="chart__tooltip">Value: 95%</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="June: 93% Attendance">
+                                    <title>June: 93%</title>
+                                    <rect x="445" y="29" width="30" height="196" class="chart__bar" />
+                                     <foreignObject x="445" y="9" width="100" height="40">
+                                        <div class="chart__tooltip">Value: 93%</div>
+                                    </foreignObject>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Bar Chart: Loading State -->
+                <div class="chart-container is-loading" style="margin-top: 24px;">
+                     <header class="chart-container__header">
+                        <h3 class="chart-container__title">Monthly Attendance Rate</h3>
+                    </header>
+                    <div class="chart-container__state-overlay">
+                        <div class="chart__skeleton">
+                            <div class="skeleton__bar" style="height: 75%;"></div>
+                            <div class="skeleton__bar" style="height: 90%;"></div>
+                            <div class="skeleton__bar" style="height: 85%;"></div>
+                            <div class="skeleton__bar" style="height: 80%;"></div>
+                            <div class="skeleton__bar" style="height: 95%;"></div>
+                            <div class="skeleton__bar" style="height: 92%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bar Chart: Empty State -->
+                <div class="chart-container is-empty" style="margin-top: 24px;">
+                     <header class="chart-container__header">
+                        <h3 class="chart-container__title">Monthly Attendance Rate</h3>
+                    </header>
+                    <div class="chart-container__state-overlay">
+                        <div class="chart__empty-state-icon">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5h-2v12h2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 2 0V2a1 1 0 0 0-1-1zm-5 4a1 1 0 0 0-1 1v7a1 1 0 0 0 2 0V8a1 1 0 0 0-1-1zm-5 5a1 1 0 0 0-1 1v3a1 1 0 0 0 2 0v-3a1 1 0 0 0-1-1z"/></svg>
+                        </div>
+                        <p class="chart__empty-state-text">No data to display for the selected period.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="showcase-section">
+                <h2>Line Chart</h2>
+
+                <!-- Line Chart: With Data -->
+                <div class="chart-container chart--line">
+                    <header class="chart-container__header">
+                        <h3 id="line-chart-title" class="chart-container__title">Weekly Team Check-ins</h3>
+                    </header>
+                    <div class="chart-container__body">
+                         <svg class="chart-svg" viewBox="0 0 500 250" role="figure" aria-labelledby="line-chart-title" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <g id="line-chart-axes">
+                                    <text x="35" y="25" class="chart__axis-label chart__axis-label--y">100</text>
+                                    <line x1="40" y1="25" x2="500" y2="25" class="chart__grid-line" />
+                                    <text x="35" y="85" class="chart__axis-label chart__axis-label--y">60</text>
+                                    <line x1="40" y1="85" x2="500" y2="85" class="chart__grid-line" />
+                                    <text x="35" y="145" class="chart__axis-label chart__axis-label--y">40</text>
+                                    <line x1="40" y1="145" x2="500" y2="145" class="chart__grid-line" />
+                                    <text x="35" y="205" class="chart__axis-label chart__axis-label--y">0</text>
+                                    <line x1="40" y1="225" x2="500" y2="225" class="chart__axis-line" />
+                                    <text x="85" y="245" class="chart__axis-label">Mon</text>
+                                    <text x="160" y="245" class="chart__axis-label">Tue</text>
+                                    <text x="235" y="245" class="chart__axis-label">Wed</text>
+                                    <text x="310" y="245" class="chart__axis-label">Thu</text>
+                                    <text x="385" y="245" class="chart__axis-label">Fri</text>
+                                    <text x="460" y="245" class="chart__axis-label">Sat</text>
+                                </g>
+                            </defs>
+                            <use href="#line-chart-axes" />
+                            <g class="chart__data">
+                                <path class="chart__line-area" d="M 85 105 L 160 65 L 235 85 L 310 45 L 385 55 L 460 75 V 225 H 85 Z" />
+                                <path class="chart__line" d="M 85 105 L 160 65 L 235 85 L 310 45 L 385 55 L 460 75" />
+                                
+                                <g class="chart__data-point" tabindex="0" aria-label="Monday: 60 Check-ins">
+                                    <title>Monday: 60</title>
+                                    <circle cx="85" cy="105" class="chart__line-point" />
+                                    <foreignObject x="85" y="85" width="100" height="40">
+                                        <div class="chart__tooltip">Check-ins: 60</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="Tuesday: 80 Check-ins">
+                                    <title>Tuesday: 80</title>
+                                    <circle cx="160" cy="65" class="chart__line-point" />
+                                    <foreignObject x="160" y="45" width="100" height="40">
+                                        <div class="chart__tooltip">Check-ins: 80</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="Wednesday: 70 Check-ins">
+                                    <title>Wednesday: 70</title>
+                                    <circle cx="235" cy="85" class="chart__line-point" />
+                                    <foreignObject x="235" y="65" width="100" height="40">
+                                        <div class="chart__tooltip">Check-ins: 70</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="Thursday: 90 Check-ins">
+                                    <title>Thursday: 90</title>
+                                    <circle cx="310" cy="45" class="chart__line-point" />
+                                    <foreignObject x="310" y="25" width="100" height="40">
+                                        <div class="chart__tooltip">Check-ins: 90</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="Friday: 85 Check-ins">
+                                    <title>Friday: 85</title>
+                                    <circle cx="385" cy="55" class="chart__line-point" />
+                                    <foreignObject x="385" y="35" width="100" height="40">
+                                        <div class="chart__tooltip">Check-ins: 85</div>
+                                    </foreignObject>
+                                </g>
+                                <g class="chart__data-point" tabindex="0" aria-label="Saturday: 75 Check-ins">
+                                    <title>Saturday: 75</title>
+                                    <circle cx="460" cy="75" class="chart__line-point" />
+                                    <foreignObject x="460" y="55" width="100" height="40">
+                                        <div class="chart__tooltip">Check-ins: 75</div>
+                                    </foreignObject>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Line Chart: Loading State -->
+                <div class="chart-container is-loading" style="margin-top: 24px;">
+                     <header class="chart-container__header">
+                        <h3 class="chart-container__title">Weekly Team Check-ins</h3>
+                    </header>
+                    <div class="chart-container__state-overlay">
+                         <div class="chart__skeleton">
+                            <div class="skeleton__bar" style="height: 60%;"></div>
+                            <div class="skeleton__bar" style="height: 80%;"></div>
+                            <div class="skeleton__bar" style="height: 70%;"></div>
+                            <div class="skeleton__bar" style="height: 90%;"></div>
+                            <div class="skeleton__bar" style="height: 85%;"></div>
+                            <div class="skeleton__bar" style="height: 75%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Line Chart: Empty State -->
+                <div class="chart-container is-empty" style="margin-top: 24px;">
+                     <header class="chart-container__header">
+                        <h3 class="chart-container__title">Weekly Team Check-ins</h3>
+                    </header>
+                    <div class="chart-container__state-overlay">
+                        <div class="chart__empty-state-icon">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5h-2v12h2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 2 0V2a1 1 0 0 0-1-1zm-5 4a1 1 0 0 0-1 1v7a1 1 0 0 0 2 0V8a1 1 0 0 0-1-1zm-5 5a1 1 0 0 0-1 1v3a1 1 0 0 0 2 0v-3a1 1 0 0 0-1-1z"/></svg>
+                        </div>
+                        <p class="chart__empty-state-text">No data to display for the selected period.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+	
+	<div style="max-width: 1200px; margin: 48px auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: var(--shadow-md);">
+        <h2>Component Variations</h2>
+        <div style="margin-top: 24px;">
+            <h3 style="font-size: 18px; margin-bottom: 8px;">Variant Name: bar_chart</h3>
+            <p style="font-size: 14px; color: #64748B; margin-bottom: 16px;">
+                Use for comparing discrete categories or showing changes over a few distinct time periods. Each bar is interactive, revealing a tooltip with its exact value on hover or focus.
+            </p>
+            <div class="chart-container chart--bar" style="min-height: 250px;">
+                <div class="chart-container__body">
+                    <svg class="chart-svg" viewBox="0 0 500 250" role="figure" aria-labelledby="bar-chart-title-var" preserveAspectRatio="xMidYMid meet">
+                        <use href="#bar-chart-axes" />
+                        <g class="chart__data">
+                            <g class="chart__data-point" tabindex="0" aria-label="January: 85% Attendance"><rect x="70" y="55" width="30" height="170" class="chart__bar" /></g>
+                            <g class="chart__data-point" tabindex="0" aria-label="February: 92% Attendance"><rect x="145" y="31" width="30" height="194" class="chart__bar" /></g>
+                            <g class="chart__data-point" tabindex="0" aria-label="March: 90% Attendance"><rect x="220" y="35" width="30" height="190" class="chart__bar" /></g>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 32px;">
+            <h3 style="font-size: 18px; margin-bottom: 8px;">Variant Name: line_chart</h3>
+            <p style="font-size: 14px; color: #64748B; margin-bottom: 16px;">
+                Use for visualizing continuous data over time to show trends. Each data point on the line is interactive, revealing a tooltip on hover or focus. An area fill provides additional visual weight to the trend.
+            </p>
+            <div class="chart-container chart--line" style="min-height: 250px;">
+                <div class="chart-container__body">
+                    <svg class="chart-svg" viewBox="0 0 500 250" role="figure" aria-labelledby="line-chart-title-var" preserveAspectRatio="xMidYMid meet">
+                        <use href="#line-chart-axes" />
+                        <g class="chart__data">
+                            <path class="chart__line-area" d="M 85 105 L 160 65 L 235 85 L 310 45 L 385 55 L 460 75 V 225 H 85 Z" />
+                            <path class="chart__line" d="M 85 105 L 160 65 L 235 85 L 310 45 L 385 55 L 460 75" />
+                            <g class="chart__data-point" tabindex="0" aria-label="Monday: 60 Check-ins"><circle cx="85" cy="105" class="chart__line-point" /></g>
+                            <g class="chart__data-point" tabindex="0" aria-label="Tuesday: 80 Check-ins"><circle cx="160" cy="65" class="chart__line-point" /></g>
+                            <g class="chart__data-point" tabindex="0" aria-label="Wednesday: 70 Check-ins"><circle cx="235" cy="85" class="chart__line-point" /></g>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

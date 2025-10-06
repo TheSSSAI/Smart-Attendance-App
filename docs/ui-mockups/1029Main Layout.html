@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Layout Organism</title>
+    <style>
+        /* 1. DESIGN SYSTEM FOUNDATION (Tokens) */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            /* Typography */
+            --font-family-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            /* Spacing */
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+            --space-8: 32px;
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            --border-width-1: 1px;
+            --border-width-2: 2px;
+            /* Sizing */
+            --sidebar-width: 260px;
+            --sidebar-width-collapsed: 80px;
+            --topbar-height: 72px;
+            /* Transitions */
+            --transition-speed: 0.25s;
+        }
+
+        /* 2. BASE & SHOWCASE STYLES */
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family-sans);
+            background-color: var(--color-neutral-100);
+            color: var(--color-neutral-700);
+        }
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
+        }
+
+        /* 3. ORGANISM: MAIN LAYOUT */
+        .layout {
+            display: grid;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--color-neutral-50);
+        }
+        /* Mobile-First: Default to single-column layout */
+        .layout {
+            grid-template-columns: 1fr;
+        }
+
+        /* Sidebar (Mobile Drawer) */
+        .layout__sidebar {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background-color: var(--color-neutral-white);
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform var(--transition-speed) ease;
+            border-right: var(--border-width-1) solid var(--color-neutral-200);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Sidebar Overlay (Mobile) */
+        .layout__sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--transition-speed) ease, visibility 0s var(--transition-speed);
+        }
+
+        /* Checkbox Hack for Mobile Toggle */
+        #mobile-sidebar-toggle { display: none; }
+        #mobile-sidebar-toggle:checked ~ .layout__sidebar { transform: translateX(0); }
+        #mobile-sidebar-toggle:checked ~ .layout__sidebar-overlay {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: 0s;
+        }
+
+        /* Main Wrapper (contains Topbar and Content) */
+        .layout__main-wrapper {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Topbar */
+        .layout__topbar {
+            height: var(--topbar-height);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-6);
+            background-color: var(--color-neutral-white);
+            border-bottom: var(--border-width-1) solid var(--color-neutral-200);
+        }
+
+        /* Main Content Area */
+        .layout__content {
+            flex-grow: 1;
+            padding: var(--space-6);
+            overflow-y: auto;
+        }
+
+        /* Toggle Buttons */
+        .sidebar-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background: none;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--color-neutral-500);
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sidebar-toggle-btn:hover {
+            background-color: var(--color-neutral-100);
+            color: var(--color-neutral-900);
+        }
+        .sidebar-toggle-btn:focus-visible {
+            outline: var(--border-width-2) solid var(--color-primary-500);
+            outline-offset: 2px;
+        }
+        .sidebar-toggle-btn.mobile-toggle { display: flex; }
+        .sidebar-toggle-btn.desktop-toggle { display: none; }
+
+        /* Tablet/Desktop Styles (Breakpoint >= 768px) */
+        @media (min-width: 768px) {
+            .layout {
+                transition: grid-template-columns var(--transition-speed) ease;
+            }
+            .layout--sidebar-open { grid-template-columns: var(--sidebar-width) 1fr; }
+            .layout--sidebar-collapsed { grid-template-columns: var(--sidebar-width-collapsed) 1fr; }
+            
+            .layout__sidebar {
+                position: static;
+                transform: none;
+                width: auto;
+                transition: width var(--transition-speed) ease;
+            }
+            .layout--sidebar-collapsed .layout__sidebar {
+                width: var(--sidebar-width-collapsed);
+            }
+            
+            .sidebar-toggle-btn.mobile-toggle { display: none; }
+            .sidebar-toggle-btn.desktop-toggle { display: flex; }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            .layout, .layout__sidebar {
+                transition: none;
+            }
+        }
+
+        /* 4. MOCK CONTENT FOR DEPENDENCIES (Sidebar, Topbar) */
+        .sidebar-header, .sidebar-footer { padding: var(--space-6); flex-shrink: 0; }
+        .sidebar-nav { flex-grow: 1; overflow-y: auto; padding: var(--space-2) 0; }
+        .sidebar-nav__list { list-style: none; margin: 0; padding: 0; }
+        .sidebar-nav__item a {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-3) var(--space-6);
+            text-decoration: none;
+            color: var(--color-neutral-700);
+            border-radius: var(--border-radius-md);
+            margin: var(--space-2) var(--space-4);
+            font-weight: var(--font-weight-medium);
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sidebar-nav__item a:hover { background-color: var(--color-neutral-100); }
+        .sidebar-nav__item a.is-active {
+            background-color: var(--color-primary-50);
+            color: var(--color-primary-600);
+            font-weight: var(--font-weight-semibold);
+        }
+        .sidebar-nav__icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar-nav__text { transition: opacity var(--transition-speed) ease; }
+        .layout--sidebar-collapsed .sidebar-nav__text { opacity: 0; width: 0; white-space: nowrap; }
+        .layout--sidebar-collapsed .sidebar-nav__item a { justify-content: center; }
+
+        .topbar__user-profile { display: flex; align-items: center; gap: var(--space-3); }
+        .topbar__user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background-color: var(--color-neutral-200);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        /* Demo placeholder styles */
+        .placeholder-card {
+            background-color: var(--color-neutral-white);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-6);
+            border: 1px solid var(--color-neutral-200);
+        }
+
+    </style>
+</head>
+<body>
+
+  <!-- Checkbox hack to control mobile sidebar for this static demo -->
+  <input type="checkbox" id="mobile-sidebar-toggle" class="sr-only">
+  <label for="mobile-sidebar-toggle" class="layout__sidebar-overlay" aria-hidden="true"></label>
+
+  <div class="layout layout--sidebar-open">
+    <aside class="layout__sidebar">
+      <div class="sidebar-header">
+        <!-- Placeholder for Logo -->
+        <h2 style="color: var(--color-neutral-900); margin: 0;">AppLogo</h2>
+      </div>
+      <nav class="sidebar-nav" role="navigation">
+        <ul class="sidebar-nav__list">
+          <li class="sidebar-nav__item">
+            <a href="#" class="is-active" aria-current="page">
+              <svg class="sidebar-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+              <span class="sidebar-nav__text">Dashboard</span>
+            </a>
+          </li>
+          <li class="sidebar-nav__item">
+            <a href="#">
+              <svg class="sidebar-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+              <span class="sidebar-nav__text">Users</span>
+            </a>
+          </li>
+          <li class="sidebar-nav__item">
+            <a href="#">
+              <svg class="sidebar-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
+              <span class="sidebar-nav__text">Reports</span>
+            </a>
+          </li>
+          <li class="sidebar-nav__item">
+            <a href="#">
+              <svg class="sidebar-nav__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.438.992a6.759 6.759 0 010 1.658c0 .379.145.752.438.992l1.003.827c.424.35.534.954.26 1.431l-1.298 2.247a1.125 1.125 0 01-1.37.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.063-.374-.313-.686-.645-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.296-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.437-.992a6.932 6.932 0 010-1.658c0-.379-.145-.752-.437-.992l-1.004-.827a1.125 1.125 0 01-.26-1.431l1.297-2.247a1.125 1.125 0 011.37-.49l1.217.456c.354.133.751.072 1.075-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <span class="sidebar-nav__text">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <!-- Placeholder for footer content -->
+      </div>
+    </aside>
+
+    <div class="layout__main-wrapper">
+      <header class="layout__topbar">
+        <label for="mobile-sidebar-toggle" class="sidebar-toggle-btn mobile-toggle" aria-label="Open navigation menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+        </label>
+        
+        <button type="button" class="sidebar-toggle-btn desktop-toggle" aria-label="Toggle sidebar">
+            <!-- This would be controlled by JS to toggle the parent class -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+        </button>
+        
+        <div class="topbar__user-profile">
+          <div class="topbar__user-info">
+            <div style="font-weight: var(--font-weight-semibold); text-align: right;">Admin User</div>
+            <div style="font-size: var(--font-size-sm); color: var(--color-neutral-500); text-align: right;">Global Tech Inc.</div>
+          </div>
+          <div class="topbar__user-avatar">AU</div>
+        </div>
+      </header>
+
+      <main class="layout__content">
+        <div class="placeholder-card">
+          <h1>Page Content Area</h1>
+          <p>This is where the main content of the application screen, such as a dashboard, data table, or form, would be rendered. This area has its own scrollbar if the content overflows.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : "default"<h3>
+		<!--description--><normal> N/A </normal>
+		<!-- vrient 1 html -->
+             
+		
+      <div>
+	 </div>
+	 </div>
+	
+	</body>
+</html>

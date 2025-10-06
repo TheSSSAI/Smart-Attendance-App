@@ -1,0 +1,47 @@
+name: Publish Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version to publish (e.g., 1.0.1)'
+        required: true
+
+jobs:
+  publish:
+    name: Publish to Registry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Grant permission to publish packages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read .nvmrc
+        id: nvm
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '${{ steps.nvm.outputs.NVMRC }}'
+          registry-url: 'https://npm.pkg.github.com' # Or your private registry (e.g., Google Artifact Registry)
+          scope: '@attendance-app'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update package version
+        run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
+
+      - name: Build project
+        run: npm run build
+
+      - name: Publish package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use GITHUB_TOKEN for GitHub Packages
+          # For other registries like Google Artifact Registry, create a repository secret
+          # NODE_AUTH_TOKEN: ${{ secrets.ARTIFACT_REGISTRY_TOKEN }}

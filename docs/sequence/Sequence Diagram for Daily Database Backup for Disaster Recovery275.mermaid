@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant "Google Cloud Scheduler" as GoogleCloudScheduler
+    participant "GCP Managed Export Service" as GCPManagedExportService
+    participant "Firestore Database (Production)" as FirestoreDatabaseProduction
+    participant "Google Cloud Storage (Backup Bucket)" as GoogleCloudStorageBackupBucket
+    participant "Google Cloud Logging" as GoogleCloudLogging
+    participant "Google Cloud Monitoring" as GoogleCloudMonitoring
+    participant "On-Call Operations Team" as OnCallOperationsTeam
+
+    activate GCPManagedExportService
+    GoogleCloudScheduler->>GCPManagedExportService: 1. 1. Trigger Scheduled Export Job
+    activate FirestoreDatabaseProduction
+    GCPManagedExportService->>FirestoreDatabaseProduction: 2. 2. Initiate Database Export(outputUriPrefix, collectionIds=['__all__'])
+    FirestoreDatabaseProduction-->>GCPManagedExportService: longRunningOperationId
+    FirestoreDatabaseProduction->>FirestoreDatabaseProduction: 3. 3. Create Point-in-Time Snapshot
+    activate GoogleCloudStorageBackupBucket
+    FirestoreDatabaseProduction->>GoogleCloudStorageBackupBucket: 4. 4. Write Snapshot Data to Bucket
+    activate GoogleCloudLogging
+    GCPManagedExportService->>GoogleCloudLogging: 5. 5. Log Job Status (SUCCESS or FAILURE)
+    activate GoogleCloudMonitoring
+    GoogleCloudLogging->>GoogleCloudMonitoring: 6. 6. [IF FAILURE] Evaluate Log-based Alert Rule
+    GoogleCloudMonitoring->>OnCallOperationsTeam: 7. 7. Fire 'FirestoreBackupFailed' Alert
+
+    note over GCPManagedExportService: The GCP Managed Export service account requires 'Cloud Datastore Import Export Admin' and 'Storag...
+
+    deactivate GoogleCloudMonitoring
+    deactivate GoogleCloudLogging
+    deactivate GoogleCloudStorageBackupBucket
+    deactivate FirestoreDatabaseProduction
+    deactivate GCPManagedExportService

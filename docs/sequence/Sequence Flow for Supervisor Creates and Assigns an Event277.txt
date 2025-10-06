@@ -1,0 +1,905 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-UJ-013
+
+## 1.2 Name
+
+Supervisor Creates and Assigns an Event
+
+## 1.3 Description
+
+A Supervisor uses the mobile application to create a new event, define its details (e.g., title, time, recurrence), and assign it to specific individuals or teams under their management.
+
+## 1.4 Type
+
+🔹 UserJourney
+
+## 1.5 Purpose
+
+To enable team and task management by allowing Supervisors to schedule and assign work or events to their subordinates.
+
+## 1.6 Complexity
+
+Medium
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- REPO-APP-MOBILE-010
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- Supervisor navigates to the event creation screen.
+- User fills out the event form including title, description, start/end times, and recurrence rules.
+- User selects assignees from a list of their subordinates and/or teams.
+- The application validates the input (e.g., end time is after start time).
+- A new event document is created in the Firestore `events` collection.
+
+## 1.11 Triggers
+
+- Supervisor initiates the 'Create Event' action.
+
+## 1.12 Outcomes
+
+- A new event is stored in Firestore.
+- The event becomes visible in the calendars of all assigned users.
+
+## 1.13 Business Rules
+
+- Supervisors can only assign events to their direct subordinates or teams they manage.
+- Event start time must be before the end time.
+
+## 1.14 Error Scenarios
+
+- Invalid event data is submitted (e.g., missing title).
+- The user attempts to save the event while offline, and the write is queued locally.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-UJ-013-IMPL
+
+## 2.2 Name
+
+Implementation: Supervisor Creates and Assigns an Event
+
+## 2.3 Description
+
+A detailed technical sequence for a Supervisor using the Flutter mobile application to create a new event and assign it to subordinates or teams. The sequence covers user interaction, state management, client-side validation, and data persistence to Firestore, including offline handling.
+
+## 2.4 Participants
+
+### 2.4.1 Actor
+
+#### 2.4.1.1 Repository Id
+
+end-user-supervisor
+
+#### 2.4.1.2 Display Name
+
+Supervisor (User)
+
+#### 2.4.1.3 Type
+
+🔹 Actor
+
+#### 2.4.1.4 Technology
+
+Human
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #999999 |
+| Stereotype | User |
+
+### 2.4.2.0 Business Logic
+
+#### 2.4.2.1 Repository Id
+
+REPO-APP-MOBILE-010
+
+#### 2.4.2.2 Display Name
+
+Mobile App (Flutter Client)
+
+#### 2.4.2.3 Type
+
+🔹 Business Logic
+
+#### 2.4.2.4 Technology
+
+Flutter 3.x, Dart, Riverpod 2.x
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | participant |
+| Color | #1E88E5 |
+| Stereotype | Presentation Layer |
+
+### 2.4.3.0 Data Persistence
+
+#### 2.4.3.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.3.2 Display Name
+
+Firestore Database
+
+#### 2.4.3.3 Type
+
+🔹 Data Persistence
+
+#### 2.4.3.4 Technology
+
+Google Firestore
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #f57c00 |
+| Stereotype | Managed Service |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+end-user-supervisor
+
+#### 2.5.1.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.3 Message
+
+1. Taps 'Create Event' button on the calendar/dashboard screen.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+Navigates to the event creation form.
+
+#### 2.5.1.8 Has Return
+
+✅ Yes
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+UI Event
+
+##### 2.5.1.10.2 Method
+
+onPressed()
+
+##### 2.5.1.10.3 Parameters
+
+*No items available*
+
+##### 2.5.1.10.4 Authentication
+
+Authenticated Session
+
+##### 2.5.1.10.5 Error Handling
+
+N/A
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+<100ms UI response
+
+### 2.5.2.0.0.0 State Management
+
+#### 2.5.2.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.2.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.2.3.0.0 Message
+
+2. Initiates `EventCreationScreen` state via Riverpod Provider.
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 State Management
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7.0.0 Return Message
+
+Triggers data fetching for the form.
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+Internal Method Call
+
+##### 2.5.2.10.2.0 Method
+
+ref.watch(eventCreationProvider)
+
+##### 2.5.2.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.2.10.4.0 Authentication
+
+N/A
+
+##### 2.5.2.10.5.0 Error Handling
+
+Provider's error state will be set if data fetching fails.
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+Immediate
+
+### 2.5.3.0.0.0 Data Retrieval
+
+#### 2.5.3.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.3.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.3.3.0.0 Message
+
+3. Fetches subordinates and teams managed by the Supervisor to populate assignee lists.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 Data Retrieval
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.3.7.0.0 Return Message
+
+Returns a collection of User and Team documents.
+
+#### 2.5.3.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.3.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+Firestore SDK
+
+##### 2.5.3.10.2.0 Method
+
+db.collection('users').where('supervisorId', '==', supervisor.uid).get()
+
+##### 2.5.3.10.3.0 Parameters
+
+- supervisor.uid
+
+##### 2.5.3.10.4.0 Authentication
+
+Firebase Auth JWT (implicit in SDK)
+
+##### 2.5.3.10.5.0 Error Handling
+
+Catches FirestoreException (e.g., 'permission-denied'). Updates UI to show data fetch error.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+<500ms for typical team sizes.
+
+### 2.5.4.0.0.0 UI Render
+
+#### 2.5.4.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.3.0.0 Message
+
+4. Renders `EventCreationScreen` UI with loading indicators, then populates form fields and assignee lists.
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 UI Render
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+UI Framework
+
+##### 2.5.4.10.2.0 Method
+
+Widget build()
+
+##### 2.5.4.10.3.0 Parameters
+
+- BuildContext context
+
+##### 2.5.4.10.4.0 Authentication
+
+N/A
+
+##### 2.5.4.10.5.0 Error Handling
+
+Displays error widget if data fetch failed.
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+Maintains 60fps rendering.
+
+### 2.5.5.0.0.0 User Input
+
+#### 2.5.5.1.0.0 Source Id
+
+end-user-supervisor
+
+#### 2.5.5.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.5.3.0.0 Message
+
+5. Enters event details (title, description, start/end times, recurrence) and selects assignees.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 User Input
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+UI state is updated in real-time.
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+UI Event
+
+##### 2.5.5.10.2.0 Method
+
+onChanged(), onSelected()
+
+##### 2.5.5.10.3.0 Parameters
+
+- value
+
+##### 2.5.5.10.4.0 Authentication
+
+N/A
+
+##### 2.5.5.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+Immediate state update.
+
+### 2.5.6.0.0.0 Validation
+
+#### 2.5.6.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.6.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.6.3.0.0 Message
+
+6. Performs client-side validation on form fields.
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 Validation
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+Displays error messages for invalid fields (e.g., 'End time must be after start time').
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+Internal Method Call
+
+##### 2.5.6.10.2.0 Method
+
+formKey.currentState.validate()
+
+##### 2.5.6.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.6.10.4.0 Authentication
+
+N/A
+
+##### 2.5.6.10.5.0 Error Handling
+
+If validation fails, the submission process is halted and UI provides feedback.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+<50ms
+
+### 2.5.7.0.0.0 User Interaction
+
+#### 2.5.7.1.0.0 Source Id
+
+end-user-supervisor
+
+#### 2.5.7.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.7.3.0.0 Message
+
+7. Taps 'Save Event' button.
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 User Interaction
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0 Return Message
+
+Triggers the event creation logic.
+
+#### 2.5.7.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+UI Event
+
+##### 2.5.7.10.2.0 Method
+
+onPressed()
+
+##### 2.5.7.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.7.10.4.0 Authentication
+
+N/A
+
+##### 2.5.7.10.5.0 Error Handling
+
+Button is disabled if form is invalid or already submitting.
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Latency
+
+Immediate
+
+### 2.5.8.0.0.0 Data Persistence
+
+#### 2.5.8.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.8.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.8.3.0.0 Message
+
+8. Creates a new document in the `/events` collection with the event data.
+
+#### 2.5.8.4.0.0 Sequence Number
+
+8
+
+#### 2.5.8.5.0.0 Type
+
+🔹 Data Persistence
+
+#### 2.5.8.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.8.7.0.0 Return Message
+
+Returns success confirmation or a FirestoreException.
+
+#### 2.5.8.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.8.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.8.10.0.0 Technical Details
+
+##### 2.5.8.10.1.0 Protocol
+
+Firestore SDK
+
+##### 2.5.8.10.2.0 Method
+
+db.collection('events').add(eventData)
+
+##### 2.5.8.10.3.0 Parameters
+
+- eventData: Map<String, dynamic>
+
+##### 2.5.8.10.4.0 Authentication
+
+Firebase Auth JWT. Firestore Security Rules verify the creator is a Supervisor and assignees are their subordinates.
+
+##### 2.5.8.10.5.0 Error Handling
+
+If offline, the write is queued to the local cache. If an error occurs (e.g., permission denied), it's caught and an error message is shown to the user.
+
+##### 2.5.8.10.6.0 Performance
+
+###### 2.5.8.10.6.1 Latency
+
+<300ms on a stable connection.
+
+### 2.5.9.0.0.0 Confirmation
+
+#### 2.5.9.1.0.0 Source Id
+
+data-persistence-layer
+
+#### 2.5.9.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.9.3.0.0 Message
+
+9. Confirms successful write operation.
+
+#### 2.5.9.4.0.0 Sequence Number
+
+9
+
+#### 2.5.9.5.0.0 Type
+
+🔹 Confirmation
+
+#### 2.5.9.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.9.7.0.0 Return Message
+
+
+
+#### 2.5.9.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.9.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.9.10.0.0 Technical Details
+
+##### 2.5.9.10.1.0 Protocol
+
+Firestore SDK Callback
+
+##### 2.5.9.10.2.0 Method
+
+Future.then()
+
+##### 2.5.9.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.9.10.4.0 Authentication
+
+N/A
+
+##### 2.5.9.10.5.0 Error Handling
+
+The Future completes with an error if the write fails after retries.
+
+##### 2.5.9.10.6.0 Performance
+
+###### 2.5.9.10.6.1 Latency
+
+Depends on network conditions.
+
+### 2.5.10.0.0.0 UI Feedback
+
+#### 2.5.10.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.10.2.0.0 Target Id
+
+end-user-supervisor
+
+#### 2.5.10.3.0.0 Message
+
+10. Displays a success notification (Snackbar) and navigates back to the previous screen.
+
+#### 2.5.10.4.0.0 Sequence Number
+
+10
+
+#### 2.5.10.5.0.0 Type
+
+🔹 UI Feedback
+
+#### 2.5.10.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.10.7.0.0 Return Message
+
+
+
+#### 2.5.10.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.10.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.10.10.0.0 Technical Details
+
+##### 2.5.10.10.1.0 Protocol
+
+UI Framework
+
+##### 2.5.10.10.2.0 Method
+
+ScaffoldMessenger.of(context).showSnackBar(); Navigator.pop();
+
+##### 2.5.10.10.3.0 Parameters
+
+*No items available*
+
+##### 2.5.10.10.4.0 Authentication
+
+N/A
+
+##### 2.5.10.10.5.0 Error Handling
+
+If an error occurred in step 8, a failure notification is shown instead and the user remains on the form.
+
+##### 2.5.10.10.6.0 Performance
+
+###### 2.5.10.10.6.1 Latency
+
+Immediate
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+Offline Handling: If the device is offline at step 8, the Firestore SDK automatically writes the new event to its local cache. The Future for the `add()` call completes successfully from the client's perspective. The SDK will sync the data to the server once connectivity is restored. This is a core feature fulfilling REQ-1-009.
+
+#### 2.6.1.2.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0 Participant Id
+
+REPO-APP-MOBILE-010
+
+#### 2.6.1.4.0.0 Sequence Number
+
+8
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+Security Enforcement: Firestore Security Rules are critical. They must validate that the `auth.uid` making the request has the 'Supervisor' role and that every ID in the `assignedUserIds` array has a `supervisorId` matching the creator's `auth.uid`. This enforces the business rule server-side.
+
+#### 2.6.2.2.0.0 Position
+
+bottom
+
+#### 2.6.2.3.0.0 Participant Id
+
+data-persistence-layer
+
+#### 2.6.2.4.0.0 Sequence Number
+
+8
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Real-time Updates: Other assigned users who have the application open will see the new event appear on their calendars in real-time, thanks to Firestore's real-time listeners. This is an implicit outcome of the write operation.
+
+#### 2.6.3.2.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0 Participant Id
+
+data-persistence-layer
+
+#### 2.6.3.4.0.0 Sequence Number
+
+9
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Firestore security rules must enforce that a user ... |
+| Performance Targets | The assignee list should load in under 500ms. The ... |
+| Error Handling Strategy | Implement robust client-side validation with clear... |
+| Testing Considerations | Unit test the Riverpod Provider logic for form val... |
+| Monitoring Requirements | Log successful event creation events to an analyti... |
+| Deployment Considerations | Ensure that the corresponding Firestore security r... |
+

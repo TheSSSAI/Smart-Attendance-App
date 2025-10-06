@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism Component: CSV Import Module</title>
+    <style>
+        /* 1. FOUNDATION & DESIGN TOKENS */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-success-500: #16A34A;
+            --color-error-500: #DC2626;
+            --color-error-900: #7f1d1d;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            /* Typography */
+            --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --line-height-body: 1.5;
+            /* Spacing */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 16px;
+            --border-width-1: 1px;
+            --border-width-2: 2px;
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* 2. BASE & LAYOUT STYLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            background-color: var(--color-neutral-100);
+            color: var(--color-neutral-700);
+            padding: var(--space-8);
+        }
+
+        .showcase-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .showcase-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+
+        .showcase-header h1 {
+            font-size: 36px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .showcase-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .showcase-section > h2 {
+            font-size: 24px;
+            color: var(--color-neutral-700);
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-4);
+            border-bottom: var(--border-width-1) solid var(--color-neutral-200);
+        }
+
+        /* 3. ATOMIC DEPENDENCIES (for showcase) */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-6);
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            border-radius: var(--border-radius-md);
+            border: var(--border-width-1) solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn:focus-visible {
+            outline: var(--border-width-2) solid var(--color-primary-500);
+            outline-offset: 2px;
+        }
+
+        .btn--primary {
+            background-color: var(--color-primary-500);
+            color: var(--color-neutral-white);
+        }
+
+        .btn--primary:hover {
+            background-color: var(--color-primary-600);
+        }
+
+        .btn--secondary {
+            background-color: var(--color-neutral-white);
+            color: var(--color-neutral-700);
+            border-color: var(--color-neutral-300);
+            box-shadow: var(--shadow-sm);
+        }
+        .btn--secondary:hover {
+            background-color: var(--color-neutral-50);
+        }
+        
+        .text-link {
+            color: var(--color-primary-500);
+            font-weight: var(--font-weight-medium);
+            text-decoration: none;
+        }
+        .text-link:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes spinner-anim {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 4px solid var(--color-neutral-200);
+            border-top-color: var(--color-primary-500);
+            animation: spinner-anim 0.8s linear infinite;
+        }
+
+        /* 4. ORGANISM COMPONENT: CSV Import Module */
+
+        /* Component: CSV Import Module */
+        /* Base Styles */
+        .import-module {
+            background-color: var(--color-neutral-white);
+            border: var(--border-width-1) solid var(--color-neutral-200);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: var(--space-8);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        /* Idle State: Dropzone */
+        .import-module__dropzone {
+            border: var(--border-width-2) dashed var(--color-neutral-300);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-8);
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            position: relative;
+        }
+
+        .import-module__dropzone:hover,
+        .import-module__dropzone--active {
+            border-color: var(--color-primary-500);
+            background-color: var(--color-primary-50);
+        }
+
+        .import-module__dropzone-icon {
+            color: var(--color-primary-500);
+            margin-bottom: var(--space-4);
+        }
+        .import-module__dropzone-icon svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        .import-module__dropzone-text {
+            font-weight: var(--font-weight-medium);
+            color: var(--color-neutral-700);
+        }
+
+        .import-module__dropzone-text strong {
+            color: var(--color-primary-500);
+        }
+
+        .import-module__dropzone-hint {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-500);
+            margin-top: var(--space-2);
+        }
+
+        .import-module__file-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        .import-module__file-input:focus-visible + label {
+            outline: var(--border-width-2) solid var(--color-primary-500);
+            outline-offset: 4px;
+            border-radius: var(--border-radius-md);
+        }
+
+        .import-module__separator {
+            margin: var(--space-6) 0;
+            color: var(--color-neutral-400);
+        }
+
+        .import-module__footer {
+            margin-top: var(--space-6);
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-500);
+        }
+
+        /* Uploading & Processing States */
+        .import-module__progress-label {
+            font-weight: var(--font-weight-medium);
+            color: var(--color-neutral-700);
+            margin-bottom: var(--space-4);
+        }
+
+        .import-module__progress-bar {
+            width: 100%;
+            height: 12px;
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .import-module__progress-bar::-webkit-progress-bar {
+            background-color: var(--color-neutral-200);
+        }
+
+        .import-module__progress-bar::-webkit-progress-value {
+            background-color: var(--color-primary-500);
+            transition: width 0.3s ease;
+        }
+        
+        /* Modern browsers */
+        .import-module__progress-bar::-moz-progress-bar {
+            background-color: var(--color-primary-500);
+        }
+
+        .import-module__processing-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-4);
+            min-height: 200px;
+        }
+        
+        .import-module__processing-state .processing-text {
+            font-weight: var(--font-weight-medium);
+            color: var(--color-neutral-700);
+        }
+        
+        .import-module__processing-state .processing-subtext {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-500);
+        }
+
+
+        /* Complete State: Summary Report */
+        .summary-report {
+            text-align: left;
+        }
+
+        .summary-report__header h3 {
+            font-size: 24px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-2);
+        }
+        .summary-report__header p {
+            color: var(--color-neutral-500);
+        }
+
+        .summary-report__stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-6);
+            margin: var(--space-6) 0;
+        }
+
+        .summary-report__stat {
+            background-color: var(--color-neutral-50);
+            padding: var(--space-4);
+            border-radius: var(--border-radius-md);
+            border-left: 4px solid var(--color-neutral-400);
+        }
+
+        .summary-report__stat--total { border-color: var(--color-primary-500); }
+        .summary-report__stat--success { border-color: var(--color-success-500); }
+        .summary-report__stat--failed { border-color: var(--color-error-500); }
+
+        .summary-report__stat-value {
+            font-size: 28px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+        }
+
+        .summary-report__stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-500);
+        }
+
+        .summary-report__failures {
+            margin-top: var(--space-8);
+        }
+
+        .summary-report__failures-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .summary-report__failures-table-wrapper {
+             border: 1px solid var(--color-neutral-200);
+             border-radius: var(--border-radius-md);
+             overflow-x: auto;
+             max-height: 300px;
+        }
+
+        .summary-report__failures-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+
+        .summary-report__failures-table th,
+        .summary-report__failures-table td {
+            padding: var(--space-3) var(--space-4);
+            text-align: left;
+            border-bottom: 1px solid var(--color-neutral-200);
+        }
+        .summary-report__failures-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .summary-report__failures-table th {
+            color: var(--color-neutral-500);
+            font-weight: var(--font-weight-semibold);
+            background-color: var(--color-neutral-50);
+        }
+
+        .summary-report__failures-table td {
+            color: var(--color-neutral-700);
+        }
+
+        .summary-report__failures-table .error-message {
+            color: var(--color-error-900);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .summary-report__actions {
+            margin-top: var(--space-8);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-4);
+        }
+
+        /* Responsive Adaptations */
+        @media (max-width: 768px) {
+            .import-module {
+                padding: var(--space-6);
+            }
+            .summary-report__actions {
+                flex-direction: column;
+            }
+            .summary-report__actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <header class="showcase-header">
+            <h1>CSV Import Module</h1>
+        </header>
+        <main>
+            <!-- Idle State Showcase -->
+            <section class="showcase-section">
+                <h2>State: Idle</h2>
+                <div class="import-module">
+                    <input type="file" id="file-upload" class="import-module__file-input" accept=".csv">
+                    <label for="file-upload" class="import-module__dropzone" role="button" tabindex="0">
+                        <div class="import-module__dropzone-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3.75 3.75M12 9.75l3.75 3.75M3 17.25V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25z" />
+                            </svg>
+                        </div>
+                        <div class="import-module__dropzone-text">
+                            <strong>Click to upload</strong> or drag and drop
+                        </div>
+                        <p class="import-module__dropzone-hint">CSV (max. 5MB)</p>
+                    </label>
+                    <div class="import-module__footer">
+                        Don't have a formatted file? <a href="#" class="text-link">Download the CSV template</a>.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Uploading State Showcase -->
+            <section class="showcase-section">
+                <h2>State: Uploading</h2>
+                <div class="import-module">
+                    <p class="import-module__progress-label">Uploading "team-data-q1.csv"...</p>
+                    <progress class="import-module__progress-bar" value="65" max="100" aria-label="File upload progress"></progress>
+                </div>
+            </section>
+
+            <!-- Processing State Showcase -->
+            <section class="showcase-section">
+                <h2>State: Processing</h2>
+                <div class="import-module">
+                    <div class="import-module__processing-state" aria-live="polite">
+                        <div class="spinner"></div>
+                        <p class="processing-text">Processing file...</p>
+                        <p class="processing-subtext">This may take a moment. Please don't close this window.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Complete State Showcase -->
+            <section class="showcase-section">
+                <h2>State: Complete (with Failures)</h2>
+                <div class="import-module">
+                    <div class="summary-report">
+                        <div class="summary-report__header">
+                            <h3>Import Complete</h3>
+                            <p>The file "team-data-q1.csv" has been processed.</p>
+                        </div>
+                        <div class="summary-report__stats">
+                            <div class="summary-report__stat summary-report__stat--total">
+                                <div class="summary-report__stat-value">50</div>
+                                <div class="summary-report__stat-label">Total Records</div>
+                            </div>
+                            <div class="summary-report__stat summary-report__stat--success">
+                                <div class="summary-report__stat-value">47</div>
+                                <div class="summary-report__stat-label">Successful Imports</div>
+                            </div>
+                            <div class="summary-report__stat summary-report__stat--failed">
+                                <div class="summary-report__stat-value">3</div>
+                                <div class="summary-report__stat-label">Failed Imports</div>
+                            </div>
+                        </div>
+                        <div class="summary-report__failures">
+                            <div class="summary-report__failures-header">
+                                <h4>Failed Records</h4>
+                                <button type="button" class="btn btn--secondary">Download Failed Records (.csv)</button>
+                            </div>
+                            <div class="summary-report__failures-table-wrapper">
+                                <table class="summary-report__failures-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Row #</th>
+                                            <th scope="col">Data</th>
+                                            <th scope="col">Error</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>5</td>
+                                            <td>jane.doe@acme.com</td>
+                                            <td class="error-message">Email already exists in this tenant.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>12</td>
+                                            <td>supervisor@acme.com</td>
+                                            <td class="error-message">Invalid role 'Manager'. Must be 'Supervisor' or 'Subordinate'.</td>
+                                        </tr>
+                                        <tr>
+                                            <td>28</td>
+                                            <td>j.smith@acme.com</td>
+                                            <td class="error-message">Required field 'lastName' is missing.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="summary-report__actions">
+                            <button type="button" class="btn btn--primary">Import Another File</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+</body>
+</html>

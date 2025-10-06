@@ -1,0 +1,34 @@
+graph TD
+    subgraph AppBarComponent["App Bar"]
+        direction LR
+        A[ ] -- composed of --> V1(Main Variant)
+        A -- composed of --> V2(Contextual Variant)
+        A -- composed of --> V3(With Tabs Variant)
+    end
+
+    subgraph MainVariant["Main Variant"]
+        V1 --> LI1["Leading Icon (IconButton)"]
+        V1 --> T1["Title (Text)"]
+        V1 --> AI1["Action Icons (IconButton)"]
+    end
+
+    subgraph ContextualVariant["Contextual Variant"]
+        V2 --> LI2["Close/Back Icon (IconButton)"]
+        V2 --> T2["Contextual Title (Text)"]
+        V2 --> AI2["Contextual Actions (e.g., Save, Delete)"]
+    end
+
+    subgraph WithTabsVariant["With Tabs Variant"]
+        V3 --> LI3["Leading Icon (IconButton)"]
+        V3 --> T3["Title (Text)"]
+        V3 --> AI3["Action Icons (IconButton)"]
+        V3 --> TB1["Tabs (Tab Bar)"]
+    end
+
+    classDef component fill:#e3f2fd,stroke:#2196f3,color:#000;
+    classDef variant fill:#e8f5e9,stroke:#4caf50,color:#000;
+    classDef atomic fill:#f3e5f5,stroke:#9c27b0,color:#000;
+
+    class AppBarComponent component;
+    class V1,V2,V3 variant;
+    class LI1,T1,AI1,LI2,T2,AI2,LI3,T3,AI3,TB1 atomic;

@@ -1,0 +1,568 @@
+
+{
+  "component_inventory": {
+    "atomic_components": [
+      {
+        "component_name": "Primary Button",
+        "category": "form_controls",
+        "variants": [
+          "primary",
+          "secondary",
+          "destructive",
+          "text_link"
+        ],
+        "states": [
+          "default",
+          "hover",
+          "active",
+          "focus",
+          "disabled",
+          "loading"
+        ],
+        "responsive_needs": "Minimum 48x48dp touch target on all platforms. Padding may be adjusted for smaller viewports.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Text Input Field",
+        "category": "form_controls",
+        "variants": [
+          "default",
+          "password",
+          "multiline",
+          "search",
+          "phone_number",
+          "otp_pin"
+        ],
+        "states": [
+          "default",
+          "focused",
+          "error",
+          "disabled",
+          "with_icon_prefix",
+          "with_icon_suffix"
+        ],
+        "responsive_needs": "Full width on mobile, max-width on larger screens. Adapts to dynamic text scaling.",
+        "dependencies": [
+          "Icon"
+        ],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "5-8 hours"
+      },
+      {
+        "component_name": "Checkbox",
+        "category": "form_controls",
+        "variants": [
+          "default",
+          "list_selection"
+        ],
+        "states": [
+          "checked",
+          "unchecked",
+          "disabled",
+          "error"
+        ],
+        "responsive_needs": "Minimum 48x48dp touch target.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "2-3 hours"
+      },
+      {
+        "component_name": "Toggle Switch",
+        "category": "form_controls",
+        "variants": [
+          "default"
+        ],
+        "states": [
+          "on",
+          "off",
+          "disabled"
+        ],
+        "responsive_needs": "Consistent size, minimum 48x48dp touch target.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "2-3 hours"
+      },
+      {
+        "component_name": "Alert Banner",
+        "category": "feedback",
+        "variants": [
+          "info",
+          "success",
+          "warning",
+          "error",
+          "persistent_sync_failure"
+        ],
+        "states": [
+          "visible",
+          "dismissible",
+          "with_action"
+        ],
+        "responsive_needs": "Adapts to screen width and dynamic text scaling.",
+        "dependencies": [
+          "Icon",
+          "Primary Button"
+        ],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Loading Indicator",
+        "category": "feedback",
+        "variants": [
+          "circular_spinner",
+          "linear_progress",
+          "skeleton_loader"
+        ],
+        "states": [
+          "indeterminate",
+          "determinate"
+        ],
+        "responsive_needs": "Scalable for different contexts (e.g., button vs. full page).",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "3-5 hours"
+      },
+      {
+        "component_name": "Tooltip",
+        "category": "feedback",
+        "variants": [
+          "default"
+        ],
+        "states": [
+          "visible_on_hover",
+          "visible_on_long_press"
+        ],
+        "responsive_needs": "Positioning logic to avoid viewport edges.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 4,
+        "estimated_effort": "2-4 hours"
+      },
+      {
+        "component_name": "Status Badge/Chip",
+        "category": "data_display",
+        "variants": [
+          "pending",
+          "approved",
+          "rejected",
+          "offline",
+          "manually-corrected",
+          "clock_discrepancy",
+          "auto_checkout",
+          "invited",
+          "active",
+          "deactivated"
+        ],
+        "states": [
+          "default"
+        ],
+        "responsive_needs": "Adapts to text length and dynamic text scaling.",
+        "dependencies": [
+          "Icon"
+        ],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "3-5 hours"
+      }
+    ],
+    "molecular_components": [
+      {
+        "component_name": "Form Field Group",
+        "category": "forms",
+        "variants": [
+          "default"
+        ],
+        "states": [
+          "default",
+          "error",
+          "disabled"
+        ],
+        "responsive_needs": "Handles responsive label positioning and text wrapping for validation messages.",
+        "dependencies": [
+          "Text Input Field",
+          "Label",
+          "Validation Message Text"
+        ],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "2-4 hours"
+      },
+      {
+        "component_name": "Searchable Dropdown",
+        "category": "form_controls",
+        "variants": [
+          "single_select",
+          "multi_select"
+        ],
+        "states": [
+          "default",
+          "focused",
+          "loading_options",
+          "error",
+          "with_selection"
+        ],
+        "responsive_needs": "Dropdown menu should open in a full-screen modal on mobile.",
+        "dependencies": [
+          "Text Input Field",
+          "List Item",
+          "Loading Indicator"
+        ],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "8-12 hours"
+      },
+      {
+        "component_name": "Date Range Picker",
+        "category": "form_controls",
+        "variants": [
+          "default"
+        ],
+        "states": [
+          "default",
+          "focused"
+        ],
+        "responsive_needs": "Should use a full-screen, mobile-friendly picker style on smaller screens.",
+        "dependencies": [
+          "Text Input Field",
+          "Calendar View"
+        ],
+        "complexity_level": "medium",
+        "implementation_priority": 5,
+        "estimated_effort": "6-8 hours"
+      },
+      {
+        "component_name": "Data Table Row",
+        "category": "data_display",
+        "variants": [
+          "user_row",
+          "team_row",
+          "report_row",
+          "audit_log_row"
+        ],
+        "states": [
+          "default",
+          "hover",
+          "selected"
+        ],
+        "responsive_needs": "Transforms into a card or simplified list item on mobile viewports.",
+        "dependencies": [
+          "Checkbox",
+          "Status Badge/Chip",
+          "Icon Button"
+        ],
+        "complexity_level": "medium",
+        "implementation_priority": 4,
+        "estimated_effort": "5-7 hours"
+      },
+      {
+        "component_name": "Confirmation Dialog",
+        "category": "feedback",
+        "variants": [
+          "standard",
+          "destructive",
+          "with_input"
+        ],
+        "states": [
+          "visible"
+        ],
+        "responsive_needs": "Centered overlay, scales with viewport width, scrollable content for long messages.",
+        "dependencies": [
+          "Primary Button",
+          "Text Input Field"
+        ],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Page Header",
+        "category": "layout",
+        "variants": [
+          "with_actions",
+          "simple"
+        ],
+        "states": [
+          "default"
+        ],
+        "responsive_needs": "Actions may wrap or move to an overflow menu on smaller screens.",
+        "dependencies": [
+          "Primary Button"
+        ],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "3-5 hours"
+      },
+      {
+        "component_name": "Metric Card",
+        "category": "data_display",
+        "variants": [
+          "default",
+          "with_trend_indicator"
+        ],
+        "states": [
+          "loading",
+          "with_data",
+          "error"
+        ],
+        "responsive_needs": "Scales to fit grid columns, text size adjusts.",
+        "dependencies": [
+          "Loading Indicator",
+          "Icon"
+        ],
+        "complexity_level": "low",
+        "implementation_priority": 5,
+        "estimated_effort": "3-4 hours"
+      },
+      {
+        "component_name": "Platform App Bar",
+        "category": "navigation",
+        "variants": [
+          "mobile",
+          "web"
+        ],
+        "states": [
+          "default",
+          "contextual_actions"
+        ],
+        "responsive_needs": "Adapts title alignment and action icon spacing for different screen sizes and notches.",
+        "dependencies": [
+          "Icon Button",
+          "Text"
+        ],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "3-4 hours"
+      }
+    ],
+    "organism_components": [
+      {
+        "component_name": "Main Layout",
+        "category": "layout",
+        "variants": [
+          "web_sidebar",
+          "mobile_bottom_nav"
+        ],
+        "states": [
+          "sidebar_open",
+          "sidebar_collapsed"
+        ],
+        "responsive_needs": "Sidebar becomes a collapsible drawer on smaller web viewports; not present on mobile.",
+        "dependencies": [
+          "Sidebar Navigation",
+          "Bottom Navigation Bar",
+          "Platform App Bar"
+        ],
+        "complexity_level": "high",
+        "implementation_priority": 2,
+        "estimated_effort": "12-18 hours"
+      },
+      {
+        "component_name": "Data Table",
+        "category": "data_display",
+        "variants": [
+          "users",
+          "teams",
+          "reports",
+          "paginated"
+        ],
+        "states": [
+          "loading",
+          "empty",
+          "with_data",
+          "error"
+        ],
+        "responsive_needs": "Must transform into a list of cards on mobile viewports to avoid horizontal scrolling.",
+        "dependencies": [
+          "Data Table Row",
+          "Pagination Controls",
+          "Loading Indicator"
+        ],
+        "complexity_level": "high",
+        "implementation_priority": 4,
+        "estimated_effort": "14-20 hours"
+      },
+      {
+        "component_name": "Report Filters Bar",
+        "category": "forms",
+        "variants": [
+          "attendance_summary",
+          "exception_report",
+          "audit_log"
+        ],
+        "states": [
+          "default"
+        ],
+        "responsive_needs": "Filters stack vertically on smaller screens.",
+        "dependencies": [
+          "Date Range Picker",
+          "Searchable Dropdown",
+          "Primary Button"
+        ],
+        "complexity_level": "medium",
+        "implementation_priority": 5,
+        "estimated_effort": "8-12 hours"
+      },
+      {
+        "component_name": "Chart Component",
+        "category": "data_display",
+        "variants": [
+          "bar_chart",
+          "line_chart"
+        ],
+        "states": [
+          "loading",
+          "with_data",
+          "empty"
+        ],
+        "responsive_needs": "SVG-based and responsive to container size, with simplified tooltips on mobile.",
+        "dependencies": [
+          "Tooltip",
+          "Loading Indicator"
+        ],
+        "complexity_level": "high",
+        "implementation_priority": 5,
+        "estimated_effort": "12-18 hours"
+      },
+      {
+        "component_name": "Settings Form Section",
+        "category": "forms",
+        "variants": [
+          "timezone",
+          "password_policy",
+          "data_retention",
+          "danger_zone"
+        ],
+        "states": [
+          "default",
+          "editing",
+          "saving"
+        ],
+        "responsive_needs": "Standard responsive form layout, stacks on mobile.",
+        "dependencies": [
+          "Form Field Group",
+          "Primary Button",
+          "Toggle Switch"
+        ],
+        "complexity_level": "medium",
+        "implementation_priority": 4,
+        "estimated_effort": "6-8 hours"
+      },
+      {
+        "component_name": "File Upload Component",
+        "category": "forms",
+        "variants": [
+          "drag_and_drop",
+          "button_select"
+        ],
+        "states": [
+          "idle",
+          "uploading",
+          "complete",
+          "error"
+        ],
+        "responsive_needs": "Drop zone needs to be clear and have a large touch target on mobile browsers.",
+        "dependencies": [
+          "Primary Button",
+          "Loading Indicator",
+          "Icon"
+        ],
+        "complexity_level": "medium",
+        "implementation_priority": 6,
+        "estimated_effort": "8-10 hours"
+      },
+      {
+        "component_name": "Public Page Layout",
+        "category": "layout",
+        "variants": [
+          "default"
+        ],
+        "states": [
+          "default"
+        ],
+        "responsive_needs": "Centered content, fully responsive from mobile to desktop.",
+        "dependencies": [
+          "Card"
+        ],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "4-6 hours"
+      }
+    ]
+  },
+  "screen_inventory": [],
+  "implementation_plan": {
+    "phase_1_foundation": {
+      "components": [
+        "Primary Button",
+        "Text Input Field",
+        "Loading Indicator",
+        "Icon",
+        "Text Link",
+        "Status Badge/Chip"
+      ],
+      "rationale": "Establishes the core atomic UI elements required by all other components. This phase provides the basic building blocks for any form, feedback, or data display.",
+      "estimated_duration": "4-6 days"
+    },
+    "phase_2_building_blocks": {
+      "components": [
+        "Alert Banner",
+        "Checkbox",
+        "Toggle Switch",
+        "Form Field Group",
+        "Confirmation Dialog",
+        "Platform App Bar",
+        "Public Page Layout"
+      ],
+      "rationale": "Builds common molecular components used in forms, feedback, and basic page structure. This enables the construction of simple screens and user flows.",
+      "estimated_duration": "5-7 days"
+    },
+    "phase_3_complex_components": {
+      "components": [
+        "Main Layout",
+        "Data Table Row",
+        "Page Header",
+        "Tooltip",
+        "Settings Form Section"
+      ],
+      "rationale": "Develops more complex layout structures and data display elements. This phase is crucial for building out the core authenticated experiences for both mobile and web.",
+      "estimated_duration": "6-9 days"
+    },
+    "phase_4_screens": {
+      "screens": [],
+      "components": [
+        "Searchable Dropdown",
+        "Data Table",
+        "Metric Card",
+        "Date Range Picker",
+        "Report Filters Bar",
+        "Chart Component",
+        "File Upload Component"
+      ],
+      "rationale": "This phase focuses on creating the high-complexity, data-heavy organism components that are the centerpiece of the application's most advanced features like reporting and data migration.",
+      "estimated_duration": "12-18 days"
+    }
+  },
+  "platform_implementation_strategy": {
+    "target_platform": "Flutter (for Mobile and Web)",
+    "implementation_approach": "responsive_by_design",
+    "responsive_strategy": "Components are built using Flutter's flexible layout widgets to be inherently responsive. Platform-specific adaptations (e.g., using Material on Android/Web, Cupertino on iOS for pickers) will be implemented to provide a native feel. The library will support both mobile and desktop (web) targets from the outset.",
+    "progressive_enhancement": "Core functionality and styling will be the baseline. Advanced interactions, animations, and platform-specific polish will be layered on top.",
+    "browser_support": "Latest stable versions of Google Chrome, Mozilla Firefox, Apple Safari, and Microsoft Edge.",
+    "accessibility_integration": "WCAG 2.1 AA compliance is a foundational requirement. All widgets must include a `semanticLabel` and support dynamic text scaling and keyboard navigation. This will be enforced in code reviews and testing."
+  },
+  "quality_assurance_plan": {
+    "component_testing": "All widgets will have dedicated `widget_test` files, covering rendering for different variants, states, and input properties.",
+    "integration_testing": "Tests will cover the composition of multiple shared components to ensure they work together correctly within a sample screen layout.",
+    "responsive_testing": "Widget tests will be run with various screen sizes. Manual testing will be performed on a range of emulators and physical devices (phones, tablets, desktop browsers).",
+    "accessibility_testing": "Automated checks for accessibility issues will be run using Flutter's tools. Manual testing with TalkBack (Android) and VoiceOver (iOS) is mandatory for every component.",
+    "performance_testing": "Flutter DevTools will be used to profile widget build times and rendering performance. The goal is to eliminate jank and maintain 60fps for all interactions."
+  }
+}

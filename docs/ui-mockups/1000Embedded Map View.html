@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organism: Embedded Map View</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ------------------------- */
+    /* --- 1. Design System & Base --- */
+    /* ------------------------- */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-600: #475569;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+      --color-white: #FFFFFF;
+      --color-success-500: #16A34A;
+      --color-error-500: #DC2626;
+
+      /* Typography */
+      --font-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-sm: 14px;
+      --font-weight-regular: 400;
+      --font-weight-semibold: 600;
+      
+      /* Spacing */
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-48: 48px;
+
+      /* Borders */
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-neutral-50);
+      padding: var(--space-24);
+    }
+
+    main {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-neutral-900);
+      margin-bottom: var(--space-8);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: var(--space-48);
+      margin-bottom: var(--space-16);
+      color: var(--color-neutral-900);
+      border-bottom: 1px solid var(--color-neutral-200);
+      padding-bottom: var(--space-8);
+    }
+    
+    p {
+      color: var(--color-neutral-600);
+      margin-bottom: var(--space-16);
+    }
+
+    /* ------------------------- */
+    /* --- 2. Spinner Dependency --- */
+    /* ------------------------- */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--color-neutral-300);
+      border-top-color: var(--color-primary-500);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ------------------------- */
+    /* --- 3. Component: Embedded Map View --- */
+    /* ------------------------- */
+    .map-view {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background-color: var(--color-neutral-200);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      color: var(--color-neutral-700);
+    }
+
+    /* State Containers */
+    .map-view__loader,
+    .map-view__error,
+    .map-view__canvas {
+      position: absolute;
+      inset: 0;
+      display: none; /* Hidden by default, shown by parent class */
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-16);
+      text-align: center;
+    }
+
+    .map-view--loading .map-view__loader,
+    .map-view--error .map-view__error,
+    .map-view--loaded .map-view__canvas {
+      display: flex;
+    }
+
+    /* Loader State */
+    .map-view__loader .spinner {
+      width: 48px;
+      height: 48px;
+      border-width: 4px;
+    }
+
+    .map-view__loader-text {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-600);
+    }
+
+    /* Error State */
+    .map-view__error-icon {
+      width: 48px;
+      height: 48px;
+      color: var(--color-neutral-400);
+    }
+
+    .map-view__error-text {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-600);
+    }
+
+    /* Loaded State - Canvas */
+    .map-view__canvas {
+      background-image: url('https://storage.googleapis.com/spec-host-backup/mio-design%2Fassets%2F1Tpx332N6thl5e-Q9e6qT8g82aB0Vb_kH%2Fstyle-basemap-simple-light.png');
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Pin Container & Interaction */
+    .map-view__pin-container {
+      position: absolute;
+      cursor: pointer;
+    }
+    .map-view__pin-container:focus {
+      outline: none;
+    }
+
+    /* Info Window (appears on hover/focus) */
+    .map-view__info-window {
+      position: absolute;
+      bottom: calc(100% + 12px); /* Position above pin */
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background-color: var(--color-white);
+      padding: var(--space-8) var(--space-12);
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-900);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 150ms ease-in-out, transform 150ms ease-in-out;
+      pointer-events: none;
+    }
+    .map-view__pin-container:hover .map-view__info-window,
+    .map-view__pin-container:focus-within .map-view__info-window {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .map-view__info-window::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: var(--color-white) transparent transparent transparent;
+    }
+
+    /* Pin Visual */
+    .map-view__pin {
+      width: 40px;
+      height: 40px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: grid;
+      place-items: center;
+      position: relative;
+      left: -20px;
+      top: -40px;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+      animation: drop-in 0.5s ease-out forwards;
+    }
+
+    .map-view__pin svg {
+      transform: rotate(45deg);
+      color: var(--color-white);
+      width: 20px;
+      height: 20px;
+    }
+
+    .map-view__pin-container:focus-within .map-view__pin {
+      box-shadow: 0 0 0 3px var(--color-white), 0 0 0 5px var(--color-primary-500);
+    }
+
+    @keyframes drop-in {
+      from { transform: rotate(-45deg) translateY(-30px); opacity: 0; }
+      to { transform: rotate(-45deg) translateY(0); opacity: 1; }
+    }
+
+    /* Pin Variants */
+    .map-view__pin--check-in {
+      background-color: var(--color-success-500);
+    }
+
+    .map-view__pin--check-out {
+      background-color: var(--color-error-500);
+      animation-delay: 100ms;
+    }
+
+    .map-view__info-window-label {
+      font-weight: var(--font-weight-regular);
+      color: var(--color-neutral-600);
+      display: block;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Organism: Embedded Map View</h1>
+      <p>This component provides a visual representation of GPS coordinates on a simulated map, complete with loading and error states.</p>
+    </header>
+
+    <section>
+      <h2>States</h2>
+
+      <h3>Loading State</h3>
+      <div class="map-view map-view--loading" aria-label="Map loading">
+        <div class="map-view__loader" role="status">
+          <div class="spinner"></div>
+          <span class="map-view__loader-text">Loading Map...</span>
+        </div>
+      </div>
+
+      <h3>Error State</h3>
+      <p>Shown when map tiles cannot be loaded due to a network issue.</p>
+      <div class="map-view map-view--error" aria-label="Map failed to load">
+        <div class="map-view__error" role="alert">
+          <svg class="map-view__error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          <span class="map-view__error-text">Map could not be loaded.<br>Please check your connection.</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Component Variations</h2>
+      <div>
+        <h3>Variant Name: "single_pin"</h3>
+        <p>This variant is used when only one location (e.g., a check-in) has been recorded. The map is centered on this single pin.</p>
+        <div class="map-view map-view--loaded" aria-label="Map showing one location pin">
+          <div class="map-view__canvas">
+            <div class="map-view__pin-container" style="top: 50%; left: 50%;" tabindex="0">
+              <div class="map-view__info-window">
+                Check-In
+                <span class="map-view__info-window-label">09:01 AM</span>
+              </div>
+              <div class="map-view__pin map-view__pin--check-in">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <h3>Variant Name: "dual_pin"</h3>
+        <p>This variant shows both check-in and check-out locations. The map view would typically be centered and zoomed to encompass both pins.</p>
+        <div class="map-view map-view--loaded" aria-label="Map showing two location pins">
+          <div class="map-view__canvas">
+            <!-- Check-in Pin -->
+            <div class="map-view__pin-container" style="top: 40%; left: 35%;" tabindex="0">
+              <div class="map-view__info-window">
+                Check-In
+                <span class="map-view__info-window-label">09:01 AM</span>
+              </div>
+              <div class="map-view__pin map-view__pin--check-in">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <!-- Check-out Pin -->
+            <div class="map-view__pin-container" style="top: 65%; left: 65%;" tabindex="0">
+              <div class="map-view__info-window">
+                Check-Out
+                <span class="map-view__info-window-label">05:03 PM</span>
+              </div>
+              <div class="map-view__pin map-view__pin--check-out">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

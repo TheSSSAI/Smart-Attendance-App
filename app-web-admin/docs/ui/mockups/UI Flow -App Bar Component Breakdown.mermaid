@@ -1,0 +1,43 @@
+mindmap
+  root((App Bar))
+    ::icon(fa fa-window-maximize)
+    **Purpose & Placement**
+      Primary screen navigation & context
+      Mobile: Top of screen
+      Web (Admin): Top of main content area
+    **Composition**
+      ::icon(fa fa-puzzle-piece)
+      Icon Button (Atomic)
+        Navigation (e.g., Back)
+        Actions (e.g., Settings, Search)
+      Text (Atomic)
+        Screen Title
+    **Variants**
+      ::icon(fa fa-clone)
+      Main
+        Displays screen title
+        Includes primary actions
+      Contextual Actions
+        Appears on item selection
+        Shows selection count ('3 selected')
+        Includes batch actions ('Approve', 'Delete')
+      With Tabs
+        Integrates a TabBar component
+        For sub-navigation within a screen
+    **Responsive Behavior**
+      ::icon(fa fa-mobile-screen-button)
+      Title Alignment
+        Center (iOS)
+        Start (Android/Web)
+      Action Icon Spacing
+        Adapts to available screen width
+      Inset Handling
+        Respects device notches & safe areas
+    **Accessibility**
+      ::icon(fa fa-universal-access)
+      Screen Reader Support
+        Title announced as heading
+      Keyboard Navigation
+        All actions must be focusable
+      Touch Target Size
+        Minimum 48x48dp for all actions

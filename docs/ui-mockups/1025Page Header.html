@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Component: Page Header</title>
+    <style>
+        /* 1. FOUNDATION & DESIGN TOKENS */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            
+            /* Typography */
+            --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-md: 16px;
+            --font-weight-semibold: 600;
+            --line-height-body: 1.5;
+
+            /* Spacing */
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-width-1: 1px;
+            --border-width-2: 2px;
+
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* 2. BASE & LAYOUT STYLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            font-size: var(--font-size-md);
+            line-height: var(--line-height-body);
+            background-color: var(--color-neutral-white);
+            color: var(--color-neutral-700);
+            padding: var(--space-8);
+        }
+        
+        .showcase {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .showcase__header h1 {
+            font-size: 36px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-2);
+        }
+        
+        .component-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .component-section > h2 {
+            font-size: 28px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-4);
+            border-bottom: var(--border-width-1) solid var(--color-neutral-200);
+        }
+
+        .component-group {
+            background-color: var(--color-neutral-50);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            border: 1px solid var(--color-neutral-200);
+        }
+
+        .component-group > h3 {
+            font-size: 20px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-1);
+        }
+
+        .component-group > p {
+            color: var(--color-neutral-500);
+            margin-bottom: var(--space-6);
+            font-size: 14px;
+        }
+
+        /* 3. DEPENDENT COMPONENT STYLES (Button) */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-6);
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            border-radius: var(--border-radius-md);
+            border: var(--border-width-1) solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .btn:focus-visible {
+            outline: var(--border-width-2) solid var(--color-primary-500);
+            outline-offset: 2px;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn--primary {
+            background-color: var(--color-primary-500);
+            color: var(--color-neutral-white);
+        }
+        .btn--primary:hover {
+            background-color: var(--color-primary-600);
+        }
+        .btn--primary:active {
+            background-color: var(--color-primary-700);
+        }
+
+        /* 4. MOLECULAR COMPONENT: PAGE HEADER */
+        .page-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-4);
+            padding-bottom: var(--space-6);
+            margin-bottom: var(--space-6);
+            border-bottom: var(--border-width-1) solid var(--color-neutral-200);
+        }
+
+        .page-header__main {
+            flex-grow: 1;
+        }
+
+        .page-header__title {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--color-neutral-900);
+            line-height: 1.25;
+            margin: 0; /* Reset default heading margin */
+        }
+
+        .page-header__subtitle {
+            font-size: var(--font-size-md);
+            color: var(--color-neutral-500);
+            max-width: 60ch;
+            margin-top: var(--space-2);
+        }
+
+        .page-header__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            flex-shrink: 0;
+        }
+        
+        /* Responsive Adaptations */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-6);
+            }
+
+            .page-header__title {
+                font-size: 28px;
+            }
+
+            .page-header__actions {
+                width: 100%;
+            }
+
+            /* Example of how buttons could behave on mobile */
+            .page-header__actions .btn {
+                flex-grow: 1; 
+                justify-content: center;
+            }
+
+             /* If there's only one button, make it full width */
+            .page-header__actions .btn:only-child {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="showcase">
+        <header class="showcase__header">
+            <h1>Molecular Component: Page Header</h1>
+        </header>
+
+        <main>
+            <section class="component-section">
+                <h2>Variants</h2>
+                
+                <div class="component-group">
+                    <h3>Simple Header</h3>
+                    <p>A basic header with just a title and an optional subtitle. Used for pages that are informational and have no primary actions.</p>
+                    
+                    <header class="page-header">
+                        <div class="page-header__main">
+                            <h1 class="page-header__title">Dashboard</h1>
+                            <p class="page-header__subtitle">Welcome back, Admin. Here's a summary of your organization's activity.</p>
+                        </div>
+                    </header>
+                </div>
+
+                <div class="component-group">
+                    <h3>Header with Actions</h3>
+                    <p>The most common variant, used on management pages to provide context and primary creation/invitation actions.</p>
+                    
+                    <header class="page-header">
+                        <div class="page-header__main">
+                            <h1 class="page-header__title">User Management</h1>
+                            <p class="page-header__subtitle">Invite, manage, and view all users within your organization.</p>
+                        </div>
+                        <div class="page-header__actions">
+                            <button type="button" class="btn btn--primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: var(--space-2);">
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                </svg>
+                                Invite User
+                            </button>
+                        </div>
+                    </header>
+                </div>
+                 <div class="component-group">
+                    <h3>Header with Multiple Actions</h3>
+                    <p>Demonstrates how multiple actions are handled. They will wrap on smaller screens.</p>
+                    
+                    <header class="page-header">
+                        <div class="page-header__main">
+                            <h1 class="page-header__title">Team Management</h1>
+                            <p class="page-header__subtitle">Create and organize teams, and assign supervisors.</p>
+                        </div>
+                        <div class="page-header__actions">
+                            <button type="button" class="btn btn--secondary">Import Teams</button>
+                             <button type="button" class="btn btn--primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: var(--space-2);">
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                </svg>
+                                Create Team
+                            </button>
+                        </div>
+                    </header>
+                </div>
+
+            </section>
+        </main>
+    </div>
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : "with_actions"<h3>
+		<!--description--><normal> Actions may wrap or move to a menu on smaller screens. </normal>
+		<!-- vrient 1 html -->
+        <header class="page-header">
+                        <div class="page-header__main">
+                            <h1 class="page-header__title">Team Management</h1>
+                            <p class="page-header__subtitle">Create and organize teams, and assign supervisors.</p>
+                        </div>
+                        <div class="page-header__actions">
+                            <button type="button" class="btn btn--secondary">Import Teams</button>
+                             <button type="button" class="btn btn--primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: var(--space-2);">
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
+                                </svg>
+                                Create Team
+                            </button>
+                        </div>
+                    </header>     
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "simple"<h3>
+		<!--description--><normal> Actions may wrap or move to a menu on smaller screens. </normal>
+		<!-- vrient 1 html -->
+        <header class="page-header">
+                        <div class="page-header__main">
+                            <h1 class="page-header__title">Dashboard</h1>
+                            <p class="page-header__subtitle">Welcome back, Admin. Here's a summary of your organization's activity.</p>
+                        </div>
+                    </header>     
+		
+      <div>
+	 </div>    
+	
+	</body>
+</html>

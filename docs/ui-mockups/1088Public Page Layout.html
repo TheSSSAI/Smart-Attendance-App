@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organism: Public Page Layout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Public Page Layout CSS */
+
+    /* Design System Tokens */
+    :root {
+      --color-primary-500: #0073FF;
+      --color-white: #FFFFFF;
+      --color-gray-50: #F8FAFC;
+      --color-gray-100: #F1F5F9;
+      --color-gray-300: #CBD5E1;
+      --color-gray-500: #64748B;
+      --color-gray-700: #334155;
+      --color-gray-900: #0F172A;
+      --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-body: 16px;
+      --font-weight-bold: 700;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --border-radius-lg: 12px;
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-700);
+      line-height: 1.5;
+    }
+
+    /* Component: Public Page Layout */
+    .public-layout {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: var(--spacing-md);
+    }
+
+    .public-layout__container {
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+    }
+
+    .public-layout__logo {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 24px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-lg);
+      text-decoration: none;
+    }
+    .public-layout__logo svg {
+      color: var(--color-primary-500);
+    }
+
+    /* Dependency: Card */
+    .card {
+      background-color: var(--color-white);
+      border-radius: var(--border-radius-lg);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--color-gray-100);
+      text-align: left;
+    }
+
+    /* Placeholder Content Styles */
+    .card h2 {
+      font-size: 28px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .card p {
+      color: var(--color-gray-500);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .placeholder-form-field {
+        height: 48px;
+        background-color: var(--color-gray-100);
+        border: 1px solid var(--color-gray-200);
+        border-radius: 8px;
+        margin-bottom: var(--spacing-md);
+    }
+    .placeholder-button {
+        height: 48px;
+        background-color: var(--color-primary-500);
+        border-radius: 8px;
+        margin-top: var(--spacing-lg);
+    }
+
+
+    /* Responsive Adaptations */
+    @media (max-width: 768px) {
+      .public-layout {
+        padding: var(--spacing-lg) var(--spacing-md);
+      }
+      .card {
+        padding: var(--spacing-lg);
+      }
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      /* No transitions to disable in this component */
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        padding: 0;
+      }
+      .public-layout {
+        background: none;
+        min-height: auto;
+        padding: 0;
+      }
+      .card {
+        box-shadow: none;
+        border: 1px solid var(--color-gray-300);
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <main class="public-layout">
+    <div class="public-layout__container">
+      <a href="#" class="public-layout__logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>AppName</span>
+      </a>
+      <div class="card">
+        <!-- The content of the card would be another component, like an Authentication Form -->
+        <h2>Welcome Back</h2>
+        <p>Enter your credentials to access your account.</p>
+        <div class="placeholder-form">
+            <div class="placeholder-form-field"></div>
+            <div class="placeholder-form-field"></div>
+            <div class="placeholder-button"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+	
+	<div style="padding: 32px; max-width: 500px; margin: 32px auto; background-color: white; border-radius: 12px;"> 
+		<h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px;"> Component Variations</h2>
+      <div>
+        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Variant Name : "Default"</h3>
+		<p style="font-size: 14px; color: #64748B; margin-bottom: 16px;"> The standard layout for all public-facing pages, providing a centered card for content.</p>
+		<div style="border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden;">
+            <div class="public-layout" style="min-height: 400px; position: relative;">
+                <div class="public-layout__container">
+                    <div class="public-layout__logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        <span>AppName</span>
+                    </div>
+                    <div class="card">
+                        <h2>Create Account</h2>
+                        <p>Join your organization by creating a new account.</p>
+                        <div class="placeholder-form">
+                            <div class="placeholder-form-field"></div>
+                            <div class="placeholder-button"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+	 </div>
+      
+	</body>
+</html>

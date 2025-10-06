@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor "Mobile Application (Flutter)" as MobileApplicationFlutter
+    participant "Application Services" as ApplicationServices
+
+    activate MobileApplicationFlutter
+    MobileApplicationFlutter->>MobileApplicationFlutter: 1. 1. [Trigger] BackgroundSyncCheckService runs on a timer or app startup.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 2. 2. Query local Firestore cache for offline records with creationTimestamp < now() - 24h.
+    MobileApplicationFlutter-->>MobileApplicationFlutter: Returns list of stale record IDs.
+    activate ApplicationServices
+    MobileApplicationFlutter->>ApplicationServices: 3. 3. For each stale record, invoke logging endpoint.
+    ApplicationServices-->>MobileApplicationFlutter: 200 OK - Log Accepted
+    ApplicationServices->>ApplicationServices: 4. 4. Write structured error log to Google Cloud Logging.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 5. 5. Update local state to mark record with 'persistent_failure'.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 6. 6. UI layer, listening to state changes, renders persistent, non-dismissible notification.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 7. 7. [User Action] User taps 'Retry Sync' button in the notification.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 8. 8. [ALT] Attempt to sync record with Firestore again. On success, clear 'persistent_failure' state and remove notification.
+    MobileApplicationFlutter-->>MobileApplicationFlutter: If failed, display temporary error (Toast) but keep persistent notification.
+
+    note over MobileApplicationFlutter: The client-side check for stale records (Step 1) is crucial. It must be resilient to app restarts...
+    note over MobileApplicationFlutter: The UI notification is a key requirement (REQ-3.2.3). It MUST NOT be dismissible by swiping or ot...
+
+    deactivate ApplicationServices
+    deactivate MobileApplicationFlutter

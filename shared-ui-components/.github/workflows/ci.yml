@@ -1,0 +1,64 @@
+# .github/workflows/ci.yml
+
+# This workflow defines the Continuous Integration pipeline for the shared_ui_components package.
+# It ensures code quality, style consistency, and correctness by running a series of checks
+# on every push and pull request to the main and develop branches.
+# This aligns with REQ-1-072 for maintaining strict quality standards and automated testing.
+
+name: Flutter CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build_and_test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the Flutter environment
+      # Caches Flutter SDK for faster subsequent runs.
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x' # Use a specific Flutter version for consistency
+          channel: 'stable'
+          cache: true
+
+      # Step 3: Install package dependencies
+      # Fetches all dependencies defined in pubspec.yaml.
+      - name: Get dependencies
+        run: flutter pub get
+
+      # Step 4: Run Dart static analysis
+      # Verifies that the code adheres to the linting rules defined in analysis_options.yaml.
+      # This is a critical quality gate.
+      - name: Run static analysis
+        run: flutter analyze
+
+      # Step 5: Run widget tests with code coverage
+      # Executes all tests in the 'test' directory and generates a coverage report.
+      # The '--coverage' flag is essential for tracking test coverage metrics as per REQ-1-072.
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      # Step 6: (Optional) Upload code coverage report
+      # This step can be integrated with services like Codecov or Coveralls to track
+      # coverage over time and enforce coverage thresholds in pull requests.
+      # For now, the report is generated and available as an artifact.
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/lcov.info

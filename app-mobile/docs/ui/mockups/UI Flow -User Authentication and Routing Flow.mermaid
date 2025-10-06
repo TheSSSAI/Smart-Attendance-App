@@ -1,0 +1,62 @@
+flowchart TD
+    subgraph "User Journey Start"
+        A["User on Login Screen"] --> B{"Choose Login Method"}
+    end
+
+    B --> C["Login with Email/Password"]
+    B --> D["Login with Phone OTP"]
+
+    subgraph "Path 1: Email & Password Authentication"
+        C --> E["Enter Email & Password"]
+        E --> F{"Validate Credentials"}
+        F -->|Incorrect| G["Increment Failure Count"]
+        G --> H{"Count >= 5?"}
+        H -->|Yes| I["Show Lockout Error & Lock Account"]
+        H -->|No| J["Show 'Invalid Credentials' Error"]
+        F -->|Correct| K["Reset Failure Count"]
+        K --> L((Proceed to Post-Auth Checks))
+    end
+
+    subgraph "Path 2: Phone OTP Authentication (Mobile)"
+        D --> M["Enter Phone Number"]
+        M --> N{"Is Phone Registered & Active?"}
+        N -->|No| O["Show 'Not Registered' Error"]
+        N -->|Yes| P["Send OTP via SMS"]
+        P --> Q["User Enters OTP"]
+        Q --> R{"Is OTP Valid & Not Expired?"}
+        R -->|No| S["Show 'Invalid Code' Error"]
+        R -->|Yes| L
+    end
+
+    subgraph "Post-Authentication Checks"
+        L --> T{"User Status is 'Active'?"}
+        T -->|No| U["Show 'Account Deactivated' Error & Block Login"]
+        T -->|Yes| V{"Terms of Service Accepted?"}
+        V -->|No| W["Redirect to 'Accept ToS' Screen"]
+        W --> X["User Accepts ToS"]
+        X --> Y["Update User Status to 'Active'"]
+        Y --> Z((Proceed to Routing))
+        V -->|Yes| Z
+    end
+
+    subgraph "Role-Based & Platform Routing"
+        Z --> AA{"Detect Platform"}
+        AA -->|Web| BB{"User Role is 'Admin'?"}
+        BB -->|Yes| CC["<i class='fa fa-desktop'></i> Admin Web Dashboard"]
+        BB -->|No| DD["Show 'Use Mobile App' Page"]
+        AA -->|Mobile| EE{"User Role is..."}
+        EE -->|"Supervisor"| FF["<i class='fa fa-mobile-alt'></i> Supervisor Mobile Dashboard"]
+        EE -->|"Subordinate"| GG["<i class='fa fa-mobile-alt'></i> Subordinate Mobile Dashboard"]
+        EE -->|"Invalid/Missing"| HH["Show 'Account Misconfigured' Error & Logout"]
+    end
+
+    %% Styling
+    classDef errorNode fill:#ffebee,stroke:#d32f2f,color:#000
+    classDef successNode fill:#e8f5e9,stroke:#4caf50,color:#000
+    classDef processNode fill:#e3f2fd,stroke:#2196f3,color:#000
+    classDef decision fill:#fffde7,stroke:#fbc02d,color:#000
+
+    class I,J,O,S,U,DD,HH errorNode
+    class CC,FF,GG successNode
+    class A,E,M,Q,X,Y processNode
+    class B,F,H,N,R,T,V,AA,BB,EE decision

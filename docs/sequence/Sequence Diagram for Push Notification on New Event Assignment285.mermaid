@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant "Google Cloud Scheduler" as GoogleCloudScheduler
+    participant "Usage Check Function" as UsageCheckFunction
+    participant "Google BigQuery" as GoogleBigQuery
+    participant "Firestore" as Firestore
+    actor "SendGrid API" as SendGridAPI
+
+    activate UsageCheckFunction
+    GoogleCloudScheduler->>UsageCheckFunction: 1. 1. [Scheduler] Trigger function execution via Pub/Sub message
+    UsageCheckFunction->>GoogleBigQuery: 2. 2. Query aggregated project-wide usage for current billing cycle
+    GoogleBigQuery-->>UsageCheckFunction: 3. Return aggregated usage data
+    UsageCheckFunction->>Firestore: 4. 4. [Loop: For each tenant in usage data] Fetch subscription tier, limits, and sent alert status
+    Firestore-->>UsageCheckFunction: 5. Return tenant configuration and alert status for current cycle
+    UsageCheckFunction->>Firestore: 6. 6. [If threshold met & alert not sent] Start transaction to query Admins and update alert state
+    Firestore-->>UsageCheckFunction: 11. Transaction result (commit/rollback)
+    UsageCheckFunction->>UsageCheckFunction: 12. 12. Deactivate
+
+    note over UsageCheckFunction: Business Logic: The function internally calculates the usage percentage for each metric (e.g., Fi...
+    note over Firestore: Idempotency: The state of sent alerts is stored in Firestore, keyed by tenant, billing cycle, met...
+
+    deactivate UsageCheckFunction

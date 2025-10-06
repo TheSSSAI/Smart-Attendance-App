@@ -1,0 +1,41 @@
+sequenceDiagram
+    actor "Admin User" as AdminUser
+    actor "Admin Web Dashboard" as AdminWebDashboard
+    participant "Application Services" as ApplicationServices
+    participant "Data & Persistence" as DataPersistence
+
+    activate AdminWebDashboard
+    AdminUser->>AdminWebDashboard: 1. 1. Initiates deactivation for a Supervisor user (supervisorId: 'sup123').
+    activate ApplicationServices
+    AdminWebDashboard->>ApplicationServices: 2. 2. POST /deactivateUser({ userId: 'sup123' })
+    ApplicationServices-->>AdminWebDashboard: 6. { error: 'SUPERVISOR_HAS_SUBORDINATES', subordinates: [...] }
+    activate DataPersistence
+    ApplicationServices->>DataPersistence: 3. 3. Checks for direct subordinates: query(users, where('supervisorId', '==', 'sup123'))
+    DataPersistence-->>ApplicationServices: 4. Returns a list of subordinate user documents.
+    ApplicationServices->>ApplicationServices: 5. 5. Business Rule Check: Verifies subordinate list is not empty (REQ-2.6.1).
+    AdminWebDashboard->>AdminUser: 7. 7. Displays reassignment modal with subordinate list and prompts for new Supervisor.
+    AdminUser->>AdminWebDashboard: 8. 8. Selects subordinates and new Supervisor (newSupervisorId: 'sup456'), then submits.
+    AdminWebDashboard->>ApplicationServices: 9. 9. POST /reassignSubordinates({ subordinateIds: [...], newSupervisorId: 'sup456' })
+    ApplicationServices-->>AdminWebDashboard: 13. { success: true }
+    ApplicationServices->>DataPersistence: 10. 10. Executes atomic batch write to reassign subordinates and log audit events.
+    DataPersistence-->>ApplicationServices: 12. Batch write commits successfully.
+    ApplicationServices->>DataPersistence: 10.1. 10.1. [For each subId]: batch.update(userDoc(subId), { supervisorId: 'sup456' })
+    ApplicationServices->>DataPersistence: 10.2. 10.2. [For each subId]: batch.set(auditLogDoc(), { action: 'REASSIGN', ... })
+    ApplicationServices->>ApplicationServices: 11. 11. Audit: Confirms all reassignments are added to the transaction.
+    AdminWebDashboard->>AdminUser: 14. 14. Displays 'Reassignment successful' and re-enables deactivation button.
+    AdminUser->>AdminWebDashboard: 15. 15. Re-initiates deactivation for Supervisor user ('sup123').
+    AdminWebDashboard->>ApplicationServices: 16. 16. POST /deactivateUser({ userId: 'sup123' })
+    ApplicationServices-->>AdminWebDashboard: 21. { success: true }
+    ApplicationServices->>DataPersistence: 17. 17. Re-checks for direct subordinates: query(users, where('supervisorId', '==', 'sup123'))
+    DataPersistence-->>ApplicationServices: 18. Returns an empty list.
+    ApplicationServices->>DataPersistence: 19. 19. Atomically updates user status and creates audit log entry.
+    DataPersistence-->>ApplicationServices: 20. Transaction commits successfully.
+    AdminWebDashboard->>AdminUser: 22. 22. Displays 'User deactivated successfully' and updates user list.
+
+    note over AdminWebDashboard: The UI must be designed to specifically handle the 'SUPERVISOR_HAS_SUBORDINATES' error code to tr...
+    note over ApplicationServices: The reassignment of subordinates (Step 10) is a critical atomic operation. Using a Firestore batc...
+    note over DataPersistence: All state-changing actions (reassignment, deactivation) must create an immutable record in the 'a...
+
+    deactivate DataPersistence
+    deactivate ApplicationServices
+    deactivate AdminWebDashboard

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Field Group Component</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* --- DESIGN SYSTEM FOUNDATION & BASE STYLES --- */
+    :root {
+      /* Colors */
+      --color-primary-50: #E6F0FF;
+      --color-primary-500: #0073FF;
+      --color-white: #FFFFFF;
+      --color-gray-50: #F8FAFC;
+      --color-gray-100: #F1F5F9;
+      --color-gray-300: #CBD5E1;
+      --color-gray-400: #94A3B8;
+      --color-gray-500: #64748B;
+      --color-gray-700: #334155;
+      --color-gray-900: #0F172A;
+      --color-error: #DC2626;
+      --color-error-bg: #FEF2F2;
+
+      /* Typography */
+      --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-weight-semibold: 600;
+
+      /* Spacing */
+      --spacing-sm: 8px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      /* Borders */
+      --border-radius-md: 8px;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-700);
+      padding: var(--spacing-xl);
+    }
+    
+    .showcase-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .showcase-header {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    .showcase-header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .component-section {
+      background-color: var(--color-white);
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .component-section > h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .component-section > p {
+        color: var(--color-gray-500);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .state-showcase {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .state-showcase:last-child {
+        margin-bottom: 0;
+    }
+    
+    .state-showcase > h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: var(--color-gray-800);
+        border-bottom: 1px solid #F1F5F9;
+        padding-bottom: 8px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    @media (min-width: 768px) {
+        .form-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* --- COMPONENT CSS --- */
+    
+    /* Dependency: Text Input */
+    .input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--border-radius-md);
+      font-size: var(--font-size-body);
+      font-family: var(--font-family-primary);
+      color: var(--color-gray-900);
+      background-color: var(--color-white);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      min-height: 48px;
+    }
+
+    .input::placeholder {
+      color: var(--color-gray-400);
+    }
+
+    .input:focus, .input.pseudo-focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+
+    .input[disabled] {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-500);
+      cursor: not-allowed;
+    }
+
+    .input--error {
+      border-color: var(--color-error);
+    }
+
+    .input--error:focus, .input--error.pseudo-focus {
+      box-shadow: 0 0 0 3px var(--color-error-bg);
+    }
+
+    textarea.input {
+      resize: vertical;
+      min-height: 120px;
+    }
+    
+    /* Molecular: Form Field Group */
+    .form-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      width: 100%;
+    }
+
+    .form-field-group__label {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-gray-700);
+      font-size: var(--font-size-caption);
+      cursor: pointer;
+    }
+
+    .form-field-group__error-message {
+      font-size: var(--font-size-caption);
+      color: var(--color-error);
+      display: none; /* Hidden by default */
+    }
+
+    /* State: Error */
+    .form-field-group--error .form-field-group__error-message {
+      display: block;
+    }
+
+    .form-field-group--error .form-field-group__label {
+      color: var(--color-error);
+    }
+
+    /* State: Disabled */
+    .form-field-group--disabled .form-field-group__label {
+      color: var(--color-gray-400);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="showcase-container">
+    <header class="showcase-header">
+      <h1>Form Field Group</h1>
+      <p>A molecular component that groups a label, an input field, and an optional validation message to create a complete, accessible form element.</p>
+    </header>
+
+    <section class="component-section">
+      <h2>Component Showcase</h2>
+      <p>Demonstrates the different states and variants of the Form Field Group.</p>
+      
+      <!-- DEFAULT STATE -->
+      <div class="state-showcase">
+        <h3>Default State</h3>
+        <div class="form-grid">
+            <div class="form-field-group">
+                <label for="default-name" class="form-field-group__label">Full Name</label>
+                <input type="text" id="default-name" class="input" placeholder="e.g., Jane Doe">
+            </div>
+            <div class="form-field-group">
+                <label for="default-email" class="form-field-group__label">Email Address</label>
+                <input type="email" id="default-email" class="input" placeholder="e.g., jane.doe@example.com">
+            </div>
+        </div>
+      </div>
+      
+      <!-- ERROR STATE -->
+      <div class="state-showcase">
+        <h3>Error State</h3>
+        <div class="form-grid">
+            <div class="form-field-group form-field-group--error">
+                <label for="error-email" class="form-field-group__label">Email Address</label>
+                <input type="email" id="error-email" class="input input--error" value="invalid-email" aria-describedby="email-error-msg">
+                <p id="email-error-msg" class="form-field-group__error-message">Please enter a valid email address.</p>
+            </div>
+            <div class="form-field-group form-field-group--error">
+                <label for="error-password" class="form-field-group__label">Password</label>
+                <input type="password" id="error-password" class="input input--error" aria-describedby="password-error-msg">
+                <p id="password-error-msg" class="form-field-group__error-message">Password cannot be empty.</p>
+            </div>
+        </div>
+      </div>
+
+      <!-- DISABLED STATE -->
+      <div class="state-showcase">
+        <h3>Disabled State</h3>
+        <div class="form-grid">
+            <div class="form-field-group form-field-group--disabled">
+                <label for="disabled-org" class="form-field-group__label">Organization</label>
+                <input type="text" id="disabled-org" class="input" value="Global Tech Inc." disabled>
+            </div>
+            <div class="form-field-group form-field-group--disabled">
+                <label for="disabled-role" class="form-field-group__label">Role</label>
+                <input type="text" id="disabled-role" class="input" value="Supervisor" disabled>
+            </div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="component-section">
+      <h2>Component Variations</h2>
+      <p>The Form Field Group can contain different types of inputs, like a textarea.</p>
+
+      <div class="state-showcase">
+        <h3>Textarea Variant</h3>
+        <div class="form-grid">
+            <!-- Textarea Default -->
+            <div class="form-field-group">
+                <label for="textarea-default" class="form-field-group__label">Justification</label>
+                <textarea id="textarea-default" class="input" placeholder="Please provide a reason for the change..."></textarea>
+            </div>
+            <!-- Textarea Error -->
+            <div class="form-field-group form-field-group--error">
+                <label for="textarea-error" class="form-field-group__label">Justification</label>
+                <textarea id="textarea-error" class="input input--error" aria-describedby="textarea-error-msg"></textarea>
+                <p id="textarea-error-msg" class="form-field-group__error-message">Justification is required and must be at least 20 characters.</p>
+            </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

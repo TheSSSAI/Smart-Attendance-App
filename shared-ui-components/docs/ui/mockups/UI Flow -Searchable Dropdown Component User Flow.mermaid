@@ -1,0 +1,33 @@
+flowchart TD
+    subgraph Component Lifecycle
+        A[Idle State] -->|User Taps/Focuses Input| B(Focused State)
+        B --> C{Initiate Data Fetch}
+        C --> D["Show Loading Indicator (e.g., Spinner)"]
+        D --> E{API Response?}
+        E -->|Success| F[Display List of Options]
+        E -->|Error| G["Display Error Message (e.g., 'Could not load data')"]
+        
+        F -->|User Types to Search| H{Fetch Filtered Data}
+        H --> I["Show Inline Loading Indicator"]
+        I --> J{API Response?}
+        J -->|Success| K[Update List with Filtered Options]
+        J -->|Error| L["Show Inline Error/Toast"]
+        K -->|User Selects an Item| M(Selected State)
+        F -->|User Selects an Item| M
+        
+        M --> N[Update Input with Selected Value & Hide List]
+        N -->|User Taps 'Clear'| A
+        N -->|User Taps Input Again| B
+        
+        G -->|User Taps Retry| C
+    end
+
+    %% Styling
+    classDef userAction fill:#e8f5e9,stroke:#66bb6a
+    classDef systemProcess fill:#e3f2fd,stroke:#42a5f5
+    classDef errorState fill:#ffebee,stroke:#ef5350
+    classDef componentState fill:#fffde7,stroke:#ffca28,stroke-width:2px,stroke-dasharray: 5 5
+
+    class B,M componentState
+    class C,D,E,F,G,H,I,J,K,L,N systemProcess
+    class G,L errorState

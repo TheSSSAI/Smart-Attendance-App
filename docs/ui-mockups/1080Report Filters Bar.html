@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Report Filters Bar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM TOKENS & BASE STYLES --- */
+        :root {
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-semibold: 600;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --border-radius-md: 8px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-100);
+            padding: var(--spacing-lg);
+        }
+        .showcase-header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* --- DEPENDENT COMPONENT STYLES (Mocked) --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            padding: 10px var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            min-height: 44px;
+            white-space: nowrap;
+        }
+        .btn--primary {
+            background-color: var(--color-primary-500);
+            color: var(--color-white);
+        }
+        .btn--primary:hover { background-color: var(--color-primary-600); }
+        .btn--secondary {
+            background-color: var(--color-white);
+            color: var(--color-gray-700);
+            border-color: var(--color-gray-300);
+            box-shadow: var(--shadow-sm);
+        }
+        .btn--secondary:hover { background-color: var(--color-gray-50); }
+        .btn:active { transform: scale(0.98); }
+
+        .form-group__label {
+            display: block;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-gray-700);
+            font-size: var(--font-size-caption);
+        }
+
+        .input-control {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--border-radius-md);
+            font-size: var(--font-size-body);
+            color: var(--color-gray-900);
+            background-color: var(--color-white);
+            min-height: 44px;
+        }
+        .input-control:focus-within {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: 2px;
+            border-color: var(--color-primary-500);
+        }
+        .input-control input {
+            border: none;
+            outline: none;
+            flex-grow: 1;
+            background: transparent;
+        }
+        .input-control .icon {
+            color: var(--color-gray-400);
+            flex-shrink: 0;
+        }
+
+        /* --- ORGANISM: REPORT FILTERS BAR --- */
+        .filters-bar {
+            background-color: var(--color-white);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-gray-200);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+        .filters-bar__main-filters {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            flex-grow: 1;
+        }
+        .filters-bar__group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            flex-grow: 1;
+        }
+        .filters-bar__item {
+            flex: 1 1 auto;
+        }
+        .filters-bar__actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        .filters-bar__actions .btn {
+            justify-content: center;
+        }
+
+        /* Tablet and up */
+        @media (min-width: 768px) {
+            .filters-bar {
+                flex-direction: row;
+                align-items: flex-end;
+                gap: var(--spacing-md);
+                flex-wrap: wrap;
+            }
+            .filters-bar__main-filters {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: flex-end;
+            }
+            .filters-bar__group {
+                flex-direction: row;
+                align-items: flex-end;
+                flex-wrap: wrap;
+            }
+            .filters-bar__item {
+                min-width: 200px;
+            }
+            .filters-bar__actions {
+                flex-direction: row;
+                padding-bottom: 2px; /* Small alignment tweak */
+            }
+        }
+        
+        /* Desktop */
+        @media (min-width: 1200px) {
+            .filters-bar {
+                flex-wrap: nowrap;
+            }
+            .filters-bar__actions {
+                margin-left: auto; /* Push actions to the end */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="showcase-header">
+    <h1>Organism: Report Filters Bar</h1>
+</div>
+
+<form class="filters-bar" action="#" method="get">
+    <div class="filters-bar__main-filters">
+        <div class="filters-bar__group">
+            <div class="filters-bar__item">
+                <label for="date-range" class="form-group__label">Date Range</label>
+                <div id="date-range" class="input-control" tabindex="0">
+                    <input type="text" placeholder="Select dates..." readonly>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zM8.5 7.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="filters-bar__item">
+                <label for="user-filter" class="form-group__label">Filter by User</label>
+                <div id="user-filter" class="input-control" tabindex="0">
+                    <input type="text" placeholder="All Users">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                </div>
+            </div>
+             <div class="filters-bar__item">
+                <label for="team-filter" class="form-group__label">Filter by Team</label>
+                <div id="team-filter" class="input-control" tabindex="0">
+                    <input type="text" placeholder="All Teams">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="filters-bar__actions">
+        <button type="reset" class="btn btn--secondary">Clear</button>
+        <button type="submit" class="btn btn--primary">Apply Filters</button>
+    </div>
+</form>
+
+    <div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : attendance_summary</h3>
+		<normal> Standard filter set for general attendance reports. Includes Date Range, User, and Team selectors. </normal>
+		
+      </div>
+	 </div>
+      <div>
+        <h3>Variant Name : exception_report</h3>
+		<normal> Adds an 'Exception Type' multi-select dropdown to the standard filter set, allowing admins to narrow down specific kinds of flagged records. </normal>
+		
+      </div>
+	 </div>
+      <div>
+        <h3>Variant Name : audit_log</h3>
+		<normal> A specialized filter set for the audit log. Includes Date Range, 'Actor' (User), and 'Action Type' selectors. </normal>
+		
+      </div>
+	 </div>
+	
+	</body>
+</html>

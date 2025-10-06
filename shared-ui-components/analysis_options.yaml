@@ -1,0 +1,80 @@
+# analysis_options.yaml
+
+# This file configures the Dart static analyzer to enforce a strict set of rules,
+# ensuring high code quality, consistency, and adherence to best practices across the project.
+# It directly supports the maintainability and quality standard requirements, such as REQ-1-072.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  # Exclude generated files from analysis to avoid noise.
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "lib/generated_plugin_registrant.dart"
+  
+  # Treat lint warnings as errors in the CI pipeline. This enforces a zero-warning policy.
+  errors:
+    # Stylistic issues are treated as warnings during development but can fail CI.
+    missing_required_param: error
+    missing_return: error
+    must_be_immutable: error
+    
+    # Increase severity for common pitfalls.
+    parameter_assignments: error
+    # Treat info-level diagnostics as warnings.
+    dead_code: error
+    
+  language:
+    # Enable stricter type checks.
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  # The rules are inherited from flutter_lints, but we can enable more here for extra strictness.
+  # A comprehensive list ensures we catch as many potential issues as possible automatically.
+  rules:
+    # --- Style Rules ---
+    - always_declare_return_types
+    - always_put_required_named_parameters_first
+    - avoid_redundant_argument_values
+    - avoid_returning_null_for_void
+    - avoid_slow_async_io
+    - avoid_type_to_string
+    - camel_case_types
+    - cascade_invocations
+    - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - prefer_final_fields
+    - prefer_final_in_for_each
+    - prefer_final_locals
+    - prefer_for_elements_to_map_fromIterable
+    - prefer_if_elements_to_conditional_expressions
+    - prefer_is_not_empty
+    - prefer_single_quotes
+    - sort_child_properties_last
+    - unawaited_futures
+    - unnecessary_await_in_return
+    - unnecessary_const
+    - unnecessary_lambdas
+    - unnecessary_new
+    - unnecessary_parenthesis
+    - unnecessary_statements
+    - use_key_in_widget_constructors
+
+    # --- Pub Rules ---
+    - sort_pub_dependencies
+
+    # --- Error Rules ---
+    - avoid_empty_else
+    - avoid_init_to_null
+    - avoid_shadowing_type_parameters
+    - no_duplicate_case_values
+    - valid_regexps
+    
+    # --- Accessibility ---
+    # Although flutter_lints includes some, explicitly list key ones.
+    - use_named_constants

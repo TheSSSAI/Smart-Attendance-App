@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Calendar Screen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--color-neutral-50);
+      color: var(--color-neutral-800);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+    button {
+      font-family: inherit;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    /* Design System Tokens */
+    :root {
+      /* Colors */
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-50: #E6F0FF;
+      --color-secondary-500: #00C2A1;
+      --color-warning-500: #F59E0B;
+
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-200: #E2E8F0;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-800: #1E293B;
+      --color-neutral-900: #0F172A;
+      --color-white: #FFFFFF;
+      --color-error: #DC2626;
+
+      /* Spacing */
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-24: 24px;
+      --space-32: 32px;
+
+      /* Typography */
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-size-h4: 20px;
+      --font-weight-regular: 400;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Borders */
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --border-radius-full: 9999px;
+    }
+
+    /* Screen Layout */
+    .screen-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      background-color: var(--color-white);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* App Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-16);
+      border-bottom: 1px solid var(--color-neutral-200);
+      flex-shrink: 0;
+    }
+    .month-display {
+      font-size: var(--font-size-h4);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-neutral-800);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--border-radius-md);
+      color: var(--color-neutral-500);
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .nav-btn:hover {
+      background-color: var(--color-neutral-100);
+      color: var(--color-neutral-800);
+    }
+    .nav-btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+    .today-btn {
+        padding: var(--space-8) var(--space-12);
+        border: 1px solid var(--color-neutral-300);
+        border-radius: var(--border-radius-md);
+        font-size: var(--font-size-caption);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-neutral-700);
+        transition: background-color 0.2s;
+    }
+    .today-btn:hover {
+        background-color: var(--color-neutral-100);
+    }
+    
+    /* Calendar Grid */
+    .calendar-container {
+        padding: var(--space-16);
+        flex-shrink: 0;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--space-4);
+    }
+    .day-header {
+      text-align: center;
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-400);
+      padding-bottom: var(--space-8);
+    }
+    .calendar-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--border-radius-full);
+      font-size: var(--font-size-body);
+      font-weight: var(--font-weight-semibold);
+      position: relative;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .calendar-day.is-other-month .day-number {
+      color: var(--color-neutral-300);
+    }
+    .calendar-day:not(.is-other-month):hover {
+      background-color: var(--color-primary-50);
+    }
+    .calendar-day.is-today .day-number {
+      color: var(--color-primary-500);
+      border: 2px solid var(--color-primary-500);
+      border-radius: var(--border-radius-full);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .calendar-day.is-selected {
+      background-color: var(--color-primary-500);
+      color: var(--color-white);
+    }
+    .calendar-day.is-selected .day-number {
+      color: var(--color-white);
+      border: none;
+    }
+     .calendar-day.is-selected .event-dot {
+        background-color: var(--color-white);
+     }
+    .event-dots {
+      display: flex;
+      gap: var(--space-4);
+      position: absolute;
+      bottom: 8px;
+    }
+    .event-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--color-primary-500);
+    }
+    .event-dot.type-training { background-color: var(--color-secondary-500); }
+    .event-dot.type-meeting { background-color: var(--color-warning-500); }
+    
+    /* Selected Day Events */
+    .selected-day-events {
+        flex-grow: 1;
+        background-color: var(--color-neutral-50);
+        padding: var(--space-24);
+        overflow-y: auto;
+    }
+    .selected-day-header {
+        font-size: var(--font-size-body);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-neutral-900);
+        margin-bottom: var(--space-16);
+    }
+    .events-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-12);
+    }
+    .event-item {
+        display: flex;
+        gap: var(--space-12);
+        padding: var(--space-16);
+        background-color: var(--color-white);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid var(--color-neutral-200);
+    }
+    .event-color-bar {
+        flex-shrink: 0;
+        width: 4px;
+        border-radius: var(--border-radius-full);
+    }
+    .event-color-bar.type-visit { background-color: var(--color-primary-500); }
+    .event-color-bar.type-training { background-color: var(--color-secondary-500); }
+    .event-color-bar.type-meeting { background-color: var(--color-warning-500); }
+
+    .event-details {
+        flex-grow: 1;
+    }
+    .event-title {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-neutral-800);
+    }
+    .event-time {
+        font-size: var(--font-size-caption);
+        color: var(--color-neutral-500);
+        margin-top: var(--space-4);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: var(--space-32) var(--space-24);
+        color: var(--color-neutral-400);
+    }
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: var(--space-16);
+    }
+    .empty-state p {
+        font-weight: var(--font-weight-semibold);
+    }
+
+    /* Loading State */
+    .shimmer {
+      background: linear-gradient(90deg, var(--color-neutral-100) 25%, var(--color-neutral-200) 50%, var(--color-neutral-100) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--border-radius-md);
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .loading-grid .calendar-day {
+        background-color: var(--color-neutral-100);
+    }
+    .loading-events .event-item {
+        height: 80px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="screen-container" id="default-view">
+    <header class="app-header">
+      <h1 class="month-display" id="month-display">January 2025</h1>
+      <div class="header-actions">
+        <button class="nav-btn" aria-label="Previous month">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="nav-btn" aria-label="Next month">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button class="today-btn">Today</button>
+      </div>
+    </header>
+    
+    <main class="calendar-container">
+      <div class="calendar-grid">
+        <div class="day-header">Su</div>
+        <div class="day-header">Mo</div>
+        <div class="day-header">Tu</div>
+        <div class="day-header">We</div>
+        <div class="day-header">Th</div>
+        <div class="day-header">Fr</div>
+        <div class="day-header">Sa</div>
+        
+        <!-- Calendar Days for Jan 2025 -->
+        <button class="calendar-day is-other-month" data-day="29" aria-label="December 29, 2024"><span class="day-number">29</span></button>
+        <button class="calendar-day is-other-month" data-day="30" aria-label="December 30, 2024"><span class="day-number">30</span></button>
+        <button class="calendar-day is-other-month" data-day="31" aria-label="December 31, 2024"><span class="day-number">31</span></button>
+        <button class="calendar-day" data-day="1" aria-label="January 1, 2025, No events"><span class="day-number">1</span></button>
+        <button class="calendar-day has-events" data-day="2" data-events-id="events-day-2" aria-label="January 2, 2025, 1 event"><span class="day-number">2</span><div class="event-dots"><span class="event-dot type-visit"></span></div></button>
+        <button class="calendar-day" data-day="3" aria-label="January 3, 2025, No events"><span class="day-number">3</span></button>
+        <button class="calendar-day" data-day="4" aria-label="January 4, 2025, No events"><span class="day-number">4</span></button>
+        <button class="calendar-day" data-day="5" aria-label="January 5, 2025, No events"><span class="day-number">5</span></button>
+        <button class="calendar-day" data-day="6" aria-label="January 6, 2025, No events"><span class="day-number">6</span></button>
+        <button class="calendar-day has-events" data-day="7" data-events-id="events-day-7" aria-label="January 7, 2025, 1 event"><span class="day-number">7</span><div class="event-dots"><span class="event-dot type-training"></span></div></button>
+        <button class="calendar-day" data-day="8" aria-label="January 8, 2025, No events"><span class="day-number">8</span></button>
+        <button class="calendar-day" data-day="9" aria-label="January 9, 2025, No events"><span class="day-number">9</span></button>
+        <button class="calendar-day" data-day="10" aria-label="January 10, 2025, No events"><span class="day-number">10</span></button>
+        <button class="calendar-day" data-day="11" aria-label="January 11, 2025, No events"><span class="day-number">11</span></button>
+        <button class="calendar-day" data-day="12" aria-label="January 12, 2025, No events"><span class="day-number">12</span></button>
+        <button class="calendar-day" data-day="13" aria-label="January 13, 2025, No events"><span class="day-number">13</span></button>
+        <button class="calendar-day has-events" data-day="14" data-events-id="events-day-14" aria-label="January 14, 2025, 1 event"><span class="day-number">14</span><div class="event-dots"><span class="event-dot type-training"></span></div></button>
+        <button class="calendar-day" data-day="15" aria-label="January 15, 2025, No events"><span class="day-number">15</span></button>
+        <button class="calendar-day is-today" data-day="16" aria-label="January 16, 2025, Today, No events"><span class="day-number">16</span></button>
+        <button class="calendar-day has-events is-selected" data-day="17" data-events-id="events-day-17" aria-label="January 17, 2025, Selected, 2 events"><span class="day-number">17</span><div class="event-dots"><span class="event-dot type-visit"></span><span class="event-dot type-meeting"></span></div></button>
+        <button class="calendar-day" data-day="18" aria-label="January 18, 2025, No events"><span class="day-number">18</span></button>
+        <button class="calendar-day" data-day="19" aria-label="January 19, 2025, No events"><span class="day-number">19</span></button>
+        <button class="calendar-day" data-day="20" aria-label="January 20, 2025, No events"><span class="day-number">20</span></button>
+        <button class="calendar-day has-events" data-day="21" data-events-id="events-day-21" aria-label="January 21, 2025, 1 event"><span class="day-number">21</span><div class="event-dots"><span class="event-dot type-training"></span></div></button>
+        <button class="calendar-day" data-day="22" aria-label="January 22, 2025, No events"><span class="day-number">22</span></button>
+        <button class="calendar-day" data-day="23" aria-label="January 23, 2025, No events"><span class="day-number">23</span></button>
+        <button class="calendar-day" data-day="24" aria-label="January 24, 2025, No events"><span class="day-number">24</span></button>
+        <button class="calendar-day" data-day="25" aria-label="January 25, 2025, No events"><span class="day-number">25</span></button>
+        <button class="calendar-day" data-day="26" aria-label="January 26, 2025, No events"><span class="day-number">26</span></button>
+        <button class="calendar-day" data-day="27" aria-label="January 27, 2025, No events"><span class="day-number">27</span></button>
+        <button class="calendar-day has-events" data-day="28" data-events-id="events-day-28" aria-label="January 28, 2025, 1 event"><span class="day-number">28</span><div class="event-dots"><span class="event-dot type-training"></span></div></button>
+        <button class="calendar-day" data-day="29" aria-label="January 29, 2025, No events"><span class="day-number">29</span></button>
+        <button class="calendar-day" data-day="30" aria-label="January 30, 2025, No events"><span class="day-number">30</span></button>
+        <button class="calendar-day" data-day="31" aria-label="January 31, 2025, No events"><span class="day-number">31</span></button>
+        <button class="calendar-day is-other-month" data-day="1" aria-label="February 1, 2025"><span class="day-number">1</span></button>
+      </div>
+    </main>
+
+    <aside class="selected-day-events">
+      <div id="events-container">
+        <!-- Events for Day 2 -->
+        <div class="event-group" id="events-day-2" style="display: none;">
+            <h2 class="selected-day-header">Events for January 2, 2025</h2>
+            <div class="events-list">
+                <div class="event-item">
+                    <div class="event-color-bar type-visit"></div>
+                    <div class="event-details">
+                        <div class="event-title">Client Site Visit - Acme Corp</div>
+                        <div class="event-time">09:00 AM - 11:30 AM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Events for Day 7 (Recurring) -->
+        <div class="event-group" id="events-day-7" style="display: none;">
+            <h2 class="selected-day-header">Events for January 7, 2025</h2>
+            <div class="events-list">
+                <div class="event-item">
+                    <div class="event-color-bar type-training"></div>
+                    <div class="event-details">
+                        <div class="event-title">Weekly Safety Training</div>
+                        <div class="event-time">02:00 PM - 03:00 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <!-- Events for Day 14 (Recurring) -->
+        <div class="event-group" id="events-day-14" style="display: none;">
+            <h2 class="selected-day-header">Events for January 14, 2025</h2>
+            <div class="events-list">
+                <div class="event-item">
+                    <div class="event-color-bar type-training"></div>
+                    <div class="event-details">
+                        <div class="event-title">Weekly Safety Training</div>
+                        <div class="event-time">02:00 PM - 03:00 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Events for Day 17 (Multiple) -->
+        <div class="event-group" id="events-day-17">
+            <h2 class="selected-day-header">Events for January 17, 2025</h2>
+            <div class="events-list">
+                <div class="event-item">
+                    <div class="event-color-bar type-visit"></div>
+                    <div class="event-details">
+                        <div class="event-title">Project Delta Kick-off</div>
+                        <div class="event-time">10:00 AM - 12:00 PM</div>
+                    </div>
+                </div>
+                <div class="event-item">
+                    <div class="event-color-bar type-meeting"></div>
+                    <div class="event-details">
+                        <div class="event-title">Q1 Planning Session</div>
+                        <div class="event-time">01:30 PM - 04:00 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Events for Day 21 (Recurring) -->
+        <div class="event-group" id="events-day-21" style="display: none;">
+            <h2 class="selected-day-header">Events for January 21, 2025</h2>
+            <div class="events-list">
+                <div class="event-item">
+                    <div class="event-color-bar type-training"></div>
+                    <div class="event-details">
+                        <div class="event-title">Weekly Safety Training</div>
+                        <div class="event-time">02:00 PM - 03:00 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Events for Day 28 (Recurring) -->
+        <div class="event-group" id="events-day-28" style="display: none;">
+            <h2 class="selected-day-header">Events for January 28, 2025</h2>
+            <div class="events-list">
+                <div class="event-item">
+                    <div class="event-color-bar type-training"></div>
+                    <div class="event-details">
+                        <div class="event-title">Weekly Safety Training</div>
+                        <div class="event-time">02:00 PM - 03:00 PM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="event-group empty-state" id="events-empty" style="display: none;">
+            <div class="empty-state-icon">🗓️</div>
+            <p>No events scheduled for this day.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+  
+  <div class="screen-variations" style="display: none; padding: 24px;">
+    <h2>Screen Variations</h2>
+    
+    <div class="variation-group" style="margin-top: 32px;">
+      <h3>Variant Name: "Loading State"</h3>
+      <p style="margin-bottom: 16px;"><normal>Shows skeleton placeholders while fetching calendar data. This provides a better user experience than a blank screen or a simple spinner.</normal></p>
+      <div class="screen-container">
+        <header class="app-header">
+          <div class="month-display shimmer" style="width: 150px; height: 28px;"></div>
+          <div class="header-actions">
+            <div class="nav-btn shimmer" style="width: 40px; height: 40px;"></div>
+            <div class="nav-btn shimmer" style="width: 40px; height: 40px;"></div>
+            <div class="today-btn shimmer" style="width: 70px; height: 40px;"></div>
+          </div>
+        </header>
+        <main class="calendar-container loading-grid">
+            <div class="calendar-grid">
+                <div class="day-header">Su</div><div class="day-header">Mo</div><div class="day-header">Tu</div><div class="day-header">We</div><div class="day-header">Th</div><div class="day-header">Fr</div><div class="day-header">Sa</div>
+                <script>for(let i=0; i<35; i++) document.write('<div class="calendar-day shimmer"></div>')</script>
+            </div>
+        </main>
+        <aside class="selected-day-events loading-events">
+            <div class="selected-day-header shimmer" style="width: 200px; height: 20px;"></div>
+            <div class="events-list">
+                <div class="event-item shimmer"></div>
+                <div class="event-item shimmer"></div>
+            </div>
+        </aside>
+      </div>
+    </div>
+    
+    <div class="variation-group" style="margin-top: 32px;">
+      <h3>Variant Name: "Empty State"</h3>
+      <p style="margin-bottom: 16px;"><normal>Shown when the user navigates to a month or selects a day with no scheduled events. It clearly communicates the lack of data.</normal></p>
+      <div style="max-width: 420px; margin: 0 auto; border: 1px solid #e2e8f0; background: white;">
+        <aside class="selected-day-events">
+            <h2 class="selected-day-header">Events for January 1, 2025</h2>
+            <div class="empty-state">
+                <div class="empty-state-icon">🗓️</div>
+                <p>No events scheduled for this day.</p>
+            </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const calendarDays = document.querySelectorAll('#default-view .calendar-day');
+      const eventGroups = document.querySelectorAll('#default-view .event-group');
+      const emptyState = document.getElementById('events-empty');
+
+      calendarDays.forEach(day => {
+        day.addEventListener('click', function() {
+          // Remove selected from all other days
+          calendarDays.forEach(d => d.classList.remove('is-selected'));
+          // Add selected to clicked day
+          this.classList.add('is-selected');
+
+          // Hide all event groups
+          eventGroups.forEach(group => group.style.display = 'none');
+          
+          const eventId = this.dataset.eventsId;
+          const targetGroup = document.getElementById(eventId);
+
+          if (targetGroup) {
+            targetGroup.style.display = 'block';
+            emptyState.style.display = 'none';
+          } else {
+            const dayNumber = this.dataset.day;
+            const monthDisplay = document.getElementById('month-display').textContent;
+            emptyState.querySelector('h2').textContent = `Events for ${monthDisplay.split(' ')[0]} ${dayNumber}, ${monthDisplay.split(' ')[1]}`;
+            emptyState.style.display = 'block';
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

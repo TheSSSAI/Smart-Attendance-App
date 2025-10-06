@@ -1,0 +1,15 @@
+// --- User Node Constraints ---
+// Enforce uniqueness for the primary key 'userId'. Also creates an index.
+CREATE CONSTRAINT user_userId_unique IF NOT EXISTS FOR (u:User) REQUIRE u.userId IS UNIQUE;
+
+// Enforce uniqueness for the 'email' attribute. Also creates an index.
+CREATE CONSTRAINT user_email_unique IF NOT EXISTS FOR (u:User) REQUIRE u.email IS UNIQUE;
+
+// --- Team Node Constraints ---
+// Enforce uniqueness for the primary key 'teamId'. Also creates an index.
+CREATE CONSTRAINT team_teamId_unique IF NOT EXISTS FOR (t:Team) REQUIRE t.teamId IS UNIQUE;
+
+// Note: Relationship types (REPORTS_TO, MEMBER_OF, SUPERVISES) and their properties
+// are defined dynamically in Neo4j when data is created and do not require
+// explicit schema definition commands. The node constraints above are the primary
+// method for enforcing a schema in Neo4j.

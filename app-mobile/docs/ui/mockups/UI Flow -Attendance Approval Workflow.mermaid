@@ -1,0 +1,42 @@
+flowchart TD
+    %% Subordinate Actions
+    subgraph Subordinate
+        A["1. Performs Check-In"] --> B
+    end
+
+    %% System Processing
+    subgraph System
+        B["2. Creates Attendance Record<br/>Status: 'pending'"] --> C
+    end
+
+    %% Supervisor Actions
+    subgraph Supervisor
+        C["3. Views Pending Records"] --> D
+        D{"4. Reviews Record: Approve?"} -->|Yes| E["5a. Approves Record"]
+        D -->|No| F["5b. Rejects Record with Reason"]
+    end
+
+    %% System Finalizes State
+    subgraph System
+        E --> G["6a. Record Status is 'approved'"]
+        F --> H["6b. Record Status is 'rejected'"]
+    end
+
+    %% Final States
+    subgraph "Final Record State"
+      G --> I((Approved))
+      H --> J((Rejected))
+    end
+
+    %% Styling
+    classDef subordinateNode fill:#e3f2fd,stroke:#1565c0,color:#000
+    classDef supervisorNode fill:#fffde7,stroke:#fbc02d,color:#000
+    classDef systemNode fill:#f3e5f5,stroke:#7b1fa2,color:#000
+    classDef successNode fill:#e8f5e9,stroke:#388e3c,color:#000
+    classDef errorNode fill:#ffebee,stroke:#d32f2f,color:#000
+
+    class A subordinateNode
+    class C,D,E,F supervisorNode
+    class B,G,H systemNode
+    class I successNode
+    class J errorNode

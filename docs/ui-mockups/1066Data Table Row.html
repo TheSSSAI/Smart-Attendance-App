@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Component: Data Table Row</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM TOKENS (Subset) --- */
+        :root {
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --color-success-bg: #F0FDF4;
+            --color-success-text: #14532D;
+            --color-warning-bg: #FFFBEB;
+            --color-warning-text: #78350F;
+            --color-error-bg: #FEF2F2;
+            --color-error-text: #991B1B;
+            --color-info-bg: #EFF6FF;
+            --color-info-text: #1E40AF;
+
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Showcase Page Styles --- */
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-50);
+            color: var(--color-gray-700);
+            padding: var(--spacing-xl);
+        }
+        .showcase {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--color-gray-900);
+            font-weight: var(--font-weight-semibold);
+        }
+        h1 { font-size: 32px; margin-bottom: var(--spacing-md); }
+        h2 { font-size: 24px; margin-top: var(--spacing-xl); margin-bottom: var(--spacing-lg); border-bottom: 1px solid var(--color-gray-200); padding-bottom: var(--spacing-md); }
+        h3 { font-size: 18px; margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-600); }
+        .table-header { display: none; }
+        @media (min-width: 768px) {
+            .table-header {
+                display: grid;
+                background-color: var(--color-gray-100);
+                border-bottom: 1px solid var(--color-gray-200);
+                font-size: 12px;
+                font-weight: var(--font-weight-semibold);
+                color: var(--color-gray-500);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .table-header__cell {
+                padding: var(--spacing-md);
+            }
+            .table-header__cell--actions {
+                text-align: right;
+            }
+        }
+        
+        /* --- ATOMIC DEPENDENCIES --- */
+        .checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-gray-300);
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .checkbox:checked {
+            background-color: var(--color-primary-500);
+            border-color: var(--color-primary-500);
+        }
+        .checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid var(--color-white);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+            text-transform: capitalize;
+        }
+        .badge--active { background-color: var(--color-success-bg); color: var(--color-success-text); }
+        .badge--invited { background-color: var(--color-primary-50); color: var(--color-primary-600); }
+        .badge--admin { background-color: var(--color-info-bg); color: var(--color-info-text); }
+        .badge--supervisor { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
+        .badge--approved { background-color: var(--color-success-bg); color: var(--color-success-text); }
+        .badge--pending { background-color: var(--color-warning-bg); color: var(--color-warning-text); }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background-color: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--color-gray-500);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .icon-btn svg { width: 20px; height: 20px; }
+        .icon-btn:hover { background-color: var(--color-gray-100); color: var(--color-gray-700); }
+        .icon-btn:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 1px; }
+
+        /* --- DATA TABLE ROW COMPONENT --- */
+        /* Base styles (Mobile-first: Card layout) */
+        .data-row {
+            display: block;
+            background-color: var(--color-white);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-gray-200);
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-md);
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .data-row__cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--color-gray-100);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+        .data-row__cell:last-child {
+            border-bottom: none;
+        }
+
+        .data-row__cell::before {
+            content: attr(data-label);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-500);
+            font-size: var(--font-size-caption);
+        }
+
+        .data-row__cell-content {
+            text-align: right;
+            color: var(--color-gray-700);
+            font-size: var(--font-size-caption);
+        }
+
+        /* States */
+        .data-row:hover, .data-row.pseudo-hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            background-color: var(--color-white);
+        }
+
+        .data-row--selected, .data-row.pseudo-selected {
+            background-color: var(--color-primary-50);
+            border-color: var(--color-primary-500);
+        }
+
+        /* Content specific cell styles */
+        .data-row__cell--user-profile .data-row__cell-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-align: left;
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--color-gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-semibold);
+            font-size: 12px;
+            color: var(--color-gray-500);
+            text-transform: uppercase;
+        }
+        .user-info__name { font-weight: var(--font-weight-semibold); color: var(--color-gray-900); font-size: 15px; }
+        .user-info__email { font-size: var(--font-size-caption); color: var(--color-gray-500); }
+
+        .data-row__cell--actions .data-row__cell-content {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        /* Desktop and Tablet viewports */
+        @media (min-width: 768px) {
+            .data-row {
+                display: grid;
+                align-items: center;
+                border-radius: 0;
+                border: none;
+                border-bottom: 1px solid var(--color-gray-200);
+                margin-bottom: 0;
+                padding: 0;
+            }
+            .data-row:hover, .data-row.pseudo-hover {
+                transform: none;
+                box-shadow: none;
+                background-color: var(--color-gray-50);
+            }
+
+            .data-row__cell {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                border-bottom: none;
+                padding: var(--spacing-md);
+                gap: var(--spacing-md);
+            }
+
+            .data-row__cell::before {
+                display: none;
+            }
+
+            .data-row__cell-content {
+                text-align: left;
+                font-size: 15px;
+            }
+
+            .data-row__cell--actions {
+                justify-content: flex-end;
+            }
+
+            /* Variant-specific grid layouts */
+            .data-row--user {
+                grid-template-columns: 48px minmax(200px, 3fr) 1.5fr 1.5fr 1fr;
+            }
+            .data-row--team {
+                grid-template-columns: minmax(200px, 3fr) 2fr 1fr 1fr;
+            }
+            .data-row--report {
+                grid-template-columns: minmax(150px, 2fr) 1fr 1fr 1fr 1.5fr 1fr;
+            }
+            .data-row--audit {
+                grid-template-columns: 1.5fr 1.5fr 1fr 2fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="showcase">
+    <h1>Molecular Component: Data Table Row</h1>
+
+    <!-- USER ROW VARIANT -->
+    <h2>Variant: User Row</h2>
+    <div class="table-header data-row--user">
+        <div class="table-header__cell"></div>
+        <div class="table-header__cell">User</div>
+        <div class="table-header__cell">Role</div>
+        <div class="table-header__cell">Status</div>
+        <div class="table-header__cell table-header__cell--actions">Actions</div>
+    </div>
+    <div class="table-body">
+        <h3>Default State</h3>
+        <div class="data-row data-row--user" role="row">
+            <div class="data-row__cell data-row__cell--checkbox" role="cell" data-label="Select">
+                <input type="checkbox" class="checkbox" aria-label="Select row for John Doe">
+            </div>
+            <div class="data-row__cell data-row__cell--user-profile" role="cell" data-label="User">
+                <div class="data-row__cell-content">
+                    <div class="user-avatar">JD</div>
+                    <div class="user-info">
+                        <div class="user-info__name">John Doe</div>
+                        <div class="user-info__email">john.doe@example.com</div>
+                    </div>
+                </div>
+            </div>
+            <div class="data-row__cell" role="cell" data-label="Role">
+                <div class="data-row__cell-content">
+                    <span class="badge badge--supervisor">Supervisor</span>
+                </div>
+            </div>
+            <div class="data-row__cell" role="cell" data-label="Status">
+                <div class="data-row__cell-content">
+                    <span class="badge badge--active">Active</span>
+                </div>
+            </div>
+            <div class="data-row__cell data-row__cell--actions" role="cell" data-label="Actions">
+                <div class="data-row__cell-content">
+                    <button class="icon-btn" aria-label="Edit user John Doe">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
+                    </button>
+                    <button class="icon-btn" aria-label="More options for John Doe">
+                        <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <h3>Hover State</h3>
+        <div class="data-row data-row--user pseudo-hover" role="row">
+            <div class="data-row__cell" role="cell" data-label="Select"> <input type="checkbox" class="checkbox" aria-label="Select row for Jane Smith"></div>
+            <div class="data-row__cell data-row__cell--user-profile" role="cell" data-label="User"><div class="data-row__cell-content"><div class="user-avatar">JS</div><div class="user-info"><div class="user-info__name">Jane Smith</div><div class="user-info__email">jane.smith@example.com</div></div></div></div>
+            <div class="data-row__cell" role="cell" data-label="Role"><div class="data-row__cell-content"><span class="badge badge--admin">Admin</span></div></div>
+            <div class="data-row__cell" role="cell" data-label="Status"><div class="data-row__cell-content"><span class="badge badge--active">Active</span></div></div>
+            <div class="data-row__cell data-row__cell--actions" role="cell" data-label="Actions"><div class="data-row__cell-content"><button class="icon-btn" aria-label="Edit user Jane Smith"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button><button class="icon-btn" aria-label="More options for Jane Smith"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg></button></div></div>
+        </div>
+
+        <h3>Selected State</h3>
+        <div class="data-row data-row--user pseudo-selected" role="row">
+            <div class="data-row__cell" role="cell" data-label="Select"><input type="checkbox" class="checkbox" checked aria-label="Select row for Sam Wilson"></div>
+            <div class="data-row__cell data-row__cell--user-profile" role="cell" data-label="User"><div class="data-row__cell-content"><div class="user-avatar">SW</div><div class="user-info"><div class="user-info__name">Sam Wilson</div><div class="user-info__email">sam.wilson@example.com</div></div></div></div>
+            <div class="data-row__cell" role="cell" data-label="Role"><div class="data-row__cell-content">Subordinate</div></div>
+            <div class="data-row__cell" role="cell" data-label="Status"><div class="data-row__cell-content"><span class="badge badge--invited">Invited</span></div></div>
+            <div class="data-row__cell data-row__cell--actions" role="cell" data-label="Actions"><div class="data-row__cell-content"><button class="icon-btn" aria-label="Edit user Sam Wilson"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button><button class="icon-btn" aria-label="More options for Sam Wilson"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path></svg></button></div></div>
+        </div>
+    </div>
+
+    <!-- REPORT ROW VARIANT -->
+    <h2>Variant: Attendance Report Row</h2>
+    <div class="table-header data-row--report">
+        <div class="table-header__cell">User</div>
+        <div class="table-header__cell">Date</div>
+        <div class="table-header__cell">Check In</div>
+        <div class="table-header__cell">Check Out</div>
+        <div class="table-header__cell">Status</div>
+        <div class="table-header__cell table-header__cell--actions"></div>
+    </div>
+    <div class="table-body">
+        <div class="data-row data-row--report" role="row">
+            <div class="data-row__cell data-row__cell--user-profile" role="cell" data-label="User"><div class="data-row__cell-content"><div class="user-avatar">JD</div><div class="user-info"><div class="user-info__name">John Doe</div><div class="user-info__email">john.doe@example.com</div></div></div></div>
+            <div class="data-row__cell" role="cell" data-label="Date"><div class="data-row__cell-content">Jan 24, 2025</div></div>
+            <div class="data-row__cell" role="cell" data-label="Check In"><div class="data-row__cell-content">09:05 AM</div></div>
+            <div class="data-row__cell" role="cell" data-label="Check Out"><div class="data-row__cell-content">05:30 PM</div></div>
+            <div class="data-row__cell" role="cell" data-label="Status"><div class="data-row__cell-content"><span class="badge badge--approved">Approved</span></div></div>
+            <div class="data-row__cell data-row__cell--actions" role="cell" data-label="Actions"><div class="data-row__cell-content"><button class="icon-btn" aria-label="View details for John Doe's record"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div></div>
+        </div>
+         <div class="data-row data-row--report pseudo-hover" role="row">
+            <div class="data-row__cell data-row__cell--user-profile" role="cell" data-label="User"><div class="data-row__cell-content"><div class="user-avatar">SW</div><div class="user-info"><div class="user-info__name">Sam Wilson</div><div class="user-info__email">sam.wilson@example.com</div></div></div></div>
+            <div class="data-row__cell" role="cell" data-label="Date"><div class="data-row__cell-content">Jan 24, 2025</div></div>
+            <div class="data-row__cell" role="cell" data-label="Check In"><div class="data-row__cell-content">08:58 AM</div></div>
+            <div class="data-row__cell" role="cell" data-label="Check Out"><div class="data-row__cell-content">--:--</div></div>
+            <div class="data-row__cell" role="cell" data-label="Status"><div class="data-row__cell-content"><span class="badge badge--pending">Pending</span></div></div>
+            <div class="data-row__cell data-row__cell--actions" role="cell" data-label="Actions"><div class="data-row__cell-content"><button class="icon-btn" aria-label="View details for Sam Wilson's record"><svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div></div>
+        </div>
+    </div>
+    
+    
+</div>
+<div>
+    <h2>Component Variations</h2>
+    <div>
+        <h3>Variant Name: User Row</h3>
+        <p>For displaying user information in management lists. Includes selection, user profile, role, status, and actions.</p>
+    </div>
+    <div>
+        <h3>Variant Name: Team Row</h3>
+        <p>For displaying team information. Includes team name, supervisor, member count, and actions. (HTML structure similar to other variants)</p>
+    </div>
+    <div>
+        <h3>Variant Name: Report Row</h3>
+        <p>For displaying attendance records in reports. Includes user info, date, times, status, and a navigation action.</p>
+    </div>
+    <div>
+        <h3>Variant Name: Audit Log Row</h3>
+        <p>For displaying audit trail events. Includes timestamp, actor, action type, and target entity. (HTML structure similar to other variants)</p>
+    </div>
+</div>
+</body>
+</html>

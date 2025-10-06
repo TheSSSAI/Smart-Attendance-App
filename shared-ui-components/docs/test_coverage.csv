@@ -1,0 +1,4 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Design System & Theming","Critical","Medium","Low","[""Unit"",""Integration""]","30","100","100","20","8","2","5","0.95","High","Low","Excellent","Good"
+"Atomic Widgets","Critical","Low","Medium","[""Unit"",""Accessibility""]","95","90","","100","4","60","50","0.99","High","Low","Excellent","Good"
+"Molecular & Organism Widgets","High","High","High","[""Unit"",""Integration"",""Performance"",""Accessibility""]","85","95","70","90","16","80","65","0.9","Medium","Medium","Excellent","Good"

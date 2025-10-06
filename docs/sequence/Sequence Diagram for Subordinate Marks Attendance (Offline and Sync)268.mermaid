@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant "Mobile App (Presentation)" as MobileAppPresentation
+    actor "Client Data Access Layer" as ClientDataAccessLayer
+    participant "Firebase SDK (Local Cache)" as FirebaseSDKLocalCache
+    participant "Firebase SDK (Sync Engine)" as FirebaseSDKSyncEngine
+    participant "Firestore Backend" as FirestoreBackend
+
+    activate ClientDataAccessLayer
+    MobileAppPresentation->>ClientDataAccessLayer: 1. 1. User initiates check-in/out; App detects offline state and invokes attendanceRepository.markAttendance(gpsData).
+    ClientDataAccessLayer-->>MobileAppPresentation: Returns Future<void> indicating acceptance of the write request.
+    ClientDataAccessLayer->>ClientDataAccessLayer: 2. 2. Constructs AttendanceRecord data object. Sets isOfflineEntry: true, clientTimestamp, and GPS data. (REQ-3.2.3)
+    activate FirebaseSDKLocalCache
+    ClientDataAccessLayer->>FirebaseSDKLocalCache: 3. 3. Invokes Firestore SDK write operation: firestore.collection('attendance').add(record). The SDK queues the write.
+    FirebaseSDKLocalCache-->>ClientDataAccessLayer: Returns a local Future that completes immediately, confirming the data is queued.
+    FirebaseSDKLocalCache->>MobileAppPresentation: 4. 4. Returns success, confirming the data is durably stored on the device. UI shows confirmation to the user.
+    activate FirebaseSDKSyncEngine
+    FirebaseSDKSyncEngine->>FirebaseSDKSyncEngine: 5. 5. [Later] Device OS restores network connectivity. SDK's background agent detects the connection.
+    FirebaseSDKSyncEngine->>FirebaseSDKLocalCache: 6. 6. Reads the queued AttendanceRecord write operation from the local cache.
+    FirebaseSDKLocalCache-->>FirebaseSDKSyncEngine: Returns the serialized AttendanceRecord object.
+    activate FirestoreBackend
+    FirebaseSDKSyncEngine->>FirestoreBackend: 7. 7. Sends queued write request to Firestore backend. The SDK automatically attaches the user's Firebase Auth JWT.
+    FirestoreBackend-->>FirebaseSDKSyncEngine: Returns HTTP 200 OK on successful write.
+    FirestoreBackend->>FirestoreBackend: 8. 8. Evaluates Firestore Security Rules to authorize the write based on JWT claims (tenantId, userId).
+    FirestoreBackend->>FirestoreBackend: 9. 9. Persists the document to the /tenants/{tenantId}/attendance/{recordId} collection and generates serverTimestamp.
+    FirestoreBackend->>FirebaseSDKSyncEngine: 10. 10. Sends success acknowledgement for the write operation.
+    FirebaseSDKSyncEngine->>FirebaseSDKLocalCache: 11. 11. Removes the successfully synced write operation from the local cache queue.
+
+    note over FirebaseSDKSyncEngine: The sync process is fully automatic and managed by the Firebase SDK. No application-level code is...
+    note over FirestoreBackend: Security is not bypassed. The synced data is subjected to the same Firestore Security Rules as a ...
+
+    deactivate FirestoreBackend
+    deactivate FirebaseSDKSyncEngine
+    deactivate FirebaseSDKLocalCache
+    deactivate ClientDataAccessLayer

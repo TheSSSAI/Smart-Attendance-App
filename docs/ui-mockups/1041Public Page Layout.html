@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Page Layout</title>
+  <style>
+    /* 1. FOUNDATION & DESIGN TOKENS */
+    :root {
+      /* Colors */
+      --color-primary-50: #E6F0FF;
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-error-500: #DC2626;
+      --color-neutral-white: #FFFFFF;
+      --color-neutral-50: #F8FAFC;
+      --color-neutral-100: #F1F5F9;
+      --color-neutral-300: #CBD5E1;
+      --color-neutral-400: #94A3B8;
+      --color-neutral-500: #64748B;
+      --color-neutral-700: #334155;
+      --color-neutral-900: #0F172A;
+
+      /* Typography */
+      --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-size-sm: 14px;
+      --font-size-md: 16px;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --line-height-body: 1.5;
+
+      /* Spacing */
+      --space-2: 8px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+
+      /* Borders */
+      --border-radius-md: 12px;
+      --border-width-1: 1px;
+      --border-width-2: 2px;
+      
+      /* Shadows */
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* 2. BASE & LAYOUT STYLES */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family-sans);
+      font-size: var(--font-size-md);
+      line-height: var(--line-height-body);
+      color: var(--color-neutral-700);
+    }
+
+    /* 3. COMPONENT IMPLEMENTATION */
+    
+    /* Organism: Public Page Layout */
+    .public-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: var(--color-neutral-50);
+      padding: var(--space-4);
+    }
+
+    /* Main Content Card */
+    .public-layout__card {
+      background-color: var(--color-neutral-white);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-8);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    /* Logo and Header Styling */
+    .public-layout__header {
+      text-align: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .public-layout__logo {
+      display: inline-block;
+      width: 48px;
+      height: 48px;
+      background-color: var(--color-primary-500);
+      border-radius: var(--border-radius-md);
+      margin-bottom: var(--space-4);
+      /* In a real app, this would be an <img> or <svg> */
+    }
+
+    .public-layout__title {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--color-neutral-900);
+      margin: 0;
+    }
+
+    .public-layout__subtitle {
+      margin-top: var(--space-2);
+      color: var(--color-neutral-500);
+      font-size: var(--font-size-sm);
+    }
+    
+    /* Content slot for forms */
+    .public-layout__content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    /* Footer slot for links */
+    .public-layout__footer {
+        margin-top: var(--space-6);
+        text-align: center;
+        font-size: var(--font-size-sm);
+        color: var(--color-neutral-500);
+    }
+
+    /* Responsive Adaptations */
+    @media (max-width: 480px) {
+      .public-layout__card {
+        padding: var(--space-6);
+      }
+    }
+
+    /* 4. EXAMPLE CONTENT STYLES (for showcase purpose) */
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .form-field__label {
+      font-weight: var(--font-weight-medium);
+    }
+    .form-field__input {
+      width: 100%;
+      padding: 12px var(--space-4);
+      font-size: var(--font-size-md);
+      border: var(--border-width-1) solid var(--color-neutral-300);
+      border-radius: var(--border-radius-md);
+      min-height: 48px;
+    }
+    .form-field__input:focus {
+        outline: none;
+        border-color: var(--color-primary-500);
+        box-shadow: 0 0 0 var(--border-width-2) var(--color-primary-50);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px var(--space-6);
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      border-radius: var(--border-radius-md);
+      border: var(--border-width-1) solid transparent;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+    }
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+    .link {
+        color: var(--color-primary-500);
+        font-weight: var(--font-weight-semibold);
+        text-decoration: none;
+    }
+    .link:hover {
+        text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="public-layout">
+    <div class="public-layout__card">
+      <header class="public-layout__header">
+        <div class="public-layout__logo" aria-hidden="true"></div>
+        <h1 class="public-layout__title">Sign in to your account</h1>
+        <p class="public-layout__subtitle">Welcome back! Please enter your details.</p>
+      </header>
+      
+      <div class="public-layout__content">
+        <form>
+          <div class="form-field">
+            <label for="email" class="form-field__label">Email</label>
+            <input type="email" id="email" class="form-field__input" placeholder="Enter your email">
+          </div>
+          <div class="form-field">
+            <label for="password" class="form-field__label">Password</label>
+            <input type="password" id="password" class="form-field__input" placeholder="Enter your password">
+          </div>
+          <button type="submit" class="btn btn--primary" style="margin-top: var(--space-4);">Sign In</button>
+        </form>
+      </div>
+      
+      <footer class="public-layout__footer">
+        Don't have an account? <a href="#" class="link">Sign up</a>
+      </footer>
+    </div>
+  </main>
+
+  
+	
+	<div style="margin-top: 48px; padding: 24px; background: #fff; border-radius: 12px; max-width: 900px; width: 100%;"> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : default</h3>
+		<!--description--><normal> Centered content, responsive to all screen sizes from mobile to desktop. </normal>
+		<!-- vrient 1 html -->
+        <div class="public-layout__card" style="margin-top: 16px;">
+            <header class="public-layout__header">
+                <div class="public-layout__logo" aria-hidden="true"></div>
+                <h1 class="public-layout__title">Example Content</h1>
+            </header>
+            <div class="public-layout__content">
+                <p>This card demonstrates the content area within the Public Page Layout.</p>
+            </div>
+         </div>     
+		
+      </div>
+	 </div>
+	
+	</body>
+</html>

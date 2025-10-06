@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atomic Components Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------------- */
+        /* --- 1. Design System Foundations --- */
+        /* ------------------------- */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-600: #475569;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --color-white: #FFFFFF;
+
+            --color-success-500: #16A34A;
+            --color-success-50: #F0FDF4;
+            --color-success-900: #14532D;
+            --color-warning-500: #F59E0B;
+            --color-warning-50: #FFFBEB;
+            --color-warning-900: #78350F;
+            --color-error-500: #DC2626;
+            --color-error-50: #FEF2F2;
+            --color-error-900: #7F1D1D;
+            --color-info-500: #2563EB;
+            --color-info-50: #EFF6FF;
+            --color-info-900: #1E3A8A;
+            
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --space-48: 48px;
+
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+        }
+
+        /* ------------------------- */
+        /* --- 2. Base & Layout --- */
+        /* ------------------------- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-neutral-50);
+            color: var(--color-neutral-700);
+            line-height: 1.5;
+            padding: var(--space-24);
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 1px solid var(--color-neutral-200);
+            padding-bottom: var(--space-24);
+            margin-bottom: var(--space-48);
+        }
+
+        h1 { font-size: 2.5rem; font-weight: 700; color: var(--color-neutral-900); }
+        h2 { font-size: 2rem; font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-24); border-bottom: 1px solid var(--color-neutral-200); padding-bottom: var(--space-12);}
+        h3 { font-size: 1.5rem; font-weight: 600; color: var(--color-neutral-900); margin-top: var(--space-32); margin-bottom: var(--space-16); }
+        p { margin-bottom: var(--space-16); max-width: 65ch; }
+        
+        .component-section {
+            margin-bottom: var(--space-48);
+        }
+
+        .component-group-description {
+            color: var(--color-neutral-600);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--space-24);
+        }
+
+        .showcase-grid {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space-16);
+            padding: var(--space-16);
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--border-radius-md);
+        }
+        .showcase-grid--column {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* ------------------------- */
+        /* --- 3. Primary Button --- */
+        /* ------------------------- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-8);
+            padding: var(--space-12) var(--space-24);
+            font-family: inherit;
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+            position: relative;
+        }
+        .btn:focus-visible {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: 2px;
+        }
+        .btn--primary {
+            background-color: var(--color-primary-500);
+            color: var(--color-white);
+        }
+        .btn--primary:hover {
+            background-color: var(--color-primary-600);
+        }
+        .btn--primary:active {
+            background-color: var(--color-primary-700);
+            transform: scale(0.98);
+        }
+        .btn--secondary {
+            background-color: var(--color-white);
+            color: var(--color-neutral-700);
+            border-color: var(--color-neutral-300);
+        }
+        .btn--secondary:hover {
+            background-color: var(--color-neutral-100);
+        }
+        .btn--danger {
+            background-color: var(--color-error-500);
+            color: var(--color-white);
+        }
+        .btn--danger:hover {
+            background-color: var(--color-error-900);
+        }
+        .btn:disabled {
+            background-color: var(--color-neutral-200);
+            color: var(--color-neutral-400);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn--loading {
+            color: transparent !important;
+            cursor: wait;
+        }
+        .btn--loading .spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-color: var(--color-white);
+            border-top-color: transparent;
+        }
+        .btn--secondary.btn--loading .spinner {
+            border-color: var(--color-neutral-400);
+            border-top-color: transparent;
+        }
+
+        /* ------------------------- */
+        /* --- 4. Text Input Field --- */
+        /* ------------------------- */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+            width: 100%;
+            max-width: 350px;
+        }
+        .input-group label {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+        }
+        .input {
+            width: 100%;
+            padding: var(--space-12) var(--space-16);
+            font-family: inherit;
+            font-size: var(--font-size-md);
+            border: 1px solid var(--color-neutral-300);
+            border-radius: var(--border-radius-md);
+            background-color: var(--color-white);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+        .input:focus {
+            outline: none;
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 20%, transparent);
+        }
+        .input--error {
+            border-color: var(--color-error-500);
+        }
+        .input--error:focus {
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error-500) 20%, transparent);
+        }
+        .input:disabled {
+            background-color: var(--color-neutral-100);
+            cursor: not-allowed;
+        }
+        .input-error-message {
+            color: var(--color-error-500);
+            font-size: var(--font-size-sm);
+        }
+
+        /* ------------------------- */
+        /* --- 5. Checkbox --- */
+        /* ------------------------- */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            cursor: pointer;
+            padding: var(--space-8); /* for larger touch target */
+        }
+        .checkbox-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .checkbox-box {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-neutral-300);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-fast), border-color var(--transition-fast);
+            flex-shrink: 0;
+        }
+        .checkbox-box svg {
+            display: none;
+            width: 16px;
+            height: 16px;
+            color: var(--color-white);
+        }
+        .checkbox-input:checked + .checkbox-box {
+            background-color: var(--color-primary-500);
+            border-color: var(--color-primary-500);
+        }
+        .checkbox-input:checked + .checkbox-box svg {
+            display: block;
+        }
+        .checkbox-input:focus-visible + .checkbox-box {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: 2px;
+        }
+        .checkbox-input:disabled + .checkbox-box {
+            background-color: var(--color-neutral-200);
+            border-color: var(--color-neutral-300);
+        }
+        .checkbox-input:disabled:checked + .checkbox-box {
+            background-color: var(--color-neutral-300);
+        }
+        .checkbox-group:has(.checkbox-input:disabled) {
+            cursor: not-allowed;
+            color: var(--color-neutral-400);
+        }
+
+        /* ------------------------- */
+        /* --- 6. Alert Banner --- */
+        /* ------------------------- */
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-12);
+            padding: var(--space-16);
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            width: 100%;
+        }
+        .alert__icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+        }
+        .alert__content {
+            flex-grow: 1;
+        }
+        .alert__title {
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--space-4);
+        }
+        .alert--info {
+            background-color: var(--color-info-50);
+            border-color: var(--color-info-500);
+            color: var(--color-info-900);
+        }
+        .alert--info .alert__icon { color: var(--color-info-500); }
+        .alert--success {
+            background-color: var(--color-success-50);
+            border-color: var(--color-success-500);
+            color: var(--color-success-900);
+        }
+        .alert--success .alert__icon { color: var(--color-success-500); }
+        .alert--warning {
+            background-color: var(--color-warning-50);
+            border-color: var(--color-warning-500);
+            color: var(--color-warning-900);
+        }
+        .alert--warning .alert__icon { color: var(--color-warning-500); }
+        .alert--error {
+            background-color: var(--color-error-50);
+            border-color: var(--color-error-500);
+            color: var(--color-error-900);
+        }
+        .alert--error .alert__icon { color: var(--color-error-500); }
+        .alert__actions {
+            margin-top: var(--space-12);
+        }
+
+        /* ------------------------- */
+        /* --- 7. Loading Spinner --- */
+        /* ------------------------- */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--color-neutral-300);
+            border-top-color: var(--color-primary-500);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .spinner--sm { width: 16px; height: 16px; border-width: 2px; }
+        .spinner--lg { width: 48px; height: 48px; border-width: 4px; }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ------------------------- */
+        /* --- 8. Status Badge/Chip --- */
+        /* ------------------------- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-4) var(--space-8);
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+        }
+        .badge--pending { background-color: var(--color-warning-50); color: var(--color-warning-900); }
+        .badge--approved { background-color: var(--color-success-50); color: var(--color-success-900); }
+        .badge--rejected { background-color: var(--color-error-50); color: var(--color-error-900); }
+        .badge--offline, .badge--corrected, .badge--discrepancy, .badge--auto_checkout {
+            background-color: var(--color-neutral-100); color: var(--color-neutral-700);
+        }
+        
+        /* ------------------------- */
+        /* --- 9. Text Link --- */
+        /* ------------------------- */
+        .link {
+            color: var(--color-primary-500);
+            text-decoration: none;
+            font-weight: var(--font-weight-semibold);
+            transition: color var(--transition-fast);
+        }
+        .link:hover {
+            color: var(--color-primary-700);
+            text-decoration: underline;
+        }
+        .link:focus-visible {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: 2px;
+            border-radius: var(--border-radius-sm);
+        }
+
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Atomic Component Showcase</h1>
+            <p>A reference for the fundamental building blocks of the application UI, built with semantic HTML, accessibility, and mobile-first principles in mind.</p>
+        </header>
+
+        <!-- ======================= -->
+        <!-- Form Controls Section -->
+        <!-- ======================= -->
+        <section class="component-section">
+            <h2>Form Controls</h2>
+
+            <h3>Primary Button</h3>
+            <p class="component-group-description">Used for the principal, most important action on a page.</p>
+            <div class="showcase-grid">
+                <button class="btn btn--primary">Default</button>
+                <button class="btn btn--primary" style="background-color: var(--color-primary-600);">Hover</button>
+                <button class="btn btn--primary" style="background-color: var(--color-primary-700); transform: scale(0.98);">Pressed</button>
+                <button class="btn btn--primary" disabled>Disabled</button>
+                <button class="btn btn--primary btn--loading"><span class="spinner"></span></button>
+            </div>
+            
+            <h3>Secondary Button</h3>
+            <p class="component-group-description">Used for secondary actions that are less prominent.</p>
+            <div class="showcase-grid">
+                <button class="btn btn--secondary">Default</button>
+                <button class="btn btn--secondary" style="background-color: var(--color-neutral-100);">Hover</button>
+                <button class="btn btn--secondary" disabled>Disabled</button>
+                <button class="btn btn--secondary btn--loading"><span class="spinner"></span></button>
+            </div>
+
+            <h3>Danger Button</h3>
+            <p class="component-group-description">Used for destructive actions like deletion.</p>
+            <div class="showcase-grid">
+                <button class="btn btn--danger">Delete Tenant</button>
+                <button class="btn btn--danger" disabled>Delete Tenant</button>
+            </div>
+            
+            <h3>Text Input Field</h3>
+            <p class="component-group-description">For user data entry. Includes states for interaction and validation.</p>
+            <div class="showcase-grid showcase-grid--column">
+                <div class="input-group">
+                    <label for="input-default">Default</label>
+                    <input type="text" id="input-default" class="input" placeholder="Enter your email...">
+                </div>
+                <div class="input-group">
+                    <label for="input-focus">Focused</label>
+                    <input type="text" id="input-focus" class="input" style="border-color: var(--color-primary-500); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 20%, transparent);" placeholder="Focused state">
+                </div>
+                <div class="input-group">
+                    <label for="input-error">Error</label>
+                    <input type="text" id="input-error" class="input input--error" placeholder="Invalid input" aria-describedby="email-error">
+                    <span id="email-error" class="input-error-message">Please enter a valid email address.</span>
+                </div>
+                <div class="input-group">
+                    <label for="input-disabled">Disabled</label>
+                    <input type="text" id="input-disabled" class="input" placeholder="Cannot be edited" disabled>
+                </div>
+                <div class="input-group">
+                    <label for="input-multiline">Multiline</label>
+                    <textarea id="input-multiline" class="input" rows="3" placeholder="Enter justification..."></textarea>
+                </div>
+            </div>
+
+            <h3>Checkbox</h3>
+            <p class="component-group-description">For binary selection options.</p>
+            <div class="showcase-grid showcase-grid--column">
+                <label class="checkbox-group">
+                    <input type="checkbox" class="checkbox-input">
+                    <span class="checkbox-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg>
+                    </span>
+                    Unchecked
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" class="checkbox-input" checked>
+                    <span class="checkbox-box">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg>
+                    </span>
+                    Checked
+                </label>
+                <label class="checkbox-group">
+                    <input type="checkbox" class="checkbox-input" disabled>
+                    <span class="checkbox-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg>
+                    </span>
+                    Disabled
+                </label>
+            </div>
+            
+            <h3>Text Link</h3>
+            <p class="component-group-description">For navigation and secondary actions.</p>
+            <div class="showcase-grid">
+                <a href="#" class="link">Forgot Password?</a>
+            </div>
+            <p>Example of an <a href="#" class="link">inline link</a> inside a sentence.</p>
+        </section>
+
+        <!-- ======================= -->
+        <!-- Feedback Section -->
+        <!-- ======================= -->
+        <section class="component-section">
+            <h2>Feedback</h2>
+            
+            <h3>Alert Banner</h3>
+            <p class="component-group-description">For conveying important, contextual information to the user.</p>
+            <div class="showcase-grid showcase-grid--column">
+                <div class="alert alert--info" role="alert">
+                    <div class="alert__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" /></svg></div>
+                    <div class="alert__content">This is for informational purposes.</div>
+                </div>
+                <div class="alert alert--success" role="alert">
+                    <div class="alert__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg></div>
+                    <div class="alert__content">Your settings have been saved successfully.</div>
+                </div>
+                <div class="alert alert--warning" role="alert">
+                    <div class="alert__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg></div>
+                    <div class="alert__content"><div class="alert__title">Sync Failure</div>3 records failed to sync. Please check your internet connection and try again.<div class="alert__actions"><button class="btn btn--secondary">Retry Sync</button></div></div>
+                </div>
+                <div class="alert alert--error" role="alert">
+                    <div class="alert__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg></div>
+                    <div class="alert__content">This is a critical error message.</div>
+                </div>
+            </div>
+
+            <h3>Loading Spinner</h3>
+            <p class="component-group-description">Indicates that a process is running.</p>
+            <div class="showcase-grid">
+                <div class="spinner spinner--sm" role="status" aria-label="Loading small"></div>
+                <div class="spinner" role="status" aria-label="Loading medium"></div>
+                <div class="spinner spinner--lg" role="status" aria-label="Loading large"></div>
+            </div>
+        </section>
+        
+        <!-- ======================= -->
+        <!-- Data Display Section -->
+        <!-- ======================= -->
+        <section class="component-section">
+            <h2>Data Display</h2>
+            
+            <h3>Status Badge/Chip</h3>
+            <p class="component-group-description">Small, colored indicators for various item statuses.</p>
+            <div class="showcase-grid">
+                <span class="badge badge--pending">Pending</span>
+                <span class="badge badge--approved">Approved</span>
+                <span class="badge badge--rejected">Rejected</span>
+                <span class="badge badge--offline">Offline</span>
+                <span class="badge badge--corrected">Corrected</span>
+                <span class="badge badge--discrepancy">Discrepancy</span>
+                <span class="badge badge--auto_checkout">Auto Checkout</span>
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Individual Component - Component Specifications</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .component-type-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4f46e5;
+            display: inline-block;
+        }
+        
+        .section h3 {
+            color: #4f46e5;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 20px 0 12px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .info-card h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        
+        .info-card p {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .variations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .variation-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .variation-name {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 8px;
+        }
+        
+        .variation-code {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            color: #1e293b;
+            overflow-x: auto;
+            margin: 8px 0;
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .variation-description {
+            font-size: 13px;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .feature-category {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .feature-category h4 {
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .feature-category ul {
+            list-style: none;
+        }
+        
+        .feature-category li {
+            padding: 6px 0;
+            color: #4b5563;
+            font-size: 14px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .feature-category li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        
+        .token {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            border: 1px solid #bae6fd;
+            text-align: center;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 16px 0;
+            line-height: 1.4;
+        }
+        
+        .stats-bar {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Individual Component</h1>
+            <div class="component-type-badge">Unknown Component</div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Variations</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Design Tokens</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Breakpoints</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">0</span>
+                <span class="stat-label">A11y Features</span>
+            </div>
+        </div><div class="content">
+        <div class="section">
+            <h2>Implementation Notes</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>Css Architecture</h4>
+                    <p>All styles are embedded in a <style> tag, using CSS custom properties for design tokens. A BEM-like naming convention is used for clarity.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Component Organization</h4>
+                    <p>Components are grouped by category (Form Controls, Feedback, etc.) with clear headings and descriptions for easy reference.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Responsive Design</h4>
+                    <p>A mobile-first approach is used. The layout is a simple vertical flow that works well on all screen sizes.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Accessibility Compliance</h4>
+                    <p>WCAG 2.1 AA compliance is targeted through semantic HTML, ARIA roles, high-contrast colors, and visible focus states.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Browser Support</h4>
+                    <p>Designed for modern evergreen browsers (Chrome, Firefox, Safari, Edge).</p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Usage Guidelines</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>File Purpose</h4><p>This file serves as a living style guide and a copy-paste resource for implementing atomic components in the application.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Development Workflow</h4><p>Developers can copy the HTML structure and relevant CSS classes for a component to use in their feature development.</p>
+                </div>
+                <div class="info-card">
+                    <h4>Testing Scenarios</h4><p>This page can be used for visual regression testing and manual accessibility checks (keyboard navigation, screen reader testing).</p>
+                </div>
+                <div class="info-card">
+                    <h4>Stakeholder Review</h4><p>Provides a clear, interactive reference for designers and product managers to review component implementation and consistency.</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

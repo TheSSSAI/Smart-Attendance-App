@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Table Component</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2ddf36116.js" crossorigin="anonymous"></script>
+    <style>
+        /* CSS Reset */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; color: #334155; }
+        table { border-collapse: collapse; border-spacing: 0; }
+
+        /* Design System Tokens */
+        :root {
+            /* Colors */
+            --primary-500: #0073FF;
+            --primary-600: #0062D9;
+            --primary-700: #0052B3;
+            --gray-50: #F8FAFC;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-300: #CBD5E1;
+            --gray-500: #64748B;
+            --gray-700: #334155;
+            --gray-800: #1E293B;
+            --gray-900: #0F172A;
+            --white: #FFFFFF;
+            --success: #16A34A;
+            --warning: #F59E0B;
+            --error: #DC2626;
+            --error-bg: #FEF2F2;
+            --error-text: #991B1B;
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+
+            /* Typography */
+            --font-body: 16px;
+            --font-caption: 14px;
+            --font-weight-normal: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+        }
+
+        /* Screen Layout */
+        .screen-container {
+            padding: var(--space-xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .screen-header {
+            margin-bottom: var(--space-xl);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .screen-header h1 {
+            font-size: 28px;
+            font-weight: var(--font-weight-bold);
+            color: var(--gray-900);
+        }
+        .variation-group {
+            margin-bottom: 48px;
+        }
+        .variation-group h3 {
+            font-size: 20px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-800);
+            margin-bottom: var(--space-md);
+        }
+        .variation-group p.description {
+            color: var(--gray-500);
+            margin-bottom: var(--space-lg);
+            max-width: 70ch;
+        }
+
+        /* Data Table Container & General Styles */
+        .data-table-wrapper {
+            background-color: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.06);
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+        }
+
+        /* Desktop Table Styles */
+        .data-table {
+            width: 100%;
+            text-align: left;
+        }
+        .data-table th {
+            padding: var(--space-md);
+            font-size: var(--font-caption);
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--gray-200);
+            background-color: var(--gray-50);
+            cursor: pointer;
+        }
+        .data-table th .sort-icon {
+            opacity: 0.5;
+            margin-left: var(--space-xs);
+        }
+        .data-table th:hover {
+            background-color: var(--gray-100);
+        }
+        .data-table td {
+            padding: var(--space-md);
+            font-size: var(--font-body);
+            color: var(--gray-700);
+            vertical-align: middle;
+        }
+        .data-table tbody tr {
+            border-bottom: 1px solid var(--gray-200);
+            transition: background-color 0.15s ease-in-out;
+        }
+        .data-table tbody tr:last-child {
+            border-bottom: none;
+        }
+        .data-table tbody tr:hover {
+            background-color: var(--gray-50);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        .user-info .name {
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-800);
+        }
+        .user-info .email {
+            font-size: var(--font-caption);
+            color: var(--gray-500);
+        }
+
+        /* Badge/Tag Component */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+        }
+        .badge-success {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        .badge-warning {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        .badge-neutral {
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        /* Action Buttons */
+        .action-button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid transparent;
+            background: none;
+            color: var(--gray-500);
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .action-button:hover {
+            background-color: var(--gray-100);
+            color: var(--gray-800);
+        }
+        .action-button:focus-visible {
+            outline: 2px solid var(--primary-500);
+            outline-offset: 1px;
+        }
+
+        /* Pagination Controls */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md);
+            font-size: var(--font-caption);
+            color: var(--gray-500);
+            border-top: 1px solid var(--gray-200);
+        }
+        .pagination-controls {
+            display: flex;
+            gap: var(--space-sm);
+        }
+        .pagination-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--gray-300);
+            background-color: var(--white);
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-700);
+        }
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination-button:not(:disabled):hover {
+            background-color: var(--gray-50);
+        }
+        .page-numbers {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+        .page-number {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+        }
+        .page-number:hover {
+            background-color: var(--gray-100);
+        }
+        .page-number--active {
+            background-color: var(--primary-500);
+            color: var(--white);
+            font-weight: var(--font-weight-bold);
+        }
+
+        /* Mobile Card View (hidden by default) */
+        .mobile-card-view {
+            display: none;
+            padding: var(--space-md);
+            background-color: var(--gray-50);
+        }
+        .mobile-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid var(--gray-200);
+        }
+        .mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .mobile-card-info .name {
+            font-weight: var(--font-weight-bold);
+            color: var(--gray-800);
+        }
+        .mobile-card-info .email {
+            font-size: var(--font-caption);
+            color: var(--gray-500);
+        }
+        .mobile-card-body {
+            display: grid;
+            gap: var(--space-sm);
+        }
+        .mobile-card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--font-caption);
+        }
+        .mobile-card-row .label {
+            color: var(--gray-500);
+            font-weight: var(--font-weight-semibold);
+        }
+        .mobile-card-row .value {
+            color: var(--gray-700);
+            text-align: right;
+        }
+        .mobile-card-actions {
+            margin-top: var(--space-md);
+            display: flex;
+            gap: var(--space-sm);
+            justify-content: flex-end;
+        }
+
+        /* Skeleton Loader */
+        .skeleton {
+            background-color: var(--gray-200);
+            border-radius: var(--border-radius-md);
+            animation: shimmer 1.5s infinite linear;
+            background-image: linear-gradient(90deg, var(--gray-200) 0px, var(--gray-100) 40px, var(--gray-200) 80px);
+            background-size: 600px;
+        }
+        @keyframes shimmer {
+            0% { background-position: -300px 0; }
+            100% { background-position: 300px 0; }
+        }
+
+        /* Empty & Error States */
+        .state-container {
+            padding: 64px var(--space-lg);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-md);
+            color: var(--gray-500);
+        }
+        .state-container .icon {
+            font-size: 48px;
+            color: var(--gray-300);
+        }
+        .state-container h4 {
+            font-size: 20px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-800);
+        }
+        .state-container.error {
+            background-color: var(--error-bg);
+            color: var(--error-text);
+        }
+        .state-container.error .icon {
+            color: var(--error);
+        }
+        .state-container.error h4 {
+            color: var(--error-text);
+        }
+
+
+        /* Responsive Breakpoint */
+        @media (max-width: 768px) {
+            .data-table, .pagination {
+                display: none;
+            }
+            .mobile-card-view {
+                display: block;
+            }
+            .screen-container {
+                padding: var(--space-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-container">
+        <header class="screen-header">
+            <h1>Data Table Component</h1>
+        </header>
+
+        <main class="screen-content">
+            <!-- Variant: Default with Data -->
+            <div class="variation-group">
+                <h3>State: With Data</h3>
+                <p class="description">Default appearance of the table when populated with data. Includes pagination and row actions. On screens smaller than 768px, this transforms into a list of cards.</p>
+                <div class="data-table-wrapper">
+                    <!-- Desktop Table -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User <i class="fa-solid fa-sort sort-icon"></i></th>
+                                <th>Role <i class="fa-solid fa-sort sort-icon"></i></th>
+                                <th>Status <i class="fa-solid fa-sort sort-icon"></i></th>
+                                <th>Teams</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="user-info">
+                                        <div>
+                                            <div class="name">Eleanor Pena</div>
+                                            <div class="email">eleanor.pena@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Supervisor</td>
+                                <td><span class="badge badge-success">Active</span></td>
+                                <td>Engineering, Mobile Devs</td>
+                                <td style="text-align: right;">
+                                    <button class="action-button" aria-label="Edit user"><i class="fa-solid fa-pencil"></i></button>
+                                    <button class="action-button" aria-label="More options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td>
+                                    <div class="user-info">
+                                        <div>
+                                            <div class="name">Cody Fisher</div>
+                                            <div class="email">cody.fisher@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Subordinate</td>
+                                <td><span class="badge badge-success">Active</span></td>
+                                <td>Engineering</td>
+                                <td style="text-align: right;">
+                                    <button class="action-button" aria-label="Edit user"><i class="fa-solid fa-pencil"></i></button>
+                                    <button class="action-button" aria-label="More options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="user-info">
+                                        <div>
+                                            <div class="name">Jenny Wilson</div>
+                                            <div class="email">jenny.wilson@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Subordinate</td>
+                                <td><span class="badge badge-warning">Invited</span></td>
+                                <td>Marketing</td>
+                                <td style="text-align: right;">
+                                    <button class="action-button" aria-label="Edit user"><i class="fa-solid fa-pencil"></i></button>
+                                    <button class="action-button" aria-label="More options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td>
+                                    <div class="user-info">
+                                        <div>
+                                            <div class="name">Robert Fox</div>
+                                            <div class="email">robert.fox@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Admin</td>
+                                <td><span class="badge badge-neutral">Deactivated</span></td>
+                                <td>-</td>
+                                <td style="text-align: right;">
+                                    <button class="action-button" aria-label="Edit user"><i class="fa-solid fa-pencil"></i></button>
+                                    <button class="action-button" aria-label="More options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- Mobile Card View -->
+                    <div class="mobile-card-view">
+                        <div class="mobile-card">
+                            <div class="mobile-card-header">
+                                <div class="mobile-card-info">
+                                    <div class="name">Eleanor Pena</div>
+                                    <div class="email">eleanor.pena@example.com</div>
+                                </div>
+                                <span class="badge badge-success">Active</span>
+                            </div>
+                            <div class="mobile-card-body">
+                                <div class="mobile-card-row">
+                                    <span class="label">Role</span>
+                                    <span class="value">Supervisor</span>
+                                </div>
+                                <div class="mobile-card-row">
+                                    <span class="label">Teams</span>
+                                    <span class="value">Engineering, Mobile Devs</span>
+                                </div>
+                            </div>
+                            <div class="mobile-card-actions">
+                                <button class="action-button" aria-label="Edit user"><i class="fa-solid fa-pencil"></i></button>
+                                <button class="action-button" aria-label="More options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            </div>
+                        </div>
+                         <div class="mobile-card">
+                            <div class="mobile-card-header">
+                                <div class="mobile-card-info">
+                                    <div class="name">Cody Fisher</div>
+                                    <div class="email">cody.fisher@example.com</div>
+                                </div>
+                                <span class="badge badge-success">Active</span>
+                            </div>
+                            <div class="mobile-card-body">
+                                <div class="mobile-card-row">
+                                    <span class="label">Role</span>
+                                    <span class="value">Subordinate</span>
+                                </div>
+                                <div class="mobile-card-row">
+                                    <span class="label">Teams</span>
+                                    <span class="value">Engineering</span>
+                                </div>
+                            </div>
+                            <div class="mobile-card-actions">
+                                <button class="action-button" aria-label="Edit user"><i class="fa-solid fa-pencil"></i></button>
+                                <button class="action-button" aria-label="More options"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <div>Showing <strong>1-10</strong> of <strong>86</strong> results</div>
+                        <div class="pagination-controls">
+                            <button class="pagination-button" disabled><i class="fa-solid fa-arrow-left"></i> Previous</button>
+                             <div class="page-numbers">
+                                <span class="page-number page-number--active">1</span>
+                                <span class="page-number">2</span>
+                                <span class="page-number">3</span>
+                                <span>...</span>
+                                <span class="page-number">9</span>
+                            </div>
+                            <button class="pagination-button">Next <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant: Loading State -->
+            <div class="variation-group">
+                <h3>State: Loading</h3>
+                <p class="description">Uses skeleton loaders to provide a content placeholder while data is being fetched, improving perceived performance.</p>
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Teams</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="user-info">
+                                        <div>
+                                            <div class="skeleton" style="width: 120px; height: 18px; margin-bottom: 6px;"></div>
+                                            <div class="skeleton" style="width: 180px; height: 14px;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><div class="skeleton" style="width: 80px; height: 20px;"></div></td>
+                                <td><div class="skeleton" style="width: 60px; height: 24px;"></div></td>
+                                <td><div class="skeleton" style="width: 150px; height: 20px;"></div></td>
+                                <td style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                                    <div class="skeleton" style="width: 36px; height: 36px;"></div>
+                                    <div class="skeleton" style="width: 36px; height: 36px;"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="user-info">
+                                        <div>
+                                            <div class="skeleton" style="width: 140px; height: 18px; margin-bottom: 6px;"></div>
+                                            <div class="skeleton" style="width: 160px; height: 14px;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><div class="skeleton" style="width: 90px; height: 20px;"></div></td>
+                                <td><div class="skeleton" style="width: 60px; height: 24px;"></div></td>
+                                <td><div class="skeleton" style="width: 100px; height: 20px;"></div></td>
+                                <td style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                                    <div class="skeleton" style="width: 36px; height: 36px;"></div>
+                                    <div class="skeleton" style="width: 36px; height: 36px;"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                     <div class="pagination">
+                        <div class="skeleton" style="width: 150px; height: 16px;"></div>
+                        <div style="display: flex; gap: 8px;">
+                             <div class="skeleton" style="width: 90px; height: 36px;"></div>
+                             <div class="skeleton" style="width: 120px; height: 36px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant: Empty State -->
+            <div class="variation-group">
+                <h3>State: Empty</h3>
+                <p class="description">Shown when a query returns no results, providing clear feedback to the user instead of a blank space.</p>
+                <div class="data-table-wrapper">
+                    <div class="state-container">
+                        <i class="fa-solid fa-users-slash icon"></i>
+                        <h4>No Users Found</h4>
+                        <p>There are no users matching your current filters. Try adjusting your search.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variant: Error State -->
+            <div class="variation-group">
+                <h3>State: Error</h3>
+                <p class="description">Displayed when data fails to load due to a network or server error, with actionable advice.</p>
+                <div class="data-table-wrapper">
+                     <div class="state-container error">
+                        <i class="fa-solid fa-circle-exclamation icon"></i>
+                        <h4>Could Not Load Data</h4>
+                        <p>An error occurred while fetching user data. Please check your connection and try again.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>

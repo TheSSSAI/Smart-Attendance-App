@@ -1,0 +1,49 @@
+// This module contains security rules for the 'events' collection.
+// It governs who can create, read, and manage events.
+
+// Helper function to validate incoming event data on write operations.
+function isValidEventData(eventData) {
+    return eventData.title is string && eventData.title.size() > 0
+        && eventData.startTime is timestamp
+        && eventData.endTime is timestamp
+        && eventData.startTime < eventData.endTime
+        && eventData.createdByUserId is string
+        && eventData.tenantId is string
+        && ('assignedUserIds' in eventData ? eventData.assignedUserIds is list : true)
+        && ('assignedTeamIds' in eventData ? eventData.assignedTeamIds is list : true)
+        && ('description' in eventData ? eventData.description is string : true)
+        && ('recurrenceRule' in eventData ? eventData.recurrenceRule is string : true) // For recurring events (US-053)
+        && eventData.keys().hasOnly(['title', 'description', 'startTime', 'endTime', 'createdByUserId', 'tenantId', 'assignedUserIds', 'assignedTeamIds', 'recurrenceRule', 'createdAt', 'updatedAt']);
+}
+
+match /events/{eventId} {
+    // READ:
+    // - Admins can read any event.
+    // - Supervisors can read any event (they manage schedules).
+    // - Subordinates can read events they are assigned to, either directly or via team membership. (US-057)
+    allow read: if isTenantMember(tenantId) && (
+                    isAdmin() || 
+                    isSupervisor() ||
+                    (request.auth.uid in resource.data.assignedUserIds) ||
+                    (exists(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid)) &&
+                     get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(request.auth.uid)).data.teamIds.hasAny(resource.data.assignedTeamIds))
+                );
+
+    // CREATE:
+    // - Only Admins and Supervisors can create new events. (US-052)
+    allow create: if isTenantMember(tenantId) 
+                  && (isAdmin() || isSupervisor())
+                  && isValidEventData(request.resource.data)
+                  && request.resource.data.createdByUserId == request.auth.uid // Creator must be the authenticated user
+                  && request.resource.data.tenantId == tenantId;
+
+    // UPDATE:
+    // - Only Admins and Supervisors can update events.
+    allow update: if isTenantMember(tenantId) 
+                  && (isAdmin() || isSupervisor())
+                  && isValidEventData(request.resource.data);
+
+    // DELETE:
+    // - Only Admins and Supervisors can delete events.
+    allow delete: if isTenantMember(tenantId) && (isAdmin() || isSupervisor());
+}

@@ -1,0 +1,711 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-014
+
+## 1.2 Name
+
+Subordinate Requests Attendance Correction
+
+## 1.3 Description
+
+A Subordinate initiates a request to correct an existing attendance record. The request is submitted to their Supervisor for approval, and the entire action is logged for auditing.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To provide a formal, auditable mechanism for correcting attendance data while maintaining a clear chain of approval.
+
+## 1.6 Complexity
+
+High
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+OnDemand
+
+## 1.9 Participants
+
+- REPO-APP-MOBILE-010
+- data-persistence-layer
+- application-services-layer
+
+## 1.10 Key Interactions
+
+- Subordinate selects an attendance record and initiates a correction request.
+- User enters the corrected time(s) and a mandatory justification.
+- The mobile app updates the attendance record's status to `correction_pending`.
+- The request now appears in the Supervisor's approval dashboard.
+- If approved, a Cloud Function updates the record, sets the `manually-corrected` flag, and writes a detailed entry to the immutable `auditLog` collection.
+- If rejected, the record reverts to its previous state and the user is notified.
+
+## 1.11 Triggers
+
+- A user submits an attendance correction form.
+
+## 1.12 Outcomes
+
+- The attendance record is either updated with the corrected data or reverted to its original state.
+- A complete audit trail of the correction request and its resolution is created.
+
+## 1.13 Business Rules
+
+- A justification is mandatory for all correction requests (REQ-3.3.3).
+- The entire workflow (request, approval, data change) must be logged in the `auditLog` (REQ-3.3.3).
+
+## 1.14 Error Scenarios
+
+- Supervisor is unavailable to approve the request, leading to potential escalation.
+- A conflict occurs if an Admin directly edits the record while a correction is pending.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-014
+
+## 2.2 Name
+
+Business Process: Subordinate Attendance Correction Workflow
+
+## 2.3 Description
+
+Implementation sequence for the end-to-end attendance correction process, initiated by a Subordinate and approved by a Supervisor. This involves state changes, transactional writes to Firestore, and immutable audit logging via a server-side Cloud Function, fulfilling REQ-FUN-014.
+
+## 2.4 Participants
+
+### 2.4.1 Client Application
+
+#### 2.4.1.1 Repository Id
+
+REPO-APP-MOBILE-010
+
+#### 2.4.1.2 Display Name
+
+Mobile Application (Flutter)
+
+#### 2.4.1.3 Type
+
+🔹 Client Application
+
+#### 2.4.1.4 Technology
+
+Flutter, Riverpod, Firebase SDK
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4285F4 |
+| Stereotype | Subordinate/Supervisor |
+
+### 2.4.2.0 Database
+
+#### 2.4.2.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.2.2 Display Name
+
+Firestore Database
+
+#### 2.4.2.3 Type
+
+🔹 Database
+
+#### 2.4.2.4 Technology
+
+Firestore, Security Rules
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFCA28 |
+| Stereotype | Managed Service |
+
+### 2.4.3.0 Serverless Backend
+
+#### 2.4.3.1 Repository Id
+
+application-services-layer
+
+#### 2.4.3.2 Display Name
+
+Cloud Functions
+
+#### 2.4.3.3 Type
+
+🔹 Serverless Backend
+
+#### 2.4.3.4 Technology
+
+TypeScript, Node.js
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #DB4437 |
+| Stereotype | Business Logic |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 ClientAction
+
+#### 2.5.1.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.3 Message
+
+Subordinate initiates correction request for an attendance record, enters corrected times and justification.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 ClientAction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+UI Event
+
+##### 2.5.1.10.2 Method
+
+onSubmitCorrectionForm()
+
+##### 2.5.1.10.3 Parameters
+
+correctedCheckIn, correctedCheckOut, justification
+
+##### 2.5.1.10.4 Authentication
+
+N/A
+
+##### 2.5.1.10.5 Error Handling
+
+Client-side validation fails if justification is empty or shorter than 20 characters (REQ-1-030).
+
+##### 2.5.1.10.6 Performance
+
+###### 2.5.1.10.6.1 Latency
+
+<50ms
+
+### 2.5.2.0.0.0 DatabaseWrite
+
+#### 2.5.2.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.2.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.2.3.0.0 Message
+
+Update attendance record to pending state. [REQ-FUN-014]
+
+#### 2.5.2.4.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0 Type
+
+🔹 DatabaseWrite
+
+#### 2.5.2.6.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7.0.0 Return Message
+
+Write acknowledgment
+
+#### 2.5.2.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.2.10.0.0 Technical Details
+
+##### 2.5.2.10.1.0 Protocol
+
+Firebase SDK
+
+##### 2.5.2.10.2.0 Method
+
+db.collection('attendance').doc(recordId).update()
+
+##### 2.5.2.10.3.0 Parameters
+
+{ status: 'correction_pending', correctionRequest: { newCheckIn, newCheckOut, justification, requestedAt: serverTimestamp() } }
+
+##### 2.5.2.10.4.0 Authentication
+
+Firebase Auth JWT. Firestore security rules validate that the user is the owner of the record.
+
+##### 2.5.2.10.5.0 Error Handling
+
+SDK handles network errors and retries. UI shows error if write fails due to security rules or persistent network issues.
+
+##### 2.5.2.10.6.0 Performance
+
+###### 2.5.2.10.6.1 Latency
+
+<1000ms on stable connection
+
+### 2.5.3.0.0.0 ClientAction
+
+#### 2.5.3.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.3.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.3.3.0.0 Message
+
+Supervisor views pending correction request on their dashboard and taps 'Approve'.
+
+#### 2.5.3.4.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0 Type
+
+🔹 ClientAction
+
+#### 2.5.3.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.3.10.0.0 Technical Details
+
+##### 2.5.3.10.1.0 Protocol
+
+UI Event
+
+##### 2.5.3.10.2.0 Method
+
+onApproveCorrection(recordId)
+
+##### 2.5.3.10.3.0 Parameters
+
+recordId
+
+##### 2.5.3.10.4.0 Authentication
+
+User must have 'Supervisor' role.
+
+##### 2.5.3.10.5.0 Error Handling
+
+UI button is disabled until a selection is made.
+
+##### 2.5.3.10.6.0 Performance
+
+###### 2.5.3.10.6.1 Latency
+
+<50ms
+
+### 2.5.4.0.0.0 RPC
+
+#### 2.5.4.1.0.0 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.2.0.0 Target Id
+
+application-services-layer
+
+#### 2.5.4.3.0.0 Message
+
+Invoke server-side approval logic.
+
+#### 2.5.4.4.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0 Type
+
+🔹 RPC
+
+#### 2.5.4.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7.0.0 Return Message
+
+{ success: true } or error
+
+#### 2.5.4.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.4.9.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0 Technical Details
+
+##### 2.5.4.10.1.0 Protocol
+
+HTTPS (Firebase Callable Function)
+
+##### 2.5.4.10.2.0 Method
+
+```javascript
+functions.httpsCallable('approveCorrection')
+```
+
+##### 2.5.4.10.3.0 Parameters
+
+{ recordId: '...' }
+
+##### 2.5.4.10.4.0 Authentication
+
+Firebase Auth JWT is automatically sent. Function verifies 'Supervisor' role via custom claims.
+
+##### 2.5.4.10.5.0 Error Handling
+
+Client handles specific errors returned from the function (e.g., 'permission-denied', 'not-found').
+
+##### 2.5.4.10.6.0 Performance
+
+###### 2.5.4.10.6.1 Latency
+
+p95 < 500ms
+
+### 2.5.5.0.0.0 DatabaseRead
+
+#### 2.5.5.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.5.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.5.3.0.0 Message
+
+Authorize Supervisor and initiate transaction.
+
+#### 2.5.5.4.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0 Type
+
+🔹 DatabaseRead
+
+#### 2.5.5.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7.0.0 Return Message
+
+subordinateUser, attendanceRecord
+
+#### 2.5.5.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.5.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.5.10.0.0 Technical Details
+
+##### 2.5.5.10.1.0 Protocol
+
+Firebase Admin SDK
+
+##### 2.5.5.10.2.0 Method
+
+runTransaction(async (t) => { ... })
+
+##### 2.5.5.10.3.0 Parameters
+
+recordId, context.auth.uid
+
+##### 2.5.5.10.4.0 Authentication
+
+Server-side with service account credentials.
+
+##### 2.5.5.10.5.0 Error Handling
+
+Function throws 'permission-denied' if caller is not the record's designated supervisor. Throws 'not-found' if record does not exist.
+
+##### 2.5.5.10.6.0 Performance
+
+###### 2.5.5.10.6.1 Latency
+
+<100ms
+
+### 2.5.6.0.0.0 DatabaseWrite_Transactional
+
+#### 2.5.6.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.6.2.0.0 Target Id
+
+data-persistence-layer
+
+#### 2.5.6.3.0.0 Message
+
+Atomically update record and create audit log. [REQ-3.3.3]
+
+#### 2.5.6.4.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0 Type
+
+🔹 DatabaseWrite_Transactional
+
+#### 2.5.6.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7.0.0 Return Message
+
+Transaction commit result
+
+#### 2.5.6.8.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.6.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.6.10.0.0 Technical Details
+
+##### 2.5.6.10.1.0 Protocol
+
+Firebase Admin SDK (Transaction)
+
+##### 2.5.6.10.2.0 Method
+
+t.update(attendanceRef, ...); t.set(auditLogRef, ...);
+
+##### 2.5.6.10.3.0 Parameters
+
+1. Update: { checkInTime: newTime, status: 'approved', flags: arrayUnion('manually-corrected'), correctionRequest: deleteField() } | 2. Create: { actorUserId, actionType, targetEntityId, details: { oldValue, newValue, justification }, ... }
+
+##### 2.5.6.10.4.0 Authentication
+
+Server-side with service account credentials.
+
+##### 2.5.6.10.5.0 Error Handling
+
+If the transaction fails due to contention or other errors, the entire operation is rolled back automatically. The function will throw an 'aborted' error.
+
+##### 2.5.6.10.6.0 Performance
+
+###### 2.5.6.10.6.1 Latency
+
+<200ms
+
+### 2.5.7.0.0.0 Response
+
+#### 2.5.7.1.0.0 Source Id
+
+application-services-layer
+
+#### 2.5.7.2.0.0 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.7.3.0.0 Message
+
+Return success response.
+
+#### 2.5.7.4.0.0 Sequence Number
+
+7
+
+#### 2.5.7.5.0.0 Type
+
+🔹 Response
+
+#### 2.5.7.6.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.7.7.0.0 Return Message
+
+{ success: true }
+
+#### 2.5.7.8.0.0 Has Return
+
+❌ No
+
+#### 2.5.7.9.0.0 Is Activation
+
+❌ No
+
+#### 2.5.7.10.0.0 Technical Details
+
+##### 2.5.7.10.1.0 Protocol
+
+HTTPS
+
+##### 2.5.7.10.2.0 Method
+
+200 OK
+
+##### 2.5.7.10.3.0 Parameters
+
+JSON payload
+
+##### 2.5.7.10.4.0 Authentication
+
+N/A
+
+##### 2.5.7.10.5.0 Error Handling
+
+N/A
+
+##### 2.5.7.10.6.0 Performance
+
+###### 2.5.7.10.6.1 Latency
+
+<50ms
+
+## 2.6.0.0.0.0 Notes
+
+### 2.6.1.0.0.0 Content
+
+#### 2.6.1.1.0.0 Content
+
+Implicit Step: After step 2, the Supervisor's mobile app, which is subscribed to a Firestore query for `status == 'correction_pending'`, automatically receives the update and displays the new request in the dashboard.
+
+#### 2.6.1.2.0.0 Position
+
+bottom
+
+#### 2.6.1.3.0.0 Participant Id
+
+REPO-APP-MOBILE-010
+
+#### 2.6.1.4.0.0 Sequence Number
+
+2
+
+### 2.6.2.0.0.0 Content
+
+#### 2.6.2.1.0.0 Content
+
+The backend update (step 6) is wrapped in a Firestore Transaction to ensure that updating the attendance record and creating the audit log entry succeed or fail together as a single atomic unit. This guarantees data consistency.
+
+#### 2.6.2.2.0.0 Position
+
+right
+
+#### 2.6.2.3.0.0 Participant Id
+
+application-services-layer
+
+#### 2.6.2.4.0.0 Sequence Number
+
+6
+
+### 2.6.3.0.0.0 Content
+
+#### 2.6.3.1.0.0 Content
+
+Firestore Security Rules for the `/auditLog` collection are configured to `allow create;` but `deny update, delete;` for all roles, ensuring the immutability of the log as required by REQ-1-028.
+
+#### 2.6.3.2.0.0 Position
+
+bottom
+
+#### 2.6.3.3.0.0 Participant Id
+
+data-persistence-layer
+
+#### 2.6.3.4.0.0 Sequence Number
+
+6
+
+## 2.7.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | 1. **Firestore Rules (Submission):** Rules on the ... |
+| Performance Targets | The end-to-end user-perceived latency for the init... |
+| Error Handling Strategy | 1. **Rejection Flow:** A parallel `rejectCorrectio... |
+| Testing Considerations | 1. **Emulator Suite:** The entire workflow MUST be... |
+| Monitoring Requirements | 1. **Metrics:** Monitor the invocation count, p95 ... |
+| Deployment Considerations | Deploy the Firestore security rules for the `audit... |
+

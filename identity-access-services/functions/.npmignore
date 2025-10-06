@@ -1,0 +1,25 @@
+# TypeScript source files
+src/
+*.test.ts
+*.spec.ts
+tsconfig.json
+tsconfig.dev.json
+
+# Tooling
+.vscode/
+.eslintrc.js
+.prettierrc
+jest.config.js
+.nvmrc
+.env.*
+
+# Tests and coverage
+__tests__/
+coverage/
+
+# Misc
+*.md
+.gitignore
+.npmignore
+firebase-debug.log
+firebase-debug.*.log

@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "development": "attendance-app-dev",
+    "staging": "attendance-app-staging",
+    "production": "attendance-app-prod"
+  }
+}

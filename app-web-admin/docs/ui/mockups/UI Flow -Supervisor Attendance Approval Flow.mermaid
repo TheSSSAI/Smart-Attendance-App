@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant "Supervisor's Mobile App" as SupervisorsMobileApp
+    participant "Firestore Database" as FirestoreDatabase
+
+    activate SupervisorsMobileApp
+    SupervisorsMobileApp->>SupervisorsMobileApp: 1. User (Supervisor) navigates to the 'Approvals' dashboard.
+    activate FirestoreDatabase
+    SupervisorsMobileApp->>FirestoreDatabase: 2. Query for pending attendance records.<br/>`db.collection('attendance')`<br/>`.where('supervisorId', '==', auth.uid)`<br/>`.where('status', '==', 'pending')`
+    FirestoreDatabase->>SupervisorsMobileApp: 3. Return QuerySnapshot with pending attendance documents.<br/>(Firestore Security Rules authorize this read)
+    SupervisorsMobileApp-->>FirestoreDatabase: QuerySnapshot containing AttendanceRecord objects.
+    SupervisorsMobileApp->>SupervisorsMobileApp: 4. Render list of pending records. If reject is chosen, prompt for mandatory reason.
+    SupervisorsMobileApp->>FirestoreDatabase: 5. Perform batched write to update status of selected records.<br/>`batch.update(docRef, { status: 'approved' })`
+    FirestoreDatabase->>SupervisorsMobileApp: 6. Return batch commit success confirmation.<br/>(Firestore Security Rules authorize each update in the batch)
+    SupervisorsMobileApp-->>FirestoreDatabase: void (success) or FirebaseException (failure)
+
+    note over FirestoreDatabase: Security Enforcement: Firestore Security Rules are the primary mechanism preventing a supervisor from viewing or actioning records outside their direct reporting line.
+    note over SupervisorsMobileApp: Offline Capability: If the device is offline when the supervisor submits the approval/rejection, the batched write is queued locally by the Firestore SDK and synced automatically upon reconnection.
+    note over FirestoreDatabase: Atomicity: Using a batched write ensures that the bulk update is an 'all or nothing' operation. This prevents partial updates and maintains data consistency.
+
+    deactivate FirestoreDatabase
+    deactivate SupervisorsMobileApp

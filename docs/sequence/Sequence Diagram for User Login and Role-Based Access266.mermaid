@@ -1,0 +1,39 @@
+sequenceDiagram
+    actor "User" as User
+    actor "Mobile Application (Flutter)" as MobileApplicationFlutter
+    participant "Firebase Authentication" as FirebaseAuthentication
+    participant "Firestore Database" as FirestoreDatabase
+    participant "Firestore Security Rules" as FirestoreSecurityRules
+
+    activate MobileApplicationFlutter
+    User->>MobileApplicationFlutter: 1. Enters email and password on login screen.
+    activate FirebaseAuthentication
+    MobileApplicationFlutter->>FirebaseAuthentication: 2. Calls signInWithEmailAndPassword with user credentials.
+    FirebaseAuthentication-->>MobileApplicationFlutter: Returns UserCredential object with JWT or throws FirebaseAuthException.
+    FirebaseAuthentication->>FirebaseAuthentication: 2.1. Checks failed login attempt counter for the user.
+    FirebaseAuthentication-->>FirebaseAuthentication: Proceeds if counter < 5; throws error if >= 5.
+    FirebaseAuthentication->>FirebaseAuthentication: 2.2. Validates credentials against stored hash and checks user status.
+    FirebaseAuthentication-->>FirebaseAuthentication: Success, failure, or disabled status.
+    FirebaseAuthentication->>FirebaseAuthentication: 2.3. Mints a signed JWT (ID Token) with custom claims.
+    FirebaseAuthentication-->>FirebaseAuthentication: Signed JWT string.
+    FirebaseAuthentication->>MobileApplicationFlutter: 3. Returns UserCredential containing the JWT.
+    MobileApplicationFlutter->>MobileApplicationFlutter: 4. Firebase SDK securely caches the JWT for the session and handles automatic refresh.
+    MobileApplicationFlutter->>User: 5. Navigates to the user's role-specific dashboard.
+    activate FirestoreDatabase
+    MobileApplicationFlutter->>FirestoreDatabase: 6. Requests data (e.g., user's own attendance records). JWT is automatically attached in the header.
+    FirestoreDatabase-->>MobileApplicationFlutter: Returns requested documents or a 'permission-denied' error.
+    activate FirestoreSecurityRules
+    FirestoreDatabase->>FirestoreSecurityRules: 7. Forwards request and authenticated user context for authorization.
+    FirestoreSecurityRules-->>FirestoreDatabase: Returns 'allow' or 'deny'.
+    FirestoreSecurityRules->>FirestoreSecurityRules: 7.1. Evaluates rules against request context.
+    FirestoreSecurityRules-->>FirestoreSecurityRules: Boolean result (true/false).
+    FirestoreSecurityRules->>FirestoreDatabase: 8. Returns authorization decision: 'allow'.
+    FirestoreDatabase->>MobileApplicationFlutter: 9. Returns the requested Firestore documents.
+
+    note over FirebaseAuthentication: JWT Custom Claims Structure: {   "tenantId": "org_abc123",   "role": "Supervisor",   // standard ...
+    note over FirestoreSecurityRules: Example Firestore Rule for Tenant Isolation & RBAC: match /tenants/{tenantId}/{document=**} {   a...
+
+    deactivate FirestoreSecurityRules
+    deactivate FirestoreDatabase
+    deactivate FirebaseAuthentication
+    deactivate MobileApplicationFlutter

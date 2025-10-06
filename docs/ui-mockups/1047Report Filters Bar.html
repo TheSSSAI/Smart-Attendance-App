@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Filters Bar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      /* Color Palette */
+      --color-primary-50: #E6F0FF;
+      --color-primary-100: #B9D7FF;
+      --color-primary-500: #0073FF;
+      --color-primary-600: #0062D9;
+      --color-primary-700: #0052B3;
+      
+      --color-white: #FFFFFF;
+      --color-gray-50: #F8FAFC;
+      --color-gray-100: #F1F5F9;
+      --color-gray-200: #E2E8F0;
+      --color-gray-300: #CBD5E1;
+      --color-gray-400: #94A3B8;
+      --color-gray-500: #64748B;
+      --color-gray-700: #334155;
+      --color-gray-900: #0F172A;
+      
+      --color-error: #DC2626;
+
+      /* Typography */
+      --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+      --font-size-body: 16px;
+      --font-size-caption: 14px;
+      --font-weight-regular: 400;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+
+      /* Borders */
+      --border-radius-md: 8px;
+    }
+
+    body {
+      font-family: var(--font-family-primary);
+      background-color: var(--color-gray-50);
+      color: var(--color-gray-900);
+      padding: var(--space-xl);
+      font-size: var(--font-size-body);
+    }
+
+    /* Screen Context Wrapper */
+    .report-screen {
+        background-color: var(--color-white);
+        padding: var(--space-lg);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    h1 {
+        font-size: 28px;
+        font-weight: var(--font-weight-bold);
+        margin-bottom: var(--space-lg);
+    }
+
+    /* Filters Bar Styles */
+    .filters-bar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      padding: var(--space-lg);
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--border-radius-md);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .filter-group label {
+      font-size: var(--font-size-caption);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-gray-700);
+    }
+
+    .filter-input, .searchable-dropdown-container .search-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--border-radius-md);
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-body);
+      transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+    }
+
+    .filter-input:focus, .searchable-dropdown-container .search-input:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+
+    .filter-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+    }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 24px;
+      border-radius: var(--border-radius-md);
+      font-size: var(--font-size-body);
+      font-weight: var(--font-weight-semibold);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 150ms ease-in-out, transform 100ms ease-in-out;
+    }
+
+    .btn:focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+
+    .btn--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-white);
+    }
+
+    .btn--primary:hover {
+      background-color: var(--color-primary-600);
+    }
+
+    .btn--primary:active {
+      background-color: var(--color-primary-700);
+      transform: scale(0.98);
+    }
+    
+    .btn--secondary {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-700);
+      border: 1px solid var(--color-gray-200);
+    }
+
+    .btn--secondary:hover {
+      background-color: var(--color-gray-200);
+    }
+
+    .btn--secondary:active {
+      background-color: var(--color-gray-300);
+      transform: scale(0.98);
+    }
+
+
+    /* Searchable Dropdown Styles */
+    .searchable-dropdown-container {
+        position: relative;
+    }
+
+    .searchable-dropdown-container .dropdown-list {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background-color: var(--color-white);
+        border: 1px solid var(--color-gray-200);
+        border-radius: var(--border-radius-md);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+    }
+    .searchable-dropdown-container.is-open .dropdown-list {
+        display: block;
+    }
+    
+    .dropdown-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: var(--font-size-body);
+    }
+    .dropdown-item:hover {
+        background-color: var(--color-gray-100);
+    }
+
+
+    /* Responsive Styles */
+    @media (min-width: 768px) {
+      .filters-bar {
+        flex-direction: row;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      
+      .filter-group {
+        flex: 1 1 auto;
+        min-width: 180px;
+      }
+
+      .filter-actions {
+        flex-direction: row;
+        margin-top: 0;
+        margin-left: auto;
+        padding-left: var(--space-md);
+        padding-bottom: 2px; /* Align with input bottom padding */
+      }
+    }
+    
+    /* Variants for demonstration */
+    .variant-container {
+        margin-top: var(--space-xl);
+        padding: var(--space-lg);
+        border: 1px dashed var(--color-gray-300);
+        border-radius: var(--border-radius-md);
+    }
+    h2, h3 {
+        margin-bottom: var(--space-md);
+    }
+    .variant-container h3 {
+        font-size: 20px;
+        font-weight: var(--font-weight-semibold);
+    }
+    .variant-container normal {
+        display: block;
+        font-size: var(--font-size-caption);
+        color: var(--color-gray-500);
+        margin-bottom: var(--space-lg);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="report-screen">
+    <h1>Attendance Summary Report</h1>
+  
+    <form class="filters-bar" onsubmit="event.preventDefault(); alert('Filters Applied!');">
+      <div class="filter-group">
+        <label for="date-start">Date Range</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="date" id="date-start" class="filter-input">
+            <span>-</span>
+            <input type="date" id="date-end" class="filter-input">
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="team-search">Team</label>
+        <div class="searchable-dropdown-container">
+          <input type="text" id="team-search" class="search-input" placeholder="Search teams...">
+          <div class="dropdown-list">
+            <div class="dropdown-item" data-value="team-alpha">Team Alpha</div>
+            <div class="dropdown-item" data-value="team-bravo">Team Bravo</div>
+            <div class="dropdown-item" data-value="team-charlie">Team Charlie</div>
+            <div class="dropdown-item" data-value="engineering">Engineering</div>
+            <div class="dropdown-item" data-value="sales">Sales</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="user-search">User</label>
+        <div class="searchable-dropdown-container">
+          <input type="text" id="user-search" class="search-input" placeholder="Search users...">
+          <div class="dropdown-list">
+            <div class="dropdown-item" data-value="user-1">Jane Doe</div>
+            <div class="dropdown-item" data-value="user-2">John Smith</div>
+            <div class="dropdown-item" data-value="user-3">Peter Jones</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" class="btn btn--secondary">Clear Filters</button>
+        <button type="submit" class="btn btn--primary">Apply Filters</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="screen-variations">
+    <div class="variant-container">
+        <h3>Variant Name: "Mobile / Vertical Layout"</h3>
+        <normal>On screens narrower than 768px, the filter groups stack vertically to ensure readability and usability on mobile devices. The action buttons appear below the filters.</normal>
+        <div style="max-width: 400px; margin: 0 auto;">
+            <form class="filters-bar">
+                <div class="filter-group">
+                  <label for="date-start-mobile">Date Range</label>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                      <input type="date" id="date-start-mobile" class="filter-input">
+                      <span>-</span>
+                      <input type="date" id="date-end-mobile" class="filter-input">
+                  </div>
+                </div>
+          
+                <div class="filter-group">
+                  <label for="team-search-mobile">Team</label>
+                  <div class="searchable-dropdown-container">
+                    <input type="text" id="team-search-mobile" class="search-input" placeholder="Search teams...">
+                  </div>
+                </div>
+          
+                <div class="filter-group">
+                  <label for="user-search-mobile">User</label>
+                  <div class="searchable-dropdown-container">
+                    <input type="text" id="user-search-mobile" class="search-input" placeholder="Search users...">
+                  </div>
+                </div>
+          
+                <div class="filter-actions">
+                  <button type="button" class="btn btn--secondary">Clear Filters</button>
+                  <button type="submit" class="btn btn--primary">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    // Basic JavaScript to handle searchable dropdown visibility
+    document.querySelectorAll('.searchable-dropdown-container').forEach(container => {
+      const input = container.querySelector('.search-input');
+      const list = container.querySelector('.dropdown-list');
+      const items = list.querySelectorAll('.dropdown-item');
+
+      input.addEventListener('focus', () => {
+        container.classList.add('is-open');
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!container.contains(event.target)) {
+          container.classList.remove('is-open');
+        }
+      });
+      
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          input.value = item.textContent;
+          container.classList.remove('is-open');
+        });
+      });
+
+      input.addEventListener('keyup', () => {
+          const filter = input.value.toLowerCase();
+          items.forEach(item => {
+              const text = item.textContent.toLowerCase();
+              if (text.includes(filter)) {
+                  item.style.display = '';
+              } else {
+                  item.style.display = 'none';
+              }
+          });
+      });
+    });
+
+    // Clear filters button functionality
+    document.querySelectorAll('.btn--secondary').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const form = event.target.closest('form');
+            if (form) {
+                form.querySelectorAll('input').forEach(input => input.value = '');
+                alert('Filters Cleared!');
+            }
+        });
+    });
+  </script>
+</body>
+</html>

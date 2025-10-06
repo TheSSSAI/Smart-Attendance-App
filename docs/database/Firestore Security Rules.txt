@@ -1,0 +1,122 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUserInTenant(tenantId) {
+      // Assumes user's tenant is in a custom claim for efficiency
+      return isAuthenticated() && request.auth.token.tenantId == tenantId;
+    }
+
+    function getUserData(tenantId, userId) {
+      return get(/databases/$(database)/documents/tenants/$(tenantId)/users/$(userId)).data;
+    }
+
+    function isRoleInTenant(tenantId, role) {
+      // For production, use custom claims instead of a document read for performance and cost.
+      return isUserInTenant(tenantId) && getUserData(tenantId, request.auth.uid).role == role;
+    }
+
+    function isAdmin(tenantId) {
+      return isRoleInTenant(tenantId, 'Admin');
+    }
+
+    function isSupervisor(tenantId) {
+      return isRoleInTenant(tenantId, 'Supervisor');
+    }
+
+    // --- Global Collections ---
+    match /subscriptionPlans/{planId} {
+      allow read: if true;
+      allow write: if false; // Assume plans are managed via an internal tool, not by app users.
+    }
+
+    // --- Tenant Root and Sub-Collections ---
+    match /tenants/{tenantId} {
+      allow read: if isUserInTenant(tenantId);
+      allow write: if isAdmin(tenantId);
+
+      // Tenant Schema Validation
+      allow create, update: if request.resource.data.keys().hasAll(['name', 'status', 'gcpRegion', 'subscriptionPlanId', 'createdAt', 'updatedAt']) &&
+                              request.resource.data.name is string &&
+                              request.resource.data.status in ['active', 'pending_deletion', 'deleted'];
+
+      // --- Users ---
+      match /users/{userId} {
+        allow read: if isUserInTenant(tenantId);
+        allow create, delete: if isAdmin(tenantId);
+        allow update: if (isAdmin(tenantId) || (isUserInTenant(tenantId) && request.auth.uid == userId));
+
+        // User Schema Validation
+        allow create, update: if request.resource.data.keys().hasAll(['email', 'firstName', 'lastName', 'fullName', 'role', 'status', 'createdAt', 'updatedAt']) &&
+                                  request.resource.data.email is string &&
+                                  request.resource.data.role in ['Admin', 'Supervisor', 'Subordinate'] &&
+                                  request.resource.data.status in ['invited', 'active', 'deactivated'];
+      }
+
+      // --- Teams ---
+      match /teams/{teamId} {
+        allow read: if isUserInTenant(tenantId);
+        allow write: if isAdmin(tenantId) || isSupervisor(tenantId);
+
+        // Team Schema Validation
+        allow create, update: if request.resource.data.keys().hasAll(['name', 'supervisorId', 'createdAt', 'updatedAt']) &&
+                                  request.resource.data.name is string &&
+                                  request.resource.data.supervisorId is string;
+      }
+
+      // --- Attendance Records ---
+      match /attendanceRecords/{recordId} {
+        allow read: if isUserInTenant(tenantId);
+        allow create: if isUserInTenant(tenantId) && request.resource.data.userId == request.auth.uid;
+        allow update: if (isSupervisor(tenantId) && get(/databases/$(database)/documents/tenants/$(tenantId)/attendanceRecords/$(recordId)).data.supervisorId == request.auth.uid) || 
+                        (isUserInTenant(tenantId) && request.resource.data.userId == request.auth.uid); // Allow user to check-out
+        
+        // Attendance Record Schema Validation
+        allow create, update: if request.resource.data.keys().hasAll(['userId', 'userFullName', 'checkInTime', 'checkInGps', 'status', 'supervisorId']) &&
+                                  request.resource.data.status in ['pending', 'approved', 'rejected', 'correction_pending'];
+      }
+
+      // --- Events ---
+      match /events/{eventId} {
+        allow read: if isUserInTenant(tenantId);
+        allow write: if isAdmin(tenantId) || isSupervisor(tenantId);
+
+        // Event Schema Validation
+        allow create, update: if request.resource.data.keys().hasAll(['title', 'startTime', 'endTime', 'isRecurring', 'createdByUserId']) &&
+                                  request.resource.data.title is string &&
+                                  request.resource.data.isRecurring is bool;
+      }
+
+      // --- Audit Logs (Immutable) ---
+      match /auditLogs/{logId} {
+        allow read: if isAdmin(tenantId);
+        allow create: if isUserInTenant(tenantId); // Should be done via backend with elevated privileges
+        allow update, delete: if false;
+
+        // Audit Log Schema Validation
+        allow create: if request.resource.data.keys().hasAll(['actingUserId', 'targetEntity', 'targetEntityId', 'actionType', 'details', 'timestamp']);
+      }
+
+      // --- Reporting & Config ---
+      match /dailySummaries/{summaryId} {
+        allow read: if isUserInTenant(tenantId);
+        allow write: if false; // Only backend can write
+      }
+
+      match /config/settings {
+        allow read: if isUserInTenant(tenantId);
+        allow write: if isAdmin(tenantId);
+      }
+
+      match /integrations/googleSheet {
+        allow read, write: if isAdmin(tenantId);
+      }
+    }
+  }
+}

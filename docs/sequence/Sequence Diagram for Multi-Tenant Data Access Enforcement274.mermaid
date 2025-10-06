@@ -1,0 +1,20 @@
+sequenceDiagram
+    actor "Flutter Mobile Application" as FlutterMobileApplication
+    participant "Firestore Database Service" as FirestoreDatabaseService
+    participant "Firestore Security Rules Engine" as FirestoreSecurityRulesEngine
+
+    activate FirestoreDatabaseService
+    FlutterMobileApplication->>FirestoreDatabaseService: 1. Executes Firestore query via SDK: db.collection('attendance').where('supervisorId', '==', 'xyz').get()
+    FirestoreDatabaseService-->>FlutterMobileApplication: Returns either QuerySnapshot with filtered data or a FirebaseException.
+    activate FirestoreSecurityRulesEngine
+    FirestoreDatabaseService->>FirestoreSecurityRulesEngine: 2. Intercepts read request and invokes Rules Engine for authorization check on path '/attendance/{docId}'.
+    FirestoreSecurityRulesEngine-->>FirestoreDatabaseService: Returns evaluation result: ALLOW or DENY.
+    FirestoreSecurityRulesEngine->>FirestoreSecurityRulesEngine: 2.1. 1. Validates JWT and extracts custom claim tenantId from request.auth.token.
+    FirestoreSecurityRulesEngine->>FirestoreSecurityRulesEngine: 2.2. 2. Applies rule allow read: if request.auth.token.tenantId == resource.data.tenantId;.
+    FirestoreDatabaseService->>FirestoreDatabaseService: 3. Executes final, combined query against physical storage.
+    FirestoreDatabaseService-->>FirestoreDatabaseService: Raw document data.
+
+    note over FirestoreSecurityRulesEngine: If the security rule evaluation at step 2.2 returns DENY, the sequence immediately jumps to retur...
+
+    deactivate FirestoreSecurityRulesEngine
+    deactivate FirestoreDatabaseService

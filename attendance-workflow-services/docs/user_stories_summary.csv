@@ -1,0 +1,2 @@
+"total_stories","total_story_points","must_have_stories","should_have_stories","could_have_stories","epics_identified","estimated_sprints","key_dependencies"
+"33","141","23","9","1","[""User Authentication & Lifecycle"",""Supervisor & Admin Management"",""Core Attendance Workflow"",""Attendance Correction Workflow"",""Admin Reporting & Dashboard""]","8","[""US-001 (Tenant Registration)"",""US-017 (Login)"",""US-028 (Check-in)""]"

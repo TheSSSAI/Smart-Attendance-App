@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant GoogleCloudScheduler
+    participant UsageAnalysisFunction
+    participant BigQuery
+    participant FirestoreDatabase
+    actor SendGridAPI
+    participant AdminWebDashboard
+
+    activate UsageAnalysisFunction
+    GoogleCloudScheduler->>UsageAnalysisFunction: 1. [Trigger] Invoke scheduled job via Pub/Sub message
+
+    UsageAnalysisFunction->>BigQuery: 2. [Query] Execute parameterized SQL to get usage per tenant
+    BigQuery-->>UsageAnalysisFunction: Returns aggregated usage data as a JSON array.
+
+    UsageAnalysisFunction->>UsageAnalysisFunction: 3. [Loop] For each tenant returned from BigQuery
+        UsageAnalysisFunction->>FirestoreDatabase: 3.1. [Read] Get subscription limits and alert status for tenantId
+        FirestoreDatabase-->>UsageAnalysisFunction: Returns Firestore document for tenant config.
+
+        UsageAnalysisFunction->>UsageAnalysisFunction: 3.2. [Decision] Check if usage > 80% limit AND alert not yet sent (BR-002)
+        alt If threshold crossed and alert not sent
+            UsageAnalysisFunction->>FirestoreDatabase: 3.3. [Read] Query for all users with 'Admin' role in tenant
+            FirestoreDatabase-->>UsageAnalysisFunction: Returns a collection of user documents.
+
+            UsageAnalysisFunction->>SendGridAPI: 3.4. [API Call] Send templated usage alert email to Admins
+            SendGridAPI-->>UsageAnalysisFunction: Returns 202 Accepted on success.
+
+            UsageAnalysisFunction->>FirestoreDatabase: 3.5. [Write] Set alert flag to prevent re-sending
+            FirestoreDatabase-->>UsageAnalysisFunction: Returns write acknowledgment.
+        end
+    end
+
+    deactivate UsageAnalysisFunction
+
+    %% Asynchronous UI Update Flow
+    AdminWebDashboard->>FirestoreDatabase: 4. [Subscribe] Admin logs in and client subscribes to tenant config document
+    FirestoreDatabase-->>AdminWebDashboard: Pushes real-time document updates to the client.
+
+    AdminWebDashboard->>AdminWebDashboard: 5. [Render] Conditionally render persistent warning banner based on alerts.usage_80_sent flag
+
+    note over UsageAnalysisFunction: Billing cycle reset logic is handled by a separate block within the same function, which runs first to clear alert flags for tenants starting a new cycle.

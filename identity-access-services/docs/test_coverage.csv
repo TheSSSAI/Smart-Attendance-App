@@ -1,0 +1,6 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Authentication & Onboarding (Backend)","Critical","High","Low","[""Unit"",""Integration"",""Security"",""End-to-End""]","95","98","90","95","4","60","45","0.98","High","Low","Excellent","Good"
+"Firestore Data Layer & Security Rules","Critical","High","Medium","[""Unit"",""Security"",""Integration""]","99","100","","100","","80","60","0.99","Very High","Medium","Excellent","Good"
+"Core Attendance Workflow (Mobile Client)","Critical","Medium","High","[""Unit"",""Widget"",""Integration"",""End-to-End"",""Accessibility""]","85","90","85","80","20","75","70","0.9","High","Medium","Excellent","Excellent"
+"Admin Dashboard & Reporting (Web Client)","High","Medium","Medium","[""Unit"",""Widget"",""Integration"",""Performance"",""Accessibility""]","80","85","70","75","30","65","65","0.88","Medium","Medium","Excellent","Good"
+"External Integrations (Google Sheets, SendGrid)","Medium","High","Low","[""Unit"",""Integration""]","90","80","50","80","10","35","45","0.85","Medium","High","Good","Good"

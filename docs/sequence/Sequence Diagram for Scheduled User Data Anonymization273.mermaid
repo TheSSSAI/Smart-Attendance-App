@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant "Google Cloud Scheduler" as GoogleCloudScheduler
+    participant "Usage Monitoring Function" as UsageMonitoringFunction
+    participant "GCP Billing Data (BigQuery)" as GCPBillingDataBigQuery
+    participant "Firestore Database" as FirestoreDatabase
+    participant "Email Service (SendGrid)" as EmailServiceSendGrid
+
+    activate UsageMonitoringFunction
+    GoogleCloudScheduler->>UsageMonitoringFunction: 1. 1. Trigger Job(topic: 'run-usage-check')
+    UsageMonitoringFunction->>GCPBillingDataBigQuery: 2. 2. GetUsageForAllTenants(query: 'SELECT ...')
+    GCPBillingDataBigQuery-->>UsageMonitoringFunction: Returns: Row[] (usage data grouped by tenant)
+    UsageMonitoringFunction->>FirestoreDatabase: 3. 3. GetActiveTenantsAndTiers()
+    FirestoreDatabase-->>UsageMonitoringFunction: Returns: Tenant[], Tier[]
+    UsageMonitoringFunction->>UsageMonitoringFunction: 4. 4. [LOOP] For each Tenant
+    UsageMonitoringFunction->>UsageMonitoringFunction: 5. 5. Compare usage against tier limits (80%, 95%)
+    UsageMonitoringFunction->>FirestoreDatabase: 6. 6. [IF Threshold Crossed] CheckAlertStatus(tenantId, metric, threshold, cycle)
+    FirestoreDatabase-->>UsageMonitoringFunction: Returns: Alert document or null
+    UsageMonitoringFunction->>FirestoreDatabase: 7. 7. [IF Alert Not Sent] GetTenantAdmins(tenantId)
+    FirestoreDatabase-->>UsageMonitoringFunction: Returns: AdminUser[]
+    UsageMonitoringFunction->>EmailServiceSendGrid: 8. 8. [LOOP Admins] SendUsageAlertEmail(to, subject, body)
+    UsageMonitoringFunction->>FirestoreDatabase: 9. 9. RecordAlertSent(tenantId, metric, threshold, cycle)
+    FirestoreDatabase-->>UsageMonitoringFunction: Returns: WriteResult
+    UsageMonitoringFunction->>UsageMonitoringFunction: 10. 10. Log summary (tenants processed, alerts sent, errors)
+
+    note over UsageMonitoringFunction: The core logic from step 4 to 9 is executed within a loop for each tenant whose usage data was re...
+    note over UsageMonitoringFunction: This conditional block (steps 6-9) ensures an alert is only triggered if a usage threshold is new...
+
+    deactivate UsageMonitoringFunction

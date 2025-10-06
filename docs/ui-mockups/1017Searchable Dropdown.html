@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Searchable Dropdown Component</title>
+    <style>
+        /* 1. FOUNDATION & DESIGN TOKENS */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+            --color-error-50: #FEF2F2;
+            --color-error-500: #DC2626;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+
+            /* Typography */
+            --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --line-height-body: 1.5;
+
+            /* Spacing */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-width-1: 1px;
+            --border-width-2: 2px;
+
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* 2. BASE & LAYOUT STYLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            font-size: var(--font-size-md);
+            line-height: var(--line-height-body);
+            background-color: var(--color-neutral-100);
+            color: var(--color-neutral-700);
+            padding: var(--space-8);
+        }
+
+        .showcase-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .showcase-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+
+        .showcase-header h1 {
+            font-size: 36px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-2);
+        }
+
+        .showcase-header p {
+            font-size: 18px;
+            color: var(--color-neutral-500);
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-8);
+            align-items: start;
+        }
+
+        .component-demo {
+            background-color: var(--color-neutral-white);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+        }
+
+        .component-demo h3 {
+            font-size: 20px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-1);
+        }
+
+        .component-demo p {
+            color: var(--color-neutral-500);
+            margin-bottom: var(--space-6);
+            font-size: var(--font-size-sm);
+        }
+
+        @keyframes spinner-anim { to { transform: rotate(360deg); } }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 4px solid var(--color-neutral-200);
+            border-top-color: var(--color-primary-500);
+            animation: spinner-anim 0.8s linear infinite;
+        }
+
+        /* 3. COMPONENT STYLES */
+        /* Component: Searchable Dropdown CSS */
+        .s-dropdown {
+          position: relative;
+          width: 100%;
+          font-family: var(--font-family-sans);
+        }
+
+        .s-dropdown__label {
+          font-weight: var(--font-weight-medium);
+          color: var(--color-neutral-700);
+          display: block;
+          margin-bottom: var(--space-2);
+        }
+
+        .s-dropdown__input-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .s-dropdown__input {
+          width: 100%;
+          padding: var(--space-3) var(--space-4);
+          padding-right: var(--space-8);
+          font-size: var(--font-size-md);
+          border: var(--border-width-1) solid var(--color-neutral-300);
+          border-radius: var(--border-radius-md);
+          background-color: var(--color-neutral-white);
+          transition: border-color 0.2s, box-shadow 0.2s;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+
+        .s-dropdown__input::placeholder {
+          color: var(--color-neutral-400);
+        }
+
+        .s-dropdown__arrow {
+          position: absolute;
+          right: var(--space-4);
+          pointer-events: none;
+          color: var(--color-neutral-500);
+          transition: transform 0.2s ease-in-out;
+        }
+
+        /* States */
+        .s-dropdown.is-open .s-dropdown__arrow {
+          transform: rotate(180deg);
+        }
+
+        .s-dropdown__input:focus, .s-dropdown.is-focused .s-dropdown__input {
+          outline: none;
+          border-color: var(--color-primary-500);
+          box-shadow: 0 0 0 var(--border-width-2) var(--color-primary-50);
+        }
+
+        .s-dropdown.is-error .s-dropdown__input {
+          border-color: var(--color-error-500);
+        }
+        .s-dropdown.is-error .s-dropdown__input:focus {
+          box-shadow: 0 0 0 var(--border-width-2) var(--color-error-50);
+        }
+
+        .s-dropdown.is-disabled {
+          cursor: not-allowed;
+        }
+
+        .s-dropdown.is-disabled .s-dropdown__label {
+          color: var(--color-neutral-400);
+        }
+
+        .s-dropdown.is-disabled .s-dropdown__input {
+          background-color: var(--color-neutral-100);
+          cursor: not-allowed;
+        }
+
+        /* Menu / Listbox */
+        .s-dropdown__menu {
+          position: absolute;
+          top: calc(100% + var(--space-2));
+          left: 0;
+          width: 100%;
+          max-height: 250px;
+          overflow-y: auto;
+          background-color: var(--color-neutral-white);
+          border: var(--border-width-1) solid var(--color-neutral-200);
+          border-radius: var(--border-radius-md);
+          box-shadow: var(--shadow-md);
+          z-index: 10;
+          list-style: none;
+          padding: var(--space-2) 0;
+          margin: 0;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+          transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+
+        .s-dropdown.is-open .s-dropdown__menu {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .s-dropdown__option {
+          padding: var(--space-3) var(--space-4);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+        }
+
+        .s-dropdown__option:hover, .s-dropdown__option.is-active {
+          background-color: var(--color-primary-50);
+        }
+
+        .s-dropdown__option[aria-selected="true"] {
+          font-weight: var(--font-weight-semibold);
+          color: var(--color-primary-600);
+        }
+        
+        .s-dropdown__option[aria-selected="true"] .s-dropdown__option-text--main,
+        .s-dropdown__option[aria-selected="true"] .s-dropdown__option-text--sub {
+             color: var(--color-primary-600);
+        }
+
+        .s-dropdown__option-content {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .s-dropdown__option-text--main {
+          color: var(--color-neutral-900);
+        }
+        .s-dropdown__option-text--sub {
+          font-size: var(--font-size-sm);
+          color: var(--color-neutral-500);
+        }
+
+        .s-dropdown__feedback {
+          padding: var(--space-6) var(--space-4);
+          text-align: center;
+          color: var(--color-neutral-500);
+        }
+
+        .s-dropdown__feedback .spinner {
+          margin: 0 auto;
+          width: 24px;
+          height: 24px;
+          border-width: 3px;
+        }
+        
+        .s-dropdown__option .checkbox__box {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Multi-select Variant */
+        .s-dropdown--multi-select .s-dropdown__input-wrapper {
+          padding: var(--space-2) var(--space-8) var(--space-2) var(--space-2);
+          border: var(--border-width-1) solid var(--color-neutral-300);
+          border-radius: var(--border-radius-md);
+          background-color: var(--color-neutral-white);
+          min-height: 48px;
+          cursor: text;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .s-dropdown--multi-select.is-focused .s-dropdown__input-wrapper {
+          outline: none;
+          border-color: var(--color-primary-500);
+          box-shadow: 0 0 0 var(--border-width-2) var(--color-primary-50);
+        }
+
+        .s-dropdown--multi-select .s-dropdown__input-content {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--space-2);
+          align-items: center;
+        }
+
+        .s-dropdown--multi-select .s-dropdown__input {
+          border: none;
+          padding: 0;
+          box-shadow: none;
+          flex-grow: 1;
+          min-width: 100px;
+          height: 30px;
+        }
+
+        .s-dropdown--multi-select .s-dropdown__chip {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-2);
+          background-color: var(--color-primary-50);
+          color: var(--color-primary-700);
+          padding: var(--space-1) var(--space-2);
+          border-radius: var(--border-radius-sm);
+          font-size: var(--font-size-sm);
+          font-weight: var(--font-weight-medium);
+        }
+
+        .s-dropdown__chip-remove {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--color-primary-700);
+          opacity: 0.7;
+          font-size: 16px;
+          line-height: 1;
+          padding: 0;
+        }
+        .s-dropdown__chip-remove:hover { opacity: 1; }
+
+        /* Checkbox from atomic components */
+        .checkbox { display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; }
+        .checkbox__input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .checkbox__box { width: 20px; height: 20px; border: var(--border-width-2) solid var(--color-neutral-300); border-radius: var(--border-radius-sm); display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, border-color 0.2s; }
+        .checkbox__box svg { opacity: 0; transition: opacity 0.2s; color: var(--color-neutral-white); }
+        .checkbox__input:checked + .checkbox__box { background-color: var(--color-primary-500); border-color: var(--color-primary-500); }
+        .checkbox__input:checked + .checkbox__box svg { opacity: 1; }
+
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <header class="showcase-header">
+            <h1>Searchable Dropdown</h1>
+            <p>A versatile combobox for single and multi-select scenarios.</p>
+        </header>
+
+        <main class="component-grid">
+
+            <!-- Single Select -->
+            <div class="component-demo">
+                <h3>Single Select</h3>
+                <p>Used for selecting one item from a list, like assigning a supervisor.</p>
+
+                <!-- Default State -->
+                <div class="s-dropdown" style="margin-bottom: 24px;">
+                    <label id="supervisor-label" class="s-dropdown__label">Assign Supervisor</label>
+                    <div class="s-dropdown__input-wrapper">
+                        <input class="s-dropdown__input" type="text" placeholder="Select a supervisor..." role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="supervisor-label">
+                        <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Open & Focused State -->
+                <div class="s-dropdown is-open is-focused">
+                    <label id="supervisor-open-label" class="s-dropdown__label">Open & Focused</label>
+                    <div class="s-dropdown__input-wrapper">
+                        <input class="s-dropdown__input" type="text" value="Jane" role="combobox" aria-haspopup="listbox" aria-expanded="true" aria-controls="supervisor-listbox-1" aria-activedescendant="option-1" aria-labelledby="supervisor-open-label" placeholder="Select a supervisor...">
+                        <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </span>
+                    </div>
+                    <ul class="s-dropdown__menu" role="listbox" id="supervisor-listbox-1">
+                        <li class="s-dropdown__option is-active" role="option" id="option-1">
+                            <div class="s-dropdown__option-content">
+                                <span class="s-dropdown__option-text--main">Jane Doe</span>
+                                <span class="s-dropdown__option-text--sub">jane.doe@example.com</span>
+                            </div>
+                        </li>
+                        <li class="s-dropdown__option" role="option" id="option-2" aria-selected="true">
+                            <div class="s-dropdown__option-content">
+                                <span class="s-dropdown__option-text--main">Janet Smith</span>
+                                <span class="s-dropdown__option-text--sub">janet.smith@example.com</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Loading State -->
+                <div class="s-dropdown is-open is-loading" style="margin-top: 24px;">
+                    <label class="s-dropdown__label">Loading Options</label>
+                    <div class="s-dropdown__input-wrapper">
+                        <input class="s-dropdown__input" type="text" placeholder="Loading..." role="combobox" aria-haspopup="listbox" aria-expanded="true">
+                        <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </span>
+                    </div>
+                     <div class="s-dropdown__menu">
+                        <div class="s-dropdown__feedback">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error State -->
+                <div class="s-dropdown is-error" style="margin-top: 24px;">
+                    <label class="s-dropdown__label">Error State</label>
+                    <div class="s-dropdown__input-wrapper">
+                        <input class="s-dropdown__input" type="text" value="Invalid Supervisor" role="combobox" aria-haspopup="listbox" aria-expanded="false" >
+                        <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Disabled State -->
+                <div class="s-dropdown is-disabled" style="margin-top: 24px;">
+                    <label class="s-dropdown__label">Disabled</label>
+                    <div class="s-dropdown__input-wrapper">
+                        <input class="s-dropdown__input" type="text" placeholder="Cannot change" disabled>
+                        <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi Select -->
+            <div class="component-demo">
+                <h3>Multi Select</h3>
+                <p>Used for selecting multiple items, like filtering a report by several teams.</p>
+                
+                <!-- Default with selections -->
+                 <div class="s-dropdown s-dropdown--multi-select" style="margin-bottom: 24px;">
+                    <label id="team-label" class="s-dropdown__label">Filter by Team</label>
+                    <div class="s-dropdown__input-wrapper" tabindex="0">
+                        <div class="s-dropdown__input-content">
+                            <span class="s-dropdown__chip">
+                                Engineering
+                                <button class="s-dropdown__chip-remove" aria-label="Remove Engineering">×</button>
+                            </span>
+                            <span class="s-dropdown__chip">
+                                Design
+                                <button class="s-dropdown__chip-remove" aria-label="Remove Design">×</button>
+                            </span>
+                            <input class="s-dropdown__input" type="text" placeholder="Select teams..." role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="team-label">
+                        </div>
+                         <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Open State -->
+                <div class="s-dropdown s-dropdown--multi-select is-open is-focused">
+                    <label id="team-open-label" class="s-dropdown__label">Open & Focused</label>
+                    <div class="s-dropdown__input-wrapper" tabindex="0">
+                        <div class="s-dropdown__input-content">
+                            <span class="s-dropdown__chip">
+                                Engineering
+                                <button class="s-dropdown__chip-remove" aria-label="Remove Engineering">×</button>
+                            </span>
+                             <input class="s-dropdown__input" type="text" placeholder="Select teams..." role="combobox" aria-haspopup="listbox" aria-expanded="true" aria-controls="team-listbox" aria-labelledby="team-open-label">
+                        </div>
+                         <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                        </span>
+                    </div>
+                     <ul class="s-dropdown__menu" role="listbox" id="team-listbox" aria-multiselectable="true">
+                        <li class="s-dropdown__option" role="option" aria-selected="true">
+                            <label class="checkbox" style="width: 100%; cursor: pointer;">
+                                <input type="checkbox" class="checkbox__input" checked>
+                                <span class="checkbox__box"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg></span>
+                                <span class="checkbox__label">Engineering</span>
+                            </label>
+                        </li>
+                         <li class="s-dropdown__option is-active" role="option" aria-selected="false">
+                            <label class="checkbox" style="width: 100%; cursor: pointer;">
+                                <input type="checkbox" class="checkbox__input">
+                                <span class="checkbox__box"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg></span>
+                                <span class="checkbox__label">Design</span>
+                            </label>
+                        </li>
+                         <li class="s-dropdown__option" role="option" aria-selected="false">
+                            <label class="checkbox" style="width: 100%; cursor: pointer;">
+                                <input type="checkbox" class="checkbox__input">
+                                <span class="checkbox__box"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg></span>
+                                <span class="checkbox__label">Marketing</span>
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+
+        </main>
+    </div>
+
+	<div class="component-varients">
+		<h2> Component Variations</h2>
+		<div class="varient-card">
+			<h3>Variant Name : single_select<h3>
+			<p class="description">Dropdown for selecting a single item from a list.</p>
+			<div class="s-dropdown" style="margin-bottom: 24px;">
+                    <label id="supervisor-label" class="s-dropdown__label">Assign Supervisor</label>
+                    <div class="s-dropdown__input-wrapper">
+                        <input class="s-dropdown__input" type="text" placeholder="Select a supervisor..." role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="supervisor-label">
+                        <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                        </span>
+                    </div>
+                </div> 
+		</div>
+		<div class="varient-card">
+			<h3>Variant Name : multi_select<h3>
+			<p class="description">Dropdown for selecting multiple items, displaying selections as chips.</p>
+			<div class="s-dropdown s-dropdown--multi-select" style="margin-bottom: 24px;">
+                    <label id="team-label" class="s-dropdown__label">Filter by Team</label>
+                    <div class="s-dropdown__input-wrapper" tabindex="0">
+                        <div class="s-dropdown__input-content">
+                            <span class="s-dropdown__chip">
+                                Engineering
+                                <button class="s-dropdown__chip-remove" aria-label="Remove Engineering">×</button>
+                            </span>
+                            <span class="s-dropdown__chip">
+                                Design
+                                <button class="s-dropdown__chip-remove" aria-label="Remove Design">×</button>
+                            </span>
+                            <input class="s-dropdown__input" type="text" placeholder="Select teams..." role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="team-label">
+                        </div>
+                         <span class="s-dropdown__arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                        </span>
+                    </div>
+                </div> 
+		</div>
+	</div>
+
+</body>
+</html>

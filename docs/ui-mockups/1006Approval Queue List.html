@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Queue List</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://kit.fontawesome.com/1d1396b78d.js" crossorigin="anonymous"></script>
+    <style>
+        /* CSS Reset */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background-color: #F1F5F9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: grid;
+            place-items: center;
+            color: #334155;
+        }
+        
+        button {
+            font-family: inherit;
+        }
+
+        /* Design System Tokens */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-800: #1E293B;
+            --color-semantic-warning: #F59E0B;
+            --color-semantic-warning-bg: #FFFBEB;
+            --color-semantic-info: #2563EB;
+            --color-semantic-info-bg: #EFF6FF;
+            --color-semantic-error: #DC2626;
+
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+
+            /* Typography */
+            --font-size-h3: 28px;
+            --font-size-h4: 20px;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            /* Borders */
+            --border-radius-lg: 12px;
+            --border-radius-full: 9999px;
+        }
+
+        /* Mobile Screen Container */
+        .mobile-screen {
+            width: 375px;
+            height: 812px;
+            background-color: var(--color-neutral-50);
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 8px solid var(--color-neutral-800);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* App Bar */
+        .app-bar {
+            background-color: var(--color-neutral-white);
+            padding: var(--space-16) var(--space-24);
+            border-bottom: 1px solid var(--color-neutral-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .app-bar h1 {
+            font-size: var(--font-size-h4);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-neutral-800);
+        }
+        
+        .app-bar .icon-button {
+            background: none;
+            border: none;
+            color: var(--color-neutral-500);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: var(--color-neutral-100);
+            padding: var(--space-16) 0;
+        }
+
+        /* Approval List */
+        .approval-list {
+            list-style-type: none;
+        }
+
+        .list-header {
+            padding: var(--space-12) var(--space-16);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--color-neutral-100);
+        }
+
+        .list-header label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            font-size: var(--font-size-caption);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-700);
+            cursor: pointer;
+        }
+
+        /* Custom Checkbox */
+        .custom-checkbox input {
+            display: none;
+        }
+        .custom-checkbox .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-neutral-300);
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .custom-checkbox .checkmark i {
+            color: var(--color-neutral-white);
+            font-size: 12px;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .custom-checkbox input:checked + .checkmark {
+            background-color: var(--color-primary-500);
+            border-color: var(--color-primary-500);
+        }
+        .custom-checkbox input:checked + .checkmark i {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Attendance List Item */
+        .attendance-item {
+            background-color: var(--color-neutral-white);
+            margin: 0 var(--space-16) var(--space-8);
+            padding: var(--space-16);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--color-neutral-200);
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .attendance-item.selected {
+            background-color: #E6F0FF;
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 1px var(--color-primary-500);
+        }
+
+        .item-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-8);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-header .user-name {
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-800);
+        }
+        .item-header .date {
+            font-size: var(--font-size-caption);
+            color: var(--color-neutral-500);
+        }
+        
+        .item-details {
+            display: flex;
+            gap: var(--space-16);
+            align-items: center;
+        }
+        .time-entry {
+            display: flex;
+            align-items: center;
+            gap: var(--space-8);
+            font-size: var(--font-size-caption);
+            color: var(--color-neutral-500);
+        }
+        .time-entry i {
+            font-size: 16px;
+        }
+
+        .item-flags {
+            display: flex;
+            gap: var(--space-8);
+            margin-top: var(--space-8);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-4) var(--space-8);
+            border-radius: var(--border-radius-full);
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+        }
+        .status-badge.offline {
+            background-color: var(--color-semantic-info-bg);
+            color: var(--color-semantic-info);
+        }
+        .status-badge.discrepancy {
+            background-color: var(--color-semantic-warning-bg);
+            color: var(--color-semantic-warning);
+        }
+
+        /* Contextual App Bar */
+        .contextual-app-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--color-neutral-800);
+            color: var(--color-neutral-white);
+            padding: var(--space-12) var(--space-24);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+            border-top: 1px solid var(--color-neutral-700);
+        }
+        .multi-select-active .contextual-app-bar {
+            transform: translateY(0);
+        }
+
+        .selection-info {
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: var(--space-12);
+        }
+        
+        .action-buttons .btn {
+            padding: var(--space-8) var(--space-16);
+            border: none;
+            border-radius: 8px;
+            font-size: var(--font-size-caption);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .action-buttons .btn-approve {
+            background-color: var(--color-primary-500);
+            color: var(--color-neutral-white);
+        }
+        .action-buttons .btn-approve:hover {
+            background-color: var(--color-primary-600);
+        }
+
+        .action-buttons .btn-reject {
+            background-color: var(--color-neutral-700);
+            color: var(--color-neutral-200);
+        }
+        .action-buttons .btn-reject:hover {
+            background-color: var(--color-neutral-600);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: var(--space-32);
+            color: var(--color-neutral-500);
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: var(--space-16);
+            color: var(--color-neutral-300);
+        }
+        .empty-state h2 {
+            font-size: var(--font-size-h4);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-700);
+            margin-bottom: var(--space-8);
+        }
+        .empty-state p {
+            font-size: var(--font-size-body);
+            line-height: 1.5;
+        }
+
+        /* Skeleton Loader */
+        .skeleton-item {
+            background-color: var(--color-neutral-white);
+            margin: 0 var(--space-16) var(--space-8);
+            padding: var(--space-16);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--color-neutral-200);
+            display: flex;
+            gap: var(--space-12);
+        }
+        .skeleton {
+            background-color: var(--color-neutral-200);
+            border-radius: 4px;
+            animation: shimmer 1.5s infinite linear;
+            background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+            background-size: 200% 100%;
+        }
+        .skeleton-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+        }
+        .skeleton-line-long {
+            width: 60%;
+            height: 16px;
+        }
+        .skeleton-line-short {
+            width: 30%;
+            height: 14px;
+        }
+        .skeleton-line-medium {
+            width: 45%;
+            height: 14px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .screen-variations {
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 2rem;
+        }
+        .variation-group {
+            margin-bottom: 2rem;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .variation-group h3 {
+            margin-bottom: 0.5rem;
+        }
+        .variation-group normal {
+            color: #666;
+            font-style: italic;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="mobile-screen">
+        <header class="app-bar">
+            <h1>Pending Approvals</h1>
+            <button class="icon-button" aria-label="Filter"><i class="fa-solid fa-filter"></i></button>
+        </header>
+
+        <main class="main-content">
+            <div class="list-header">
+                <label for="select-all">
+                    <span class="custom-checkbox">
+                        <input type="checkbox" id="select-all">
+                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                    </span>
+                    Select All
+                </label>
+                <span>3 Pending</span>
+            </div>
+            <ul class="approval-list">
+                <li class="attendance-item" aria-label="Pending attendance for Amelia Vance on Jan 17, 2025.">
+                    <label class="custom-checkbox">
+                        <input type="checkbox">
+                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                    </label>
+                    <div class="item-content">
+                        <div class="item-header">
+                            <span class="user-name">Amelia Vance</span>
+                            <span class="date">Jan 17, 2025</span>
+                        </div>
+                        <div class="item-details">
+                            <div class="time-entry">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                <span>09:15 AM</span>
+                            </div>
+                            <div class="time-entry">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                <span>05:32 PM</span>
+                            </div>
+                        </div>
+                        <div class="item-flags">
+                            <div class="status-badge discrepancy">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                Clock Discrepancy
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                 <li class="attendance-item" aria-label="Pending attendance for Ben Carter on Jan 17, 2025.">
+                    <label class="custom-checkbox">
+                        <input type="checkbox">
+                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                    </label>
+                    <div class="item-content">
+                        <div class="item-header">
+                            <span class="user-name">Ben Carter</span>
+                            <span class="date">Jan 17, 2025</span>
+                        </div>
+                        <div class="item-details">
+                            <div class="time-entry">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                <span>08:55 AM</span>
+                            </div>
+                            <div class="time-entry">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                <span>05:01 PM</span>
+                            </div>
+                        </div>
+                        <!-- No flags for this one -->
+                    </div>
+                </li>
+                 <li class="attendance-item" aria-label="Pending attendance for Chloe Davis on Jan 16, 2025.">
+                    <label class="custom-checkbox">
+                        <input type="checkbox">
+                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                    </label>
+                    <div class="item-content">
+                        <div class="item-header">
+                            <span class="user-name">Chloe Davis</span>
+                            <span class="date">Jan 16, 2025</span>
+                        </div>
+                        <div class="item-details">
+                            <div class="time-entry">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                <span>09:05 AM</span>
+                            </div>
+                            <div class="time-entry">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                <span>04:58 PM</span>
+                            </div>
+                        </div>
+                        <div class="item-flags">
+                             <div class="status-badge offline">
+                                <i class="fa-solid fa-wifi-slash"></i>
+                                Offline Entry
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </main>
+        
+        <!-- Contextual App Bar (hidden by default) -->
+        <div class="contextual-app-bar">
+            <!-- This bar's visibility is controlled by a parent class -->
+        </div>
+    </div>
+    
+    <div class="screen-variations">
+        <h2>Screen Variations</h2>
+
+        <div class="variation-group">
+            <h3>Variant Name: "Loading State"</h3>
+            <normal>The screen's appearance while fetching the initial list of approvals, using skeleton placeholders to indicate where content will appear.</normal>
+            <div class="mobile-screen">
+                <header class="app-bar"><h1>Pending Approvals</h1></header>
+                <main class="main-content">
+                    <ul class="approval-list">
+                        <li class="skeleton-item">
+                            <div class="skeleton skeleton-checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-header"><div class="skeleton skeleton-line-long"></div></div>
+                                <div class="item-details"><div class="skeleton skeleton-line-medium"></div></div>
+                            </div>
+                        </li>
+                        <li class="skeleton-item">
+                            <div class="skeleton skeleton-checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-header"><div class="skeleton skeleton-line-long"></div></div>
+                                <div class="item-details"><div class="skeleton skeleton-line-medium"></div></div>
+                            </div>
+                        </li>
+                        <li class="skeleton-item">
+                            <div class="skeleton skeleton-checkbox"></div>
+                            <div class="item-content">
+                                <div class="item-header"><div class="skeleton skeleton-line-long"></div></div>
+                                <div class="item-details"><div class="skeleton skeleton-line-medium"></div></div>
+                            </div>
+                        </li>
+                    </ul>
+                </main>
+            </div>
+        </div>
+
+        <div class="variation-group">
+            <h3>Variant Name: "Empty State"</h3>
+            <normal>Shown when the supervisor has no pending attendance records to review. It provides clear, positive feedback.</normal>
+            <div class="mobile-screen">
+                <header class="app-bar"><h1>Pending Approvals</h1></header>
+                <main class="main-content">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <h2>All Caught Up!</h2>
+                        <p>There are no pending attendance records for you to review at this time.</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+        
+        <div class="variation-group">
+            <h3>Variant Name: "Multi-Select Active State"</h3>
+            <normal>Triggered when a supervisor selects one or more records. A contextual action bar appears at the bottom for bulk actions.</normal>
+            <div class="mobile-screen multi-select-active">
+                <header class="app-bar">
+                    <h1>Pending Approvals</h1>
+                    <button class="icon-button" aria-label="Filter"><i class="fa-solid fa-filter"></i></button>
+                </header>
+
+                <main class="main-content">
+                    <div class="list-header">
+                        <label for="select-all-2">
+                            <span class="custom-checkbox">
+                                <input type="checkbox" id="select-all-2" checked>
+                                <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                            </span>
+                            Select All
+                        </label>
+                        <span>2 Pending</span>
+                    </div>
+                    <ul class="approval-list">
+                        <li class="attendance-item selected" aria-label="Selected. Pending attendance for Amelia Vance on Jan 17, 2025.">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" checked>
+                                <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                            </label>
+                            <div class="item-content">
+                                <div class="item-header"><span class="user-name">Amelia Vance</span><span class="date">Jan 17, 2025</span></div>
+                                <div class="item-details">
+                                    <div class="time-entry"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>09:15 AM</span></div>
+                                    <div class="time-entry"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>05:32 PM</span></div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="attendance-item selected" aria-label="Selected. Pending attendance for Ben Carter on Jan 17, 2025.">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" checked>
+                                <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                            </label>
+                            <div class="item-content">
+                                <div class="item-header"><span class="user-name">Ben Carter</span><span class="date">Jan 17, 2025</span></div>
+                                <div class="item-details">
+                                    <div class="time-entry"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>08:55 AM</span></div>
+                                    <div class="time-entry"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>05:01 PM</span></div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </main>
+                
+                <div class="contextual-app-bar">
+                    <div class="selection-info" aria-live="polite">2 Selected</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-reject">Reject</button>
+                        <button class="btn btn-approve">Approve</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

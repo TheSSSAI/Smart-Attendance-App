@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Calendar View</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------------- */
+        /* --- 1. Design System Foundations --- */
+        /* ------------------------- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-600: #475569;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --color-warning-50: #FFFBEB;
+            --color-warning-900: #78350F;
+
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-caption: 14px;
+            --font-size-body: 16px;
+            --font-weight-regular: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --spacing-4: 4px;
+            --spacing-8: 8px;
+            --spacing-12: 12px;
+            --spacing-16: 16px;
+            --spacing-24: 24px;
+            --spacing-48: 48px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+        }
+
+        /* ------------------------- */
+        /* --- 2. Base & Showcase Layout --- */
+        /* ------------------------- */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-neutral-100);
+            color: var(--color-neutral-700);
+            padding: var(--spacing-24);
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+            gap: var(--spacing-48);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .showcase {
+            padding: var(--spacing-16);
+        }
+
+        h1 {
+            font-size: 2rem;
+            grid-column: 1 / -1;
+            margin-bottom: var(--spacing-16);
+            color: var(--color-neutral-900);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--spacing-16);
+        }
+
+        /* ------------------------- */
+        /* --- 3. Calendar Component CSS --- */
+        /* ------------------------- */
+        .calendar-view {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-24);
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+        }
+
+        .calendar__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-24);
+        }
+
+        .calendar__title {
+            font-size: 1.25rem;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+        }
+
+        .calendar__nav {
+            display: flex;
+            gap: var(--spacing-8);
+        }
+
+        .calendar__nav-btn {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: transparent;
+            color: var(--color-neutral-600);
+            cursor: pointer;
+            transition: background-color var(--transition-fast);
+        }
+        
+        .calendar__nav-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .calendar__nav-btn:hover {
+            background-color: var(--color-neutral-100);
+        }
+        
+        .calendar__nav-btn:focus-visible {
+            outline: 2px solid var(--color-primary-500);
+        }
+        
+        .calendar__body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--spacing-4);
+        }
+
+        .calendar__weekday {
+            text-align: center;
+            font-size: var(--font-size-caption);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-400);
+            padding-bottom: var(--spacing-8);
+            user-select: none;
+        }
+
+        .calendar__day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 52px;
+            border-radius: var(--border-radius-md);
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            transition: background-color var(--transition-fast);
+            position: relative;
+            padding: var(--spacing-8);
+        }
+
+        .calendar__day:focus-visible {
+            outline: 2px solid var(--color-primary-500);
+            outline-offset: 2px;
+        }
+
+        .calendar__day-number {
+            font-size: var(--font-size-body);
+            color: var(--color-neutral-700);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .calendar__day--other-month .calendar__day-number {
+            color: var(--color-neutral-400);
+            font-weight: var(--font-weight-regular);
+        }
+
+        .calendar__day--today .calendar__day-number {
+            color: var(--color-primary-500);
+            font-weight: var(--font-weight-semibold);
+            position: relative;
+        }
+
+        .calendar__day--today .calendar__day-number::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--color-primary-500);
+        }
+
+        .calendar__day--selected {
+            background-color: var(--color-primary-500);
+        }
+
+        .calendar__day--selected .calendar__day-number {
+            color: var(--color-white);
+            font-weight: var(--font-weight-semibold);
+        }
+        
+        .calendar__day--selected.calendar__day--today .calendar__day-number::after {
+            background-color: var(--color-white);
+        }
+
+        .calendar__event-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--color-primary-500);
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .calendar__day--selected .calendar__event-dot {
+            background-color: var(--color-white);
+        }
+        
+        /* States */
+        .calendar-view--empty .calendar__body {
+            display: none;
+        }
+
+        .calendar__empty-state {
+            text-align: center;
+            padding: var(--spacing-48) 0;
+            color: var(--color-neutral-600);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-16);
+        }
+        
+        .calendar__empty-state svg {
+            width: 48px;
+            height: 48px;
+            color: var(--color-neutral-300);
+        }
+
+        .calendar--loading .calendar__day-number {
+            width: 24px;
+            height: 24px;
+            background-color: var(--color-neutral-200);
+            border-radius: 50%;
+            color: transparent; /* Hide text */
+            user-select: none;
+        }
+
+        .calendar--loading .shimmer {
+            animation: shimmer 1.5s infinite linear;
+            background: linear-gradient(90deg, var(--color-neutral-200) 25%, var(--color-neutral-100) 50%, var(--color-neutral-200) 75%);
+            background-size: 200% 100%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Event List Dependency */
+        .event-list-header {
+            font-size: 1rem;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            margin-top: var(--spacing-24);
+            padding-bottom: var(--spacing-12);
+            border-bottom: 1px solid var(--color-neutral-200);
+        }
+        .event-list {
+            list-style: none;
+            margin-top: var(--spacing-16);
+        }
+        .event-item {
+            display: flex;
+            gap: var(--spacing-16);
+            padding: var(--spacing-12) 0;
+        }
+        .event-item__time {
+            flex-shrink: 0;
+            font-size: var(--font-size-caption);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-700);
+            width: 70px;
+        }
+        .event-item__details {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-4);
+            padding-left: var(--spacing-16);
+            border-left: 3px solid var(--color-primary-500);
+        }
+        .event-item__title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+        }
+        .event-item__description {
+            font-size: var(--font-size-caption);
+            color: var(--color-neutral-600);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-4);
+            padding: var(--spacing-4) var(--spacing-8);
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: var(--font-weight-semibold);
+            text-transform: uppercase;
+        }
+        .badge--pending { background-color: var(--color-warning-50); color: var(--color-warning-900); }
+
+    </style>
+</head>
+<body>
+
+<main>
+    <h1>Organism: Calendar View</h1>
+
+    <div class="showcase">
+        <h2>State: With Events</h2>
+        <div class="calendar-view">
+            <header class="calendar__header">
+                <button class="calendar__nav-btn" aria-label="Previous month">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>
+                </button>
+                <h3 class="calendar__title" id="calendar-title-1">January 2025</h3>
+                <button class="calendar__nav-btn" aria-label="Next month">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
+                </button>
+            </header>
+            <div role="grid" aria-labelledby="calendar-title-1">
+                <div class="calendar__body">
+                    <!-- Weekdays -->
+                    <div class="calendar__weekday" aria-hidden="true">Su</div>
+                    <div class="calendar__weekday" aria-hidden="true">Mo</div>
+                    <div class="calendar__weekday" aria-hidden="true">Tu</div>
+                    <div class="calendar__weekday" aria-hidden="true">We</div>
+                    <div class="calendar__weekday" aria-hidden="true">Th</div>
+                    <div class="calendar__weekday" aria-hidden="true">Fr</div>
+                    <div class="calendar__weekday" aria-hidden="true">Sa</div>
+                    <!-- Days -->
+                    <button class="calendar__day calendar__day--other-month"><span class="calendar__day-number">29</span></button>
+                    <button class="calendar__day calendar__day--other-month"><span class="calendar__day-number">30</span></button>
+                    <button class="calendar__day calendar__day--other-month"><span class="calendar__day-number">31</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">1</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">2</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">3</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">4</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">5</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">6</span> <span class="calendar__event-dot"></span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">7</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">8</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">9</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">10</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">11</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">12</span></button>
+                    <button class="calendar__day calendar__day--today"><span class="calendar__day-number">13</span> <span class="calendar__event-dot"></span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">14</span></button>
+                    <button class="calendar__day calendar__day--selected" aria-selected="true"><span class="calendar__day-number">15</span> <span class="calendar__event-dot"></span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">16</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">17</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">18</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">19</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">20</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">21</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">22</span> <span class="calendar__event-dot"></span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">23</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">24</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">25</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">26</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">27</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">28</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">29</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">30</span></button>
+                    <button class="calendar__day"><span class="calendar__day-number">31</span></button>
+                    <button class="calendar__day calendar__day--other-month"><span class="calendar__day-number">1</span></button>
+                </div>
+            </div>
+            <div class="event-list-container">
+                 <h4 class="event-list-header">Events for January 15, 2025</h4>
+                 <ul class="event-list">
+                     <li class="event-item">
+                         <div class="event-item__time">09:00 AM</div>
+                         <div class="event-item__details">
+                             <span class="event-item__title">Q1 Planning Meeting</span>
+                             <span class="event-item__description">Conference Room B</span>
+                         </div>
+                     </li>
+                     <li class="event-item">
+                         <div class="event-item__time">02:30 PM</div>
+                         <div class="event-item__details">
+                             <span class="event-item__title">Client On-site Visit: Acme Corp</span>
+                             <span class="event-item__description">123 Main St, Anytown</span>
+                         </div>
+                     </li>
+                 </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="showcase">
+        <h2>State: Empty</h2>
+        <div class="calendar-view calendar-view--empty">
+            <header class="calendar__header">
+                <button class="calendar__nav-btn" aria-label="Previous month">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>
+                </button>
+                <h3 class="calendar__title">February 2025</h3>
+                <button class="calendar__nav-btn" aria-label="Next month">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
+                </button>
+            </header>
+            <div class="calendar__body">
+                <!-- Grid would be here, but is hidden in empty state -->
+            </div>
+            <div class="calendar__empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0h18M12 12.75h.008v.008H12v-.008Z" /></svg>
+                <span>No events scheduled for this month.</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="showcase">
+        <h2>State: Loading</h2>
+        <div class="calendar-view calendar--loading">
+            <header class="calendar__header">
+                <button class="calendar__nav-btn" aria-label="Previous month">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>
+                </button>
+                <h3 class="calendar__title">January 2025</h3>
+                <button class="calendar__nav-btn" aria-label="Next month">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>
+                </button>
+            </header>
+            <div class="calendar__body">
+                <!-- Weekdays -->
+                <div class="calendar__weekday">Su</div><div class="calendar__weekday">Mo</div><div class="calendar__weekday">Tu</div><div class="calendar__weekday">We</div><div class="calendar__weekday">Th</div><div class="calendar__weekday">Fr</div><div class="calendar__weekday">Sa</div>
+                <!-- Skeleton Days -->
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+                <div class="calendar__day"><span class="calendar__day-number shimmer"></span></div>
+            </div>
+        </div>
+    </div>
+</main>
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : "month"<h3>
+		<!--description--><normal> The default view, showing a full month grid. Optimized for at-a-glance overview of scheduled activities. </normal>
+		<!-- vrient 1 html -->
+             
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "week"<h3>
+		<!--description--><normal> A view showing a single week (7 days). Useful for more detailed short-term planning. This would be a structural change in a real implementation. </normal>
+		<!-- vrient 1 html -->
+             
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : "day"<h3>
+		<!--description--><normal> A view showing a single day's schedule in a timeline format. Best for viewing detailed itineraries for a specific day. This would be a structural change in a real implementation. </normal>
+		<!-- vrient 1 html -->
+             
+		
+      <div>
+	 </div>
+	</div>
+	</body>
+</html>

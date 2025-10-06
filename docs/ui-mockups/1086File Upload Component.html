@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism Component: File Upload</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM TOKENS & BASE STYLES --- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-white: #FFFFFF;
+            --color-gray-50: #F8FAFC;
+            --color-gray-100: #F1F5F9;
+            --color-gray-200: #E2E8F0;
+            --color-gray-300: #CBD5E1;
+            --color-gray-400: #94A3B8;
+            --color-gray-500: #64748B;
+            --color-gray-700: #334155;
+            --color-gray-900: #0F172A;
+            --color-success: #16A34A;
+            --color-error: #DC2626;
+            --color-error-bg: #FEF2F2;
+            --color-error-text: #991B1B;
+            /* Typography */
+            --font-family-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            /* Spacing */
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-primary);
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-700);
+            padding: var(--spacing-xl);
+        }
+        .showcase-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        .showcase-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        .showcase-section h2 {
+            font-size: 24px;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-gray-900);
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* --- DEPENDENT COMPONENTS --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            font-family: var(--font-family-primary);
+            font-size: var(--font-size-body);
+            font-weight: var(--font-weight-semibold);
+            padding: 10px var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            min-height: 48px;
+        }
+        .btn--primary {
+            background-color: var(--color-primary-500);
+            color: var(--color-white);
+        }
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--color-gray-200);
+            border-top-color: var(--color-primary-500);
+            border-radius: 50%;
+            animation: spinner-spin 1s linear infinite;
+        }
+        @keyframes spinner-spin { to { transform: rotate(360deg); } }
+
+        /* --- FILE UPLOAD COMPONENT --- */
+        .file-upload {
+            background-color: var(--color-white);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--color-gray-200);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            font-family: var(--font-family-primary);
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .file-upload__dropzone {
+            border: 2px dashed var(--color-gray-300);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-xl) var(--spacing-lg);
+            cursor: pointer;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .file-upload__dropzone:hover,
+        .file-upload__dropzone--dragover {
+            border-color: var(--color-primary-500);
+            background-color: var(--color-primary-50);
+        }
+
+        .file-upload__icon {
+            width: 48px;
+            height: 48px;
+            color: var(--color-primary-500);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .file-upload__text {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-700);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .file-upload__text .browse-link {
+            color: var(--color-primary-500);
+            font-weight: var(--font-weight-bold);
+            text-decoration: none;
+        }
+
+        .file-upload__text .browse-link:hover {
+            text-decoration: underline;
+        }
+
+        .file-upload__hint {
+            font-size: var(--font-size-caption);
+            color: var(--color-gray-500);
+        }
+
+        .file-upload__input {
+            display: none;
+        }
+
+        /* States Management */
+        .file-upload__state-view {
+            display: none;
+            padding: var(--spacing-lg) 0;
+        }
+
+        .file-upload[data-state="idle"] .file-upload__dropzone { display: block; }
+        .file-upload[data-state="idle"] .file-upload__state-view { display: none; }
+
+        .file-upload[data-state="uploading"],
+        .file-upload[data-state="complete"],
+        .file-upload[data-state="error"] {
+            padding: var(--spacing-lg);
+        }
+
+        .file-upload[data-state="uploading"] .file-upload__dropzone,
+        .file-upload[data-state="complete"] .file-upload__dropzone,
+        .file-upload[data-state="error"] .file-upload__dropzone {
+            display: none;
+        }
+
+        .file-upload[data-state="uploading"] .file-upload__state-view--uploading,
+        .file-upload[data-state="complete"] .file-upload__state-view--complete,
+        .file-upload[data-state="error"] .file-upload__state-view--error {
+            display: block;
+        }
+
+        /* Uploading State */
+        .file-upload__state-view--uploading .spinner {
+            margin: 0 auto var(--spacing-md) auto;
+        }
+        .file-upload__filename {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-gray-700);
+            word-break: break-all;
+        }
+        .file-upload__progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--color-gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: var(--spacing-md);
+        }
+        .file-upload__progress-bar-fill {
+            height: 100%;
+            width: 65%; /* Example progress */
+            background-color: var(--color-primary-500);
+            border-radius: 4px;
+        }
+
+        /* Complete State */
+        .file-upload__state-view--complete .file-upload__icon {
+            color: var(--color-success);
+        }
+        .file-upload__complete-text {
+            font-weight: var(--font-weight-bold);
+            color: var(--color-gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        /* Error State */
+        .file-upload__state-view--error .file-upload__icon {
+            color: var(--color-error);
+        }
+        .file-upload__error-title {
+            font-weight: var(--font-weight-bold);
+            color: var(--color-gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+        .file-upload__error-message {
+            font-size: var(--font-size-caption);
+            color: var(--color-error-text);
+            background-color: var(--color-error-bg);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--spacing-md);
+            word-break: break-all;
+        }
+
+        /* Button Select Variant */
+        .file-upload--button-select {
+            padding: 0;
+            border: none;
+            box-shadow: none;
+            background-color: transparent;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="showcase-header">
+        <h1>Organism Component: File Upload</h1>
+    </div>
+
+    <div class="showcase-section">
+        <h2>Component States</h2>
+
+        <!-- Idle State -->
+        <h3>Idle</h3>
+        <div class="file-upload" data-state="idle">
+            <label for="file-input-idle" class="file-upload__dropzone">
+                <svg class="file-upload__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3.75 3.75M12 9.75l3.75 3.75M3 17.25V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25z" />
+                </svg>
+                <p class="file-upload__text">Drag & drop your file here or <span class="browse-link">browse</span></p>
+                <p class="file-upload__hint">CSV files up to 10MB</p>
+            </label>
+            <input type="file" id="file-input-idle" class="file-upload__input" accept=".csv">
+        </div>
+    </div>
+
+    <div class="showcase-section">
+        <!-- Uploading State -->
+        <h3>Uploading</h3>
+        <div class="file-upload" data-state="uploading">
+            <!-- Hidden dropzone for state switch -->
+            <label for="file-input-uploading" class="file-upload__dropzone"></label>
+            <input type="file" id="file-input-uploading" class="file-upload__input">
+            
+            <div class="file-upload__state-view file-upload__state-view--uploading" aria-live="polite">
+                <div class="spinner"></div>
+                <p class="file-upload__filename">user_data_import_q1.csv</p>
+                <div class="file-upload__progress-bar" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
+                    <div class="file-upload__progress-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="showcase-section">
+        <!-- Complete State -->
+        <h3>Complete</h3>
+        <div class="file-upload" data-state="complete">
+             <!-- Hidden dropzone for state switch -->
+            <label for="file-input-complete" class="file-upload__dropzone"></label>
+            <input type="file" id="file-input-complete" class="file-upload__input">
+
+            <div class="file-upload__state-view file-upload__state-view--complete" role="status">
+                <svg class="file-upload__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="file-upload__complete-text">Upload Complete</p>
+                <p class="file-upload__filename">user_data_import_q1.csv</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="showcase-section">
+        <!-- Error State -->
+        <h3>Error</h3>
+        <div class="file-upload" data-state="error">
+             <!-- Hidden dropzone for state switch -->
+            <label for="file-input-error" class="file-upload__dropzone"></label>
+            <input type="file" id="file-input-error" class="file-upload__input">
+
+            <div class="file-upload__state-view file-upload__state-view--error" role="alert">
+                 <svg class="file-upload__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <p class="file-upload__error-title">Upload Failed</p>
+                <p class="file-upload__filename">invalid_format.csv</p>
+                <p class="file-upload__error-message">Invalid header found: 'user_email' should be 'email'.</p>
+                <button class="btn btn--primary" style="margin-top: 16px;">Try Again</button>
+            </div>
+        </div>
+    </div>
+    
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : "drag_and_drop"</h3>
+		<normal> The primary, full-featured variant that provides a large, clearly marked area for users to drag and drop files directly from their desktop. Also includes a clickable link to open the native file browser. </normal>
+		<div class="file-upload" data-state="idle">
+            <label for="file-input-idle-variant" class="file-upload__dropzone">
+                <svg class="file-upload__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3.75 3.75M12 9.75l3.75 3.75M3 17.25V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25z" />
+                </svg>
+                <p class="file-upload__text">Drag & drop your file here or <span class="browse-link">browse</span></p>
+                <p class="file-upload__hint">CSV files up to 10MB</p>
+            </label>
+            <input type="file" id="file-input-idle-variant" class="file-upload__input" accept=".csv">
+        </div>     
+		
+      </div>
+	 
+      <div>
+        <h3>Variant Name : "button_select"</h3>
+		<normal> A simplified variant that presents only a button to the user. Clicking the button opens the native file browser. This is useful in contexts where a large drop zone is not practical or necessary. </normal>
+		<div class="file-upload file-upload--button-select">
+            <label for="file-input-button-variant" class="btn btn--primary" style="display: inline-flex; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 8px;"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+                <span>Upload CSV File</span>
+            </label>
+            <input type="file" id="file-input-button-variant" class="file-upload__input" accept=".csv">
+        </div>     
+		
+      </div>
+	 </div>    
+	
+	</body>
+</html>

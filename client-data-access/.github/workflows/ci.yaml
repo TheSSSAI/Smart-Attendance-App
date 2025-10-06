@@ -1,0 +1,56 @@
+# Continuous Integration workflow for the client-data-access package
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main and develop branches
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name:  checkout repository
+        uses: actions/checkout@v4
+
+      # Sets up the Flutter environment for the CI job
+      - name: setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.22.x' # Use a specific stable version
+
+      # Installs project dependencies
+      - name: install dependencies
+        run: flutter pub get
+
+      # Verifies that the code is formatted according to dart format
+      - name: check formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      # Runs static analysis using the rules defined in analysis_options.yaml
+      - name: analyze code
+        run: flutter analyze
+
+      # Runs all unit and widget tests and generates a code coverage report
+      - name: run tests and generate coverage
+        run: flutter test --coverage
+
+      # Checks if the test coverage meets the minimum threshold of 80%
+      # as required by REQ-1-072
+      - name: check test coverage
+        uses: very_good_ventures/very_good_coverage@v3
+        with:
+          min_coverage: 80
+          path: ./coverage/lcov.info

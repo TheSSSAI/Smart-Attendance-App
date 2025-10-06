@@ -1,0 +1,388 @@
+
+{
+  "component_inventory": {
+    "atomic_components": [
+      {
+        "component_name": "Primary Button",
+        "category": "form_controls",
+        "variants": ["default", "secondary", "danger", "loading", "disabled"],
+        "states": ["default", "pressed", "disabled", "loading"],
+        "responsive_needs": "Minimum 48x48dp touch target size to comply with Material/HIG guidelines.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "2-4 hours"
+      },
+      {
+        "component_name": "Text Input Field",
+        "category": "form_controls",
+        "variants": ["default", "password", "multiline", "phone_number", "otp_pin"],
+        "states": ["default", "focused", "error", "disabled"],
+        "responsive_needs": "Adapts to screen width, handles keyboard overlap, proper keyboard type handling (email, phone, etc.).",
+        "dependencies": ["Icon Button (for visibility toggle)"],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Checkbox",
+        "category": "form_controls",
+        "variants": ["default", "list_selection"],
+        "states": ["checked", "unchecked", "disabled"],
+        "responsive_needs": "Minimum 48x48dp touch target.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "2-3 hours"
+      },
+      {
+        "component_name": "Alert Banner",
+        "category": "feedback",
+        "variants": ["info", "success", "warning", "error", "persistent_sync_failure"],
+        "states": ["visible", "hidden"],
+        "responsive_needs": "Full width with appropriate padding, adapts to dynamic text scaling.",
+        "dependencies": ["Icon", "Text", "Primary Button (for 'Retry')"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Loading Spinner",
+        "category": "feedback",
+        "variants": ["circular_overlay", "inline_small", "linear"],
+        "states": ["indeterminate"],
+        "responsive_needs": "Scalable size for different contexts (e.g., button vs. full screen).",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 1,
+        "estimated_effort": "1-2 hours"
+      },
+      {
+        "component_name": "Status Badge/Chip",
+        "category": "data_display",
+        "variants": ["pending", "approved", "rejected", "offline", "corrected", "discrepancy", "auto_checkout"],
+        "states": ["default"],
+        "responsive_needs": "Font and padding scales with text size.",
+        "dependencies": ["Icon"],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "3-5 hours"
+      },
+      {
+        "component_name": "Text Link",
+        "category": "navigation",
+        "variants": ["default", "inline"],
+        "states": ["default", "pressed"],
+        "responsive_needs": "Minimum 48x48dp touch target.",
+        "dependencies": [],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "1-2 hours"
+      }
+    ],
+    "molecular_components": [
+      {
+        "component_name": "App Bar",
+        "category": "navigation",
+        "variants": ["main", "contextual_actions", "with_tabs"],
+        "states": ["default"],
+        "responsive_needs": "Adapts title alignment and action icon spacing for different screen sizes and notches.",
+        "dependencies": ["Icon Button", "Text"],
+        "complexity_level": "low",
+        "implementation_priority": 2,
+        "estimated_effort": "3-4 hours"
+      },
+      {
+        "component_name": "Bottom Navigation Bar",
+        "category": "navigation",
+        "variants": ["subordinate_nav", "supervisor_nav"],
+        "states": ["default", "active_item"],
+        "responsive_needs": "Standard mobile component, adapts to gesture navigation insets.",
+        "dependencies": ["Icon", "Text"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Attendance List Item",
+        "category": "data_display",
+        "variants": ["subordinate_view", "supervisor_view", "with_flags", "multi_select_enabled"],
+        "states": ["default", "pressed", "selected"],
+        "responsive_needs": "Adapts to screen width and dynamic text scaling.",
+        "dependencies": ["Text", "Status Badge/Chip", "Checkbox"],
+        "complexity_level": "medium",
+        "implementation_priority": 4,
+        "estimated_effort": "6-8 hours"
+      },
+      {
+        "component_name": "Confirmation Dialog",
+        "category": "feedback",
+        "variants": ["generic", "destructive_action", "with_input_for_rejection"],
+        "states": ["visible"],
+        "responsive_needs": "Centered overlay, responsive to screen width.",
+        "dependencies": ["Primary Button", "Text Link", "Text Input Field"],
+        "complexity_level": "medium",
+        "implementation_priority": 3,
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "component_name": "Date/Time Picker",
+        "category": "form_controls",
+        "variants": ["date_only", "time_only", "platform_adaptive"],
+        "states": ["visible"],
+        "responsive_needs": "Uses native iOS (Cupertino) and Android (Material) picker styles for a familiar UX.",
+        "dependencies": [],
+        "complexity_level": "medium",
+        "implementation_priority": 5,
+        "estimated_effort": "3-5 hours"
+      },
+      {
+        "component_name": "Permission Guidance Dialog",
+        "category": "feedback",
+        "variants": ["location_denied"],
+        "states": ["visible"],
+        "responsive_needs": "Standard dialog format.",
+        "dependencies": ["Primary Button", "Text"],
+        "complexity_level": "low",
+        "implementation_priority": 3,
+        "estimated_effort": "2-3 hours"
+      }
+    ],
+    "organism_components": [
+      {
+        "component_name": "Authentication Form",
+        "category": "forms",
+        "variants": ["login_email_password", "login_phone_number_entry", "otp_entry", "forgot_password", "set_new_password"],
+        "states": ["default", "loading", "error"],
+        "responsive_needs": "Standard vertical form layout, handles keyboard visibility.",
+        "dependencies": ["Text Input Field", "Primary Button", "Text Link"],
+        "complexity_level": "medium",
+        "implementation_priority": 2,
+        "estimated_effort": "8-12 hours"
+      },
+      {
+        "component_name": "Event Creation/Edit Form",
+        "category": "forms",
+        "variants": ["single_event", "recurring_event"],
+        "states": ["default", "validating", "saving"],
+        "responsive_needs": "Scrollable form for smaller screens to accommodate all fields.",
+        "dependencies": ["Text Input Field", "Date/Time Picker", "User/Team Selection List"],
+        "complexity_level": "high",
+        "implementation_priority": 6,
+        "estimated_effort": "12-16 hours"
+      },
+      {
+        "component_name": "Approval Queue List",
+        "category": "data_display",
+        "variants": ["attendance_approval", "correction_review"],
+        "states": ["loading", "empty", "with_data", "multi_select_active"],
+        "responsive_needs": "Full-screen list view for mobile with pull-to-refresh.",
+        "dependencies": ["Attendance List Item", "Checkbox", "Primary Button", "Contextual App Bar"],
+        "complexity_level": "high",
+        "implementation_priority": 5,
+        "estimated_effort": "10-14 hours"
+      },
+      {
+        "component_name": "Calendar View",
+        "category": "data_display",
+        "variants": ["month", "week", "day"],
+        "states": ["loading", "with_events", "empty"],
+        "responsive_needs": "Optimized for mobile touch interaction (swiping, tapping days).",
+        "dependencies": ["Event List Item", "Status Badge/Chip"],
+        "complexity_level": "high",
+        "implementation_priority": 6,
+        "estimated_effort": "12-18 hours"
+      },
+      {
+        "component_name": "Embedded Map View",
+        "category": "data_display",
+        "variants": ["single_pin", "dual_pin"],
+        "states": ["loading", "loaded", "error_no_network"],
+        "responsive_needs": "Standard mobile map interaction (pan, zoom).",
+        "dependencies": [],
+        "complexity_level": "high",
+        "implementation_priority": 5,
+        "estimated_effort": "8-12 hours"
+      }
+    ]
+  },
+  "screen_inventory": [
+    {
+      "screen_name": "Splash Screen",
+      "screen_type": "utility",
+      "variants": [],
+      "states": ["loading"],
+      "required_components": ["Loading Spinner"],
+      "platform_optimizations": "Displays app logo while checking authentication state.",
+      "implementation_priority": 1,
+      "estimated_effort": "2-4 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Login Screen",
+      "screen_type": "authentication",
+      "variants": ["email_password", "phone_number_entry"],
+      "states": ["default", "loading", "error"],
+      "required_components": ["Authentication Form"],
+      "platform_optimizations": "Standard Flutter Material components.",
+      "implementation_priority": 2,
+      "estimated_effort": "8-12 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Registration Completion Screen",
+      "screen_type": "authentication",
+      "variants": ["set_password"],
+      "states": ["default", "loading", "error"],
+      "required_components": ["Authentication Form", "Checkbox"],
+      "platform_optimizations": "Displays password complexity rules.",
+      "implementation_priority": 2,
+      "estimated_effort": "4-6 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Subordinate Dashboard Screen",
+      "screen_type": "dashboard",
+      "variants": ["checked_out", "checked_in", "offline"],
+      "states": ["loading", "loaded", "error"],
+      "required_components": ["Primary Button", "Alert Banner", "Event List Item"],
+      "platform_optimizations": "Main action buttons ('Check-In'/'Check-Out') are prominent and easily accessible.",
+      "implementation_priority": 3,
+      "estimated_effort": "12-16 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Supervisor Dashboard Screen",
+      "screen_type": "dashboard",
+      "variants": ["default"],
+      "states": ["loading", "loaded", "empty_queue", "error"],
+      "required_components": ["Approval Queue List"],
+      "platform_optimizations": "Prioritizes showing actionable items (pending approvals).",
+      "implementation_priority": 4,
+      "estimated_effort": "16-24 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Attendance History Screen",
+      "screen_type": "list_view",
+      "variants": ["subordinate_self_view", "supervisor_view_of_subordinate"],
+      "states": ["loading", "with_data", "empty", "offline"],
+      "required_components": ["Attendance List Item", "Alert Banner"],
+      "platform_optimizations": "Infinite scroll or paginated list for performance.",
+      "implementation_priority": 4,
+      "estimated_effort": "8-12 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Attendance Detail Screen",
+      "screen_type": "detail_view",
+      "variants": ["pending", "approved", "rejected"],
+      "states": ["loading", "loaded"],
+      "required_components": ["Embedded Map View", "Status Badge/Chip", "Text"],
+      "platform_optimizations": "Layout adapts to show map and details clearly on mobile devices of varying sizes.",
+      "implementation_priority": 5,
+      "estimated_effort": "10-14 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Event Calendar Screen",
+      "screen_type": "calendar",
+      "variants": ["subordinate_read_only", "supervisor_with_create_button"],
+      "states": ["loading", "loaded", "empty"],
+      "required_components": ["Calendar View", "Primary Button"],
+      "platform_optimizations": "Uses native-like gestures (swiping) for navigation between months/weeks.",
+      "implementation_priority": 6,
+      "estimated_effort": "12-18 hours",
+      "user_flow_criticality": "high"
+    },
+    {
+      "screen_name": "Event Creation/Edit Screen",
+      "screen_type": "form",
+      "variants": ["new_event", "edit_event"],
+      "states": ["default", "saving", "error"],
+      "required_components": ["Event Creation/Edit Form"],
+      "platform_optimizations": "Uses platform-adaptive date/time pickers (Cupertino/Material).",
+      "implementation_priority": 7,
+      "estimated_effort": "12-16 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Correction Request Screen",
+      "screen_type": "form",
+      "variants": ["subordinate_request_form"],
+      "states": ["default", "loading", "error", "success"],
+      "required_components": ["Confirmation Dialog", "Date/Time Picker", "Text Input Field"],
+      "platform_optimizations": "Presents a clear comparison between original and new data for the user.",
+      "implementation_priority": 8,
+      "estimated_effort": "8-12 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Correction Review Screen",
+      "screen_type": "detail_view",
+      "variants": ["supervisor_review"],
+      "states": ["default", "loading", "error"],
+      "required_components": ["Confirmation Dialog", "Primary Button", "Text"],
+      "platform_optimizations": "Highlights changes requested by the subordinate for easy review.",
+      "implementation_priority": 8,
+      "estimated_effort": "6-8 hours",
+      "user_flow_criticality": "medium"
+    },
+    {
+      "screen_name": "Settings Screen",
+      "screen_type": "settings",
+      "variants": ["default"],
+      "states": ["loaded"],
+      "required_components": ["List Tile", "Switch", "Text Link"],
+      "platform_optimizations": "Standard platform-specific settings layout.",
+      "implementation_priority": 7,
+      "estimated_effort": "6-10 hours",
+      "user_flow_criticality": "low"
+    }
+  ],
+  "implementation_plan": {
+    "phase_1_foundation": {
+      "components": ["Primary Button", "Text Input Field", "Loading Spinner", "Alert Banner", "App Bar", "Bottom Navigation Bar"],
+      "rationale": "Core atomic and molecular components needed for all subsequent UI development, basic user feedback, and app navigation structure.",
+      "estimated_duration": "3-5 days"
+    },
+    "phase_2_authentication": {
+      "screens": ["Splash Screen", "Login Screen", "Registration Completion Screen", "Forgot Password Screen"],
+      "rationale": "Builds the complete user authentication and onboarding flow, which is a prerequisite for any role-specific functionality.",
+      "estimated_duration": "5-8 days"
+    },
+    "phase_3_subordinate_core": {
+      "screens": ["Subordinate Dashboard Screen", "Attendance History Screen"],
+      "components": ["Attendance List Item", "Permission Guidance Dialog"],
+      "rationale": "Implements the primary user flow for the Subordinate role: checking in/out and viewing their own data, including offline capabilities. This is the core value proposition.",
+      "estimated_duration": "8-12 days"
+    },
+    "phase_4_supervisor_core": {
+      "screens": ["Supervisor Dashboard Screen"],
+      "components": ["Approval Queue List", "Confirmation Dialog", "Status Badge/Chip"],
+      "rationale": "Implements the primary user flow for the Supervisor role: reviewing and actioning subordinate attendance records, including single and bulk actions.",
+      "estimated_duration": "8-12 days"
+    },
+    "phase_5_advanced_features": {
+      "screens": ["Attendance Detail Screen", "Event Calendar Screen", "Event Creation/Edit Screen", "Correction Request Screen", "Correction Review Screen", "Settings Screen"],
+      "components": ["Embedded Map View", "Calendar View", "Event Creation/Edit Form"],
+      "rationale": "Builds out the secondary, but high-value, features of event management, data correction, and settings for both roles.",
+      "estimated_duration": "10-15 days"
+    }
+  },
+  "platform_implementation_strategy": {
+    "target_platform": "Mobile (iOS & Android)",
+    "implementation_approach": "mobile_first",
+    "responsive_strategy": "The application is mobile-only, but components must be built with responsive principles (using Flutter's layout widgets like Expanded, Flexible, LayoutBuilder) to handle various screen sizes and densities gracefully.",
+    "progressive_enhancement": "Core online functionality (attendance) must be solid before adding offline capabilities, followed by advanced features like event management.",
+    "browser_support": "N/A",
+    "accessibility_integration": "WCAG 2.1 AA compliance and dynamic text scaling will be integrated into every component and screen from the beginning of development."
+  },
+  "quality_assurance_plan": {
+    "component_testing": "Widget testing for each Flutter component in isolation to verify UI rendering and state changes.",
+    "integration_testing": "Testing interactions between components and services (e.g., forms submitting to Riverpod providers). Use of Firebase Emulator Suite is mandatory.",
+    "responsive_testing": "Testing on a range of iOS and Android device emulators and physical devices covering various screen sizes and densities.",
+    "accessibility_testing": "Manual testing with TalkBack (Android) and VoiceOver (iOS) for all user flows. Use of automated checkers for contrast and touch target size.",
+    "performance_testing": "Monitoring frame rates (jank), app startup time, and memory usage using Flutter DevTools during development and QA."
+  }
+}

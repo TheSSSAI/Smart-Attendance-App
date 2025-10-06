@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Dev (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--web-port=5000",
+                "--web-renderer=canvaskit",
+                "--dart-define-from-file=env/.env.dev"
+            ],
+            "toolArgs": [
+                "-d",
+                "chrome",
+            ]
+        },
+        {
+            "name": "Run Staging (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--web-port=5000",
+                "--web-renderer=canvaskit",
+                "--dart-define-from-file=env/.env.staging"
+            ],
+            "toolArgs": [
+                "-d",
+                "chrome",
+            ]
+        },
+        {
+            "name": "Run Prod (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--web-port=5000",
+                "--web-renderer=canvaskit",
+                "--dart-define-from-file=env/.env.prod"
+            ],
+            "toolArgs": [
+                "-d",
+                "chrome",
+            ]
+        }
+    ]
+}

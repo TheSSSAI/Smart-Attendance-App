@@ -1,0 +1,45 @@
+# General
+*.log
+.DS_Store
+.idea/
+.vscode/
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+flutter_*.log
+
+# Mobile
+/ios/Pods/
+/ios/Flutter/App.framework
+/ios/Flutter/engine.podspec
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/Generated.xcconfig
+/ios/Runner/GeneratedPluginRegistrant.*
+/ios/Runner.xcworkspace/
+/ios/Runner.xcodeproj/project.xcworkspace/
+/ios/Runner.xcodeproj/xcuserdata/
+/android/app/build/
+/android/build/
+/android/.gradle/
+/android/gradle/
+/android/local.properties
+/android/*.iml
+/android/.idea/
+
+# Web
+.dart_tool/build/
+
+# Code Coverage
+/coverage/
+lcov.info
+
+# Sensitive files
+*.pem
+*.jks

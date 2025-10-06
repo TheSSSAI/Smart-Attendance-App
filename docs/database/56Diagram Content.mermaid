@@ -1,0 +1,10 @@
+erDiagram
+    "Node: User" {
+        String userId PK
+    }
+    "Node: Team" {
+        String teamId PK
+    }
+    "Node: User" }o--|| "Node: User" : "REPORTS_TO"
+    "Node: User" }o--o{ "Node: Team" : "MEMBER_OF"
+    "Node: User" ||--o{ "Node: Team" : "SUPERVISES"

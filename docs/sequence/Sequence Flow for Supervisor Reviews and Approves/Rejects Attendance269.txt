@@ -1,0 +1,536 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-BP-005
+
+## 1.2 Name
+
+Supervisor Reviews and Approves/Rejects Attendance
+
+## 1.3 Description
+
+A Supervisor logs in, views a dashboard of pending attendance records from their direct subordinates, and performs a bulk or single approval or rejection action. Rejected records require a justification.
+
+## 1.4 Type
+
+🔹 BusinessProcess
+
+## 1.5 Purpose
+
+To implement the human-in-the-loop approval workflow for validating attendance records.
+
+## 1.6 Complexity
+
+Low
+
+## 1.7 Priority
+
+🔴 High
+
+## 1.8 Frequency
+
+Daily
+
+## 1.9 Participants
+
+- REPO-APP-MOBILE-010
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- Supervisor opens the approval dashboard in the mobile app.
+- The app queries Firestore for attendance records where `supervisorId` matches their ID and `status` is 'pending'.
+- The UI displays the list of pending records, visually distinguishing any with flags (offline, discrepancy).
+- Supervisor selects one or more records and taps 'Approve' or 'Reject'.
+- If rejecting, the supervisor is prompted to provide a mandatory reason.
+- The app performs a batched write to update the `status` of the selected documents in Firestore to 'approved' or 'rejected', including the `rejectionReason` if applicable.
+
+## 1.11 Triggers
+
+- A Supervisor chooses to review pending attendance records.
+
+## 1.12 Outcomes
+
+- The status of pending attendance records is updated to 'approved' or 'rejected'.
+- Rejected records contain a reason for the rejection visible to the subordinate.
+- Approved records become eligible for reporting and data export.
+
+## 1.13 Business Rules
+
+- A reason is mandatory for rejection (REQ-3.3.1).
+- Supervisors can only see records for their direct subordinates, enforced by Firestore Security Rules.
+
+## 1.14 Error Scenarios
+
+- Supervisor attempts to approve records while offline; the action is queued locally by Firestore.
+- A conflict occurs if an automated process (e.g., escalation) changes the record status simultaneously.
+
+## 1.15 Integration Points
+
+*No items available*
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-BP-005-IMPL
+
+## 2.2 Name
+
+Implementation: Supervisor Attendance Approval Workflow
+
+## 2.3 Description
+
+Provides a comprehensive technical specification for the supervisor attendance approval business process. The sequence details how the Flutter mobile client (REPO-APP-MOBILE-010) securely queries and updates attendance records stored in the Firestore database (data-persistence-layer). It emphasizes the use of indexed Firestore queries for performance, batched writes for atomic updates, and the critical role of Firestore Security Rules for enforcing Role-Based Access Control (RBAC).
+
+## 2.4 Participants
+
+### 2.4.1 Flutter Client
+
+#### 2.4.1.1 Repository Id
+
+REPO-APP-MOBILE-010
+
+#### 2.4.1.2 Display Name
+
+Supervisor's Mobile App
+
+#### 2.4.1.3 Type
+
+🔹 Flutter Client
+
+#### 2.4.1.4 Technology
+
+Flutter, Riverpod, Firebase SDK
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #4285F4 |
+| Stereotype | Presentation Layer |
+
+### 2.4.2.0 NoSQL Database
+
+#### 2.4.2.1 Repository Id
+
+data-persistence-layer
+
+#### 2.4.2.2 Display Name
+
+Firestore Database
+
+#### 2.4.2.3 Type
+
+🔹 NoSQL Database
+
+#### 2.4.2.4 Technology
+
+Firestore, Firestore Security Rules
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFCA28 |
+| Stereotype | Data Persistence Layer |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 User Interaction
+
+#### 2.5.1.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.1.3 Message
+
+User (Supervisor) navigates to the 'Approvals' dashboard.
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 User Interaction
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal UI Navigation |
+| Method | Navigator.push() |
+| Parameters | Route to ApprovalScreen |
+| Authentication | Requires authenticated Supervisor session. |
+| Error Handling | N/A |
+| Performance | UI transition should be < 200ms. |
+
+#### 2.5.1.11 Nested Interactions
+
+*No items available*
+
+### 2.5.2.0 Database Query
+
+#### 2.5.2.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.2.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.2.3 Message
+
+Query for pending attendance records.
+
+#### 2.5.2.4 Sequence Number
+
+2
+
+#### 2.5.2.5 Type
+
+🔹 Database Query
+
+#### 2.5.2.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.2.7 Return Message
+
+
+
+#### 2.5.2.8 Has Return
+
+✅ Yes
+
+#### 2.5.2.9 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | collection('attendance').where('supervisorId', '==... |
+| Parameters | Implicit current user ID from Firebase Auth state. |
+| Authentication | Firebase Auth JWT automatically sent by SDK. Fires... |
+| Error Handling | Client must handle 'permission-denied' (logic erro... |
+| Performance | Requires a composite index on `supervisorId` and `... |
+
+#### 2.5.2.11 Nested Interactions
+
+*No items available*
+
+### 2.5.3.0 Database Response
+
+#### 2.5.3.1 Source Id
+
+data-persistence-layer
+
+#### 2.5.3.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.3.3 Message
+
+Return QuerySnapshot with pending attendance documents.
+
+#### 2.5.3.4 Sequence Number
+
+3
+
+#### 2.5.3.5 Type
+
+🔹 Database Response
+
+#### 2.5.3.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7 Return Message
+
+QuerySnapshot containing `AttendanceRecord` objects.
+
+#### 2.5.3.8 Has Return
+
+✅ Yes
+
+#### 2.5.3.9 Is Activation
+
+❌ No
+
+#### 2.5.3.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method |  |
+| Parameters | Array of DocumentSnapshot objects. |
+| Authentication | N/A |
+| Error Handling | Client deserializes documents and handles potentia... |
+| Performance | Payload size depends on the number of pending reco... |
+
+#### 2.5.3.11 Nested Interactions
+
+*No items available*
+
+### 2.5.4.0 UI Logic
+
+#### 2.5.4.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.4.3 Message
+
+Render list of pending records. If `reject` is chosen, prompt for mandatory reason.
+
+#### 2.5.4.4 Sequence Number
+
+4
+
+#### 2.5.4.5 Type
+
+🔹 UI Logic
+
+#### 2.5.4.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.4.7 Return Message
+
+
+
+#### 2.5.4.8 Has Return
+
+❌ No
+
+#### 2.5.4.9 Is Activation
+
+❌ No
+
+#### 2.5.4.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Internal State Management (Riverpod) |
+| Method | updateState(records) |
+| Parameters | Visually distinguish records with flags like `isOf... |
+| Authentication | N/A |
+| Error Handling | Display user-friendly error message if rejection r... |
+| Performance | List rendering should be virtualized for performan... |
+
+#### 2.5.4.11 Nested Interactions
+
+*No items available*
+
+### 2.5.5.0 Database Write (Batch)
+
+#### 2.5.5.1 Source Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.5.2 Target Id
+
+data-persistence-layer
+
+#### 2.5.5.3 Message
+
+Perform batched write to update status of selected records.
+
+#### 2.5.5.4 Sequence Number
+
+5
+
+#### 2.5.5.5 Type
+
+🔹 Database Write (Batch)
+
+#### 2.5.5.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.5.7 Return Message
+
+
+
+#### 2.5.5.8 Has Return
+
+✅ Yes
+
+#### 2.5.5.9 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method | firestore.batch().update(docRef, data).commit() |
+| Parameters | For each selected record:
+- Approve: `{ 'status': ... |
+| Authentication | Firebase Auth JWT automatically sent. Security Rul... |
+| Error Handling | This is an atomic operation. If one update fails, ... |
+| Performance | Batching up to 500 operations is highly efficient. |
+
+#### 2.5.5.11 Nested Interactions
+
+*No items available*
+
+### 2.5.6.0 Database Response
+
+#### 2.5.6.1 Source Id
+
+data-persistence-layer
+
+#### 2.5.6.2 Target Id
+
+REPO-APP-MOBILE-010
+
+#### 2.5.6.3 Message
+
+Return batch commit success confirmation.
+
+#### 2.5.6.4 Sequence Number
+
+6
+
+#### 2.5.6.5 Type
+
+🔹 Database Response
+
+#### 2.5.6.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.6.7 Return Message
+
+void (success) or FirebaseException (failure)
+
+#### 2.5.6.8 Has Return
+
+✅ Yes
+
+#### 2.5.6.9 Is Activation
+
+❌ No
+
+#### 2.5.6.10 Technical Details
+
+| Property | Value |
+|----------|-------|
+| Protocol | Firestore SDK |
+| Method |  |
+| Parameters |  |
+| Authentication | N/A |
+| Error Handling | On success, client updates UI (removes processed i... |
+| Performance | Typically < 100ms on a stable connection. |
+
+#### 2.5.6.11 Nested Interactions
+
+*No items available*
+
+## 2.6.0.0 Notes
+
+### 2.6.1.0 Content
+
+#### 2.6.1.1 Content
+
+Security Enforcement: Firestore Security Rules are the primary mechanism preventing a supervisor from viewing or modifying records not belonging to their direct subordinates. The query itself is filtered in the client, but the rules provide the authoritative server-side enforcement.
+
+#### 2.6.1.2 Position
+
+top-right
+
+#### 2.6.1.3 Participant Id
+
+data-persistence-layer
+
+#### 2.6.1.4 Sequence Number
+
+2
+
+### 2.6.2.0 Content
+
+#### 2.6.2.1 Content
+
+Offline Capability: If the device is offline when the supervisor submits the approval/rejection, the Firestore SDK automatically queues the batched write locally. It will execute the transaction once connectivity is restored, fulfilling REQ-1-009.
+
+#### 2.6.2.2 Position
+
+bottom-right
+
+#### 2.6.2.3 Participant Id
+
+REPO-APP-MOBILE-010
+
+#### 2.6.2.4 Sequence Number
+
+5
+
+### 2.6.3.0 Content
+
+#### 2.6.3.1 Content
+
+Atomicity: Using a batched write ensures that the bulk update is an 'all or nothing' operation. This prevents the data from being left in an inconsistent state where some records are approved and others are not from the same user action.
+
+#### 2.6.3.2 Position
+
+bottom-right
+
+#### 2.6.3.3 Participant Id
+
+data-persistence-layer
+
+#### 2.6.3.4 Sequence Number
+
+5
+
+## 2.7.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | Firestore Security Rules for `/attendance/{recordI... |
+| Performance Targets | - **Query Latency (p95)**: < 1 second. A composite... |
+| Error Handling Strategy | - **Permission Denied**: If the Firestore query or... |
+| Testing Considerations | - **Unit Tests**: Business logic in the Riverpod p... |
+| Monitoring Requirements | - **Firestore Operations**: Monitor the count of r... |
+| Deployment Considerations | The composite index required for the query must be... |
+

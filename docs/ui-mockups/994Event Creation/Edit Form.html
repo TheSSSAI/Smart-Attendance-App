@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism Component: Event Creation/Edit Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------------- */
+        /* --- 1. Design System Foundations & Reset --- */
+        /* ------------------------- */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-600: #475569;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --color-white: #FFFFFF;
+            --color-error-500: #DC2626;
+
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --space-48: 48px;
+
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-neutral-100);
+            color: var(--color-neutral-700);
+            padding: var(--space-32);
+        }
+
+        main { max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 2.25rem; font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-16); }
+        h2 { font-size: 1.75rem; font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-24); border-bottom: 1px solid var(--color-neutral-200); padding-bottom: var(--space-12); margin-top: var(--space-48); }
+        p { margin-bottom: var(--space-16); max-width: 65ch; line-height: 1.6; }
+
+        /* ------------------------- */
+        /* --- 2. Dependent Atomic/Molecular Components --- */
+        /* ------------------------- */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-8); padding: var(--space-12) var(--space-24); font-family: inherit; font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); border-radius: var(--border-radius-md); border: 1px solid transparent; cursor: pointer; text-decoration: none; transition: all var(--transition-fast); }
+        .btn:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+        .btn--primary { background-color: var(--color-primary-500); color: var(--color-white); }
+        .btn--primary:hover { background-color: var(--color-primary-600); }
+        .btn--secondary { background-color: var(--color-white); color: var(--color-neutral-700); border-color: var(--color-neutral-300); }
+        .btn--secondary:hover { background-color: var(--color-neutral-100); }
+        .btn:disabled { background-color: var(--color-neutral-200); color: var(--color-neutral-400); cursor: not-allowed; }
+
+        .input-group { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; }
+        .input-group label { font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); color: var(--color-neutral-700); }
+        .input-wrapper { position: relative; display: flex; align-items: center; width: 100%; border: 1px solid var(--color-neutral-300); border-radius: var(--border-radius-md); background-color: var(--color-white); transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
+        .input-wrapper:has(input:focus) { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 20%, transparent); }
+        .input-wrapper--error { border-color: var(--color-error-500); }
+        .input-wrapper--error:has(input:focus) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error-500) 20%, transparent); }
+        .input { flex-grow: 1; padding: var(--space-12) var(--space-16); font-family: inherit; font-size: var(--font-size-md); border: none; background-color: transparent; width: 100%; color: var(--color-neutral-700); }
+        .input:focus { outline: none; }
+        .input-wrapper__icon { position: absolute; right: var(--space-16); top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--color-neutral-400); pointer-events: none; }
+        .input::-webkit-calendar-picker-indicator { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; cursor: pointer; opacity: 0; }
+        .input-error-message { color: var(--color-error-500); font-size: var(--font-size-sm); }
+        textarea.input { resize: vertical; min-height: 100px; }
+
+        .checkbox-group { display: flex; align-items: center; gap: var(--space-8); cursor: pointer; padding: var(--space-8); }
+        .checkbox-input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .checkbox-box { width: 20px; height: 20px; border: 2px solid var(--color-neutral-300); border-radius: var(--border-radius-sm); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); flex-shrink: 0; }
+        .checkbox-box svg { display: none; width: 16px; height: 16px; color: var(--color-white); }
+        .checkbox-input:checked + .checkbox-box { background-color: var(--color-primary-500); border-color: var(--color-primary-500); }
+        .checkbox-input:checked + .checkbox-box svg { display: block; }
+        .checkbox-input:focus-visible + .checkbox-box { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+
+        .radio-group { display: flex; align-items: center; gap: var(--space-8); cursor: pointer; padding: var(--space-8); }
+        .radio-input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .radio-dot { width: 20px; height: 20px; border: 2px solid var(--color-neutral-300); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); flex-shrink: 0; }
+        .radio-dot::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background-color: var(--color-white); transform: scale(0); transition: transform var(--transition-fast); }
+        .radio-input:checked + .radio-dot { background-color: var(--color-primary-500); border-color: var(--color-primary-500); }
+        .radio-input:checked + .radio-dot::before { transform: scale(1); }
+        .radio-input:focus-visible + .radio-dot { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+
+        /* ------------------------- */
+        /* --- 3. Organism: Event Creation Form --- */
+        /* ------------------------- */
+        .event-form { background-color: var(--color-white); border-radius: var(--border-radius-lg); padding: var(--space-24); display: flex; flex-direction: column; gap: var(--space-24); border: 1px solid var(--color-neutral-200); }
+        .event-form__section { display: flex; flex-direction: column; gap: var(--space-16); }
+        .event-form__section-title { font-size: 1.125rem; font-weight: var(--font-weight-semibold); color: var(--color-neutral-900); padding-bottom: var(--space-8); border-bottom: 1px solid var(--color-neutral-200); }
+        .event-form__time-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16); }
+
+        /* Recurrence Section */
+        #recurrence-toggle:not(:checked) ~ .event-form__recurrence-options { display: none; }
+        .event-form__recurrence-options { display: flex; flex-direction: column; gap: var(--space-16); padding: var(--space-16); background-color: var(--color-neutral-50); border-radius: var(--border-radius-md); border: 1px solid var(--color-neutral-200); }
+        .event-form__recurrence-freq { display: flex; flex-wrap: wrap; gap: var(--space-12); }
+        .event-form__recurrence-days { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+        .day-toggle { font-size: var(--font-size-sm); }
+        .day-toggle .checkbox-box { width: 32px; height: 32px; border-radius: 50%; }
+        .day-toggle .checkbox-box span { display: block; }
+        .day-toggle .checkbox-input:checked + .checkbox-box span { color: var(--color-white); }
+        .day-toggle .checkbox-box svg { display: none; } /* Hide checkmark */
+
+        /* Multi-select for Users/Teams */
+        .multi-select { display: flex; flex-direction: column; gap: var(--space-8); }
+        .multi-select__search .input-wrapper { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+        .multi-select__list { max-height: 200px; overflow-y: auto; border: 1px solid var(--color-neutral-200); border-top: none; border-radius: 0 0 var(--border-radius-md) var(--border-radius-md); padding: var(--space-8); }
+        .multi-select__item { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-8); border-radius: var(--border-radius-md); }
+        .multi-select__item .checkbox-group { flex-grow: 1; }
+        .multi-select__item:hover { background-color: var(--color-neutral-100); }
+        .multi-select__item-info { display: flex; flex-direction: column; }
+        .multi-select__item-name { font-weight: var(--font-weight-semibold); color: var(--color-neutral-900); }
+        .multi-select__item-detail { font-size: var(--font-size-sm); color: var(--color-neutral-600); }
+        
+        /* Form Actions */
+        .event-form__actions { display: flex; justify-content: flex-end; gap: var(--space-12); margin-top: var(--space-16); padding-top: var(--space-16); border-top: 1px solid var(--color-neutral-200); }
+        
+        /* States */
+        .event-form[aria-busy='true'] fieldset { pointer-events: none; opacity: 0.6; }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .event-form__time-fields { grid-template-columns: 1fr; }
+            .event-form__actions { flex-direction: column-reverse; }
+            .event-form__actions > * { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Organism: Event Creation Form</h1>
+        <p>This form allows Supervisors and Admins to create new events, define recurrence rules, and assign them to users or teams. It showcases different variants and states.</p>
+
+        <h2>Variant: Single Event (Default State)</h2>
+        <form class="event-form">
+            <fieldset>
+                <div class="event-form__section">
+                    <h3 class="event-form__section-title">Event Details</h3>
+                    <div class="input-group">
+                        <label for="event-title-1">Event Title</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="event-title-1" class="input" placeholder="e.g., Q1 Project Kick-off">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="event-desc-1">Description (Optional)</label>
+                        <div class="input-wrapper">
+                            <textarea id="event-desc-1" class="input" placeholder="Add details about the event..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-form__section">
+                    <h3 class="event-form__section-title">Date & Time</h3>
+                    <div class="event-form__time-fields">
+                        <div class="input-group">
+                            <label for="start-time-1">Start Time</label>
+                            <div class="input-wrapper">
+                                <input type="datetime-local" id="start-time-1" class="input">
+                                <svg class="input-wrapper__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c0-.414.336-.75.75-.75h10.5a.75.75 0 010 1.5H5.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" /></svg>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="end-time-1">End Time</label>
+                            <div class="input-wrapper">
+                                <input type="datetime-local" id="end-time-1" class="input">
+                            </div>
+                        </div>
+                    </div>
+                    <label class="checkbox-group event-form__recurrence-toggle">
+                        <input type="checkbox" class="checkbox-input" id="recurrence-toggle">
+                        <span class="checkbox-box"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></span>
+                        Repeat Event
+                    </label>
+                </div>
+
+                <div class="event-form__actions">
+                    <button type="button" class="btn btn--secondary">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Create Event</button>
+                </div>
+            </fieldset>
+        </form>
+
+        <h2>Variant: Recurring Event (with assignments)</h2>
+        <form class="event-form">
+            <fieldset>
+                <div class="event-form__section">
+                    <h3 class="event-form__section-title">Event Details</h3>
+                    <div class="input-group">
+                        <label for="event-title-2">Event Title</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="event-title-2" class="input" value="Weekly Team Sync">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-form__section">
+                    <h3 class="event-form__section-title">Date & Time</h3>
+                    <div class="event-form__time-fields">
+                         <div class="input-group">
+                            <label for="start-time-2">Start Time</label>
+                            <div class="input-wrapper">
+                                <input type="datetime-local" id="start-time-2" class="input" value="2025-03-03T09:00">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="end-time-2">End Time</label>
+                            <div class="input-wrapper">
+                                <input type="datetime-local" id="end-time-2" class="input" value="2025-03-03T09:30">
+                            </div>
+                        </div>
+                    </div>
+                    <label class="checkbox-group event-form__recurrence-toggle">
+                        <input type="checkbox" class="checkbox-input" id="recurrence-toggle-2" checked>
+                        <span class="checkbox-box"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></span>
+                        Repeat Event
+                    </label>
+                    <div class="event-form__recurrence-options">
+                        <div class="input-group">
+                            <label>Frequency</label>
+                            <div class="event-form__recurrence-freq">
+                                <label class="radio-group"><input type="radio" name="freq" class="radio-input"> <span class="radio-dot"></span> Daily</label>
+                                <label class="radio-group"><input type="radio" name="freq" class="radio-input" checked> <span class="radio-dot"></span> Weekly</label>
+                                <label class="radio-group"><input type="radio" name="freq" class="radio-input"> <span class="radio-dot"></span> Monthly</label>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Repeat On</label>
+                            <div class="event-form__recurrence-days">
+                                <label class="checkbox-group day-toggle"><input type="checkbox" class="checkbox-input"> <span class="checkbox-box"><span>S</span></span></label>
+                                <label class="checkbox-group day-toggle"><input type="checkbox" class="checkbox-input" checked> <span class="checkbox-box"><span>M</span></span></label>
+                                <label class="checkbox-group day-toggle"><input type="checkbox" class="checkbox-input"> <span class="checkbox-box"><span>T</span></span></label>
+                                <label class="checkbox-group day-toggle"><input type="checkbox" class="checkbox-input"> <span class="checkbox-box"><span>W</span></span></label>
+                                <label class="checkbox-group day-toggle"><input type="checkbox" class="checkbox-input"> <span class="checkbox-box"><span>T</span></span></label>
+                                <label class="checkbox-group day-toggle"><input type="checkbox" class="checkbox-input"> <span class="checkbox-box"><span>F</span></span></label>
+                                <label class="checkbox-group day-toggle"><input type="checkbox" class="checkbox-input"> <span class="checkbox-box"><span>S</span></span></label>
+                            </div>
+                        </div>
+                         <div class="input-group">
+                            <label for="end-date-2">End Date</label>
+                            <div class="input-wrapper">
+                                <input type="date" id="end-date-2" class="input" value="2025-06-30">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-form__section">
+                    <h3 class="event-form__section-title">Assignees</h3>
+                    <div class="multi-select">
+                        <label for="user-search">Search Users or Teams</label>
+                        <div class="multi-select__search input-wrapper">
+                            <input type="search" id="user-search" class="input" placeholder="Type to search...">
+                        </div>
+                        <div class="multi-select__list">
+                             <div class="multi-select__item">
+                                <label class="checkbox-group">
+                                    <input type="checkbox" class="checkbox-input" checked>
+                                    <span class="checkbox-box"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></span>
+                                    <div class="multi-select__item-info">
+                                        <span class="multi-select__item-name">[Team] Field Operators</span>
+                                        <span class="multi-select__item-detail">12 Members</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="multi-select__item">
+                                <label class="checkbox-group">
+                                    <input type="checkbox" class="checkbox-input">
+                                    <span class="checkbox-box"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></span>
+                                    <div class="multi-select__item-info">
+                                        <span class="multi-select__item-name">Alice Johnson</span>
+                                        <span class="multi-select__item-detail">alice.j@example.com</span>
+                                    </div>
+                                </label>
+                            </div>
+                             <div class="multi-select__item">
+                                <label class="checkbox-group">
+                                    <input type="checkbox" class="checkbox-input">
+                                    <span class="checkbox-box"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></span>
+                                    <div class="multi-select__item-info">
+                                        <span class="multi-select__item-name">Bob Williams</span>
+                                        <span class="multi-select__item-detail">bob.w@example.com</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-form__actions">
+                    <button type="button" class="btn btn--secondary">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Save Changes</button>
+                </div>
+            </fieldset>
+        </form>
+
+        <h2>State: Validating (with errors)</h2>
+        <form class="event-form">
+            <fieldset>
+                 <div class="event-form__section">
+                    <h3 class="event-form__section-title">Event Details</h3>
+                    <div class="input-group">
+                        <label for="event-title-3">Event Title</label>
+                        <div class="input-wrapper input-wrapper--error">
+                            <input type="text" id="event-title-3" class="input" value="" aria-describedby="title-error">
+                        </div>
+                        <span id="title-error" class="input-error-message">Event title is required.</span>
+                    </div>
+                </div>
+
+                <div class="event-form__section">
+                    <h3 class="event-form__section-title">Date & Time</h3>
+                    <div class="event-form__time-fields">
+                        <div class="input-group">
+                            <label for="start-time-3">Start Time</label>
+                            <div class="input-wrapper input-wrapper--error">
+                                <input type="datetime-local" id="start-time-3" class="input" value="2025-04-15T14:00" aria-describedby="time-error">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="end-time-3">End Time</label>
+                            <div class="input-wrapper input-wrapper--error">
+                                <input type="datetime-local" id="end-time-3" class="input" value="2025-04-15T13:00" aria-describedby="time-error">
+                            </div>
+                        </div>
+                    </div>
+                    <span id="time-error" class="input-error-message" style="text-align: center;">End time must be after start time.</span>
+                </div>
+
+                <div class="event-form__actions">
+                    <button type="button" class="btn btn--secondary">Cancel</button>
+                    <button type="submit" class="btn btn--primary" disabled>Create Event</button>
+                </div>
+            </fieldset>
+        </form>
+
+        <h2>State: Saving</h2>
+        <form class="event-form" aria-busy="true">
+            <fieldset disabled>
+                <div class="event-form__section">
+                    <h3 class="event-form__section-title">Event Details</h3>
+                    <div class="input-group">
+                        <label for="event-title-4">Event Title</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="event-title-4" class="input" value="Finalizing Sprint Tasks">
+                        </div>
+                    </div>
+                </div>
+                <div class="event-form__actions">
+                    <button type="button" class="btn btn--secondary">Cancel</button>
+                    <button type="submit" class="btn btn--primary" disabled>Saving...</button>
+                </div>
+            </fieldset>
+        </form>
+    </main>
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : single_event<h3>
+		<!--description--><normal> The default form for creating a one-time, non-recurring event. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : recurring_event<h3>
+		<!--description--><normal> An expanded version of the form that appears when the 'Repeat Event' option is selected. It includes controls for frequency (daily, weekly, monthly), days of the week, and a recurrence end date. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : default<h3>
+		<!--description--><normal> The standard interactive state of the form, ready for user input. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : validating<h3>
+		<!--description--><normal> A state showing client-side validation errors, such as a missing title or an end time that occurs before the start time. The 'Save' button is disabled, and clear error messages guide the user. </normal>
+		
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : saving<h3>
+		<!--description--><normal> A state indicating that the form has been submitted and is awaiting a response from the server. All form fields are disabled, and the primary action button shows a loading state to prevent duplicate submissions. </normal>
+		
+      <div>
+	 </div>
+	</div>
+	
+</body>
+</html>

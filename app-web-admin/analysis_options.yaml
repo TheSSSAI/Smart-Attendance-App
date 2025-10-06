@@ -1,0 +1,56 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+  
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  
+  errors:
+    # Treat these issues as errors
+    invalid_annotation_target: error
+    missing_required_param: error
+    missing_return: error
+    must_be_immutable: error
+    
+    # Treat these issues as warnings
+    dead_code: warning
+    deprecated_member_use: warning
+
+    # Style
+    prefer_single_quotes: warning
+    
+    # We will handle unused imports via a fixer on save
+    unused_import: ignore
+
+linter:
+  rules:
+    # General Style
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - prefer_final_locals
+    - prefer_final_fields
+    - prefer_single_quotes
+    - require_trailing_commas
+    - sort_child_properties_last
+    - sort_pub_dependencies
+    - unawaited_futures
+    - unnecessary_await_in_return
+    - unnecessary_lambdas
+    - use_super_parameters
+    
+    # Documentation
+    - package_api_docs
+    - public_member_api_docs
+    
+    # Avoid
+    - avoid_print
+    - avoid_relative_lib_imports
+    - avoid_returning_null_for_void
+    - avoid_shadowing_type_parameters
+    - avoid_types_as_parameter_names
+    - avoid_web_libraries_in_flutter
+    - no_logic_in_create_state

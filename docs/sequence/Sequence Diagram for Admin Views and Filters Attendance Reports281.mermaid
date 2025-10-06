@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor "Admin Web Dashboard (Flutter)" as AdminWebDashboardFlutter
+    participant "Firestore Database" as FirestoreDatabase
+
+    activate AdminWebDashboardFlutter
+    AdminWebDashboardFlutter->>AdminWebDashboardFlutter: 1. 1. Admin navigates to '/reports'. ReportsScreen initializes its State Management Provider (Riverpod).
+    AdminWebDashboardFlutter-->>AdminWebDashboardFlutter: Provider enters 'loading' state.
+    activate FirestoreDatabase
+    AdminWebDashboardFlutter->>FirestoreDatabase: 2. 2. Riverpod provider executes AttendanceRepository.getAttendanceReportStream(filters: defaultFilters). A Firestore listener is attached.
+    FirestoreDatabase-->>AdminWebDashboardFlutter: Stream of QuerySnapshots
+    FirestoreDatabase->>AdminWebDashboardFlutter: 3. 3. Firestore evaluates security rules, executes indexed query, and streams back the initial dataset.
+    AdminWebDashboardFlutter-->>FirestoreDatabase: QuerySnapshot with initial report documents.
+    AdminWebDashboardFlutter->>AdminWebDashboardFlutter: 4. 4. Repository maps Firestore documents to Domain Models. Provider updates state with data and sets loading to false.
+    AdminWebDashboardFlutter-->>AdminWebDashboardFlutter: Provider enters 'data' state. UI rebuilds to display the report.
+    AdminWebDashboardFlutter->>AdminWebDashboardFlutter: 5. 5. Admin interacts with a filter UI component (e.g., team Dropdown), triggering a state update.
+    AdminWebDashboardFlutter-->>AdminWebDashboardFlutter: Filter state is updated in the provider.
+    AdminWebDashboardFlutter->>FirestoreDatabase: 6. 6. The change in filter state causes the Riverpod provider to re-execute, tearing down the old stream and creating a new one with updated query parameters.
+    FirestoreDatabase-->>AdminWebDashboardFlutter: New stream of QuerySnapshots.
+    FirestoreDatabase->>AdminWebDashboardFlutter: 7. 7. Firestore streams back the new, filtered dataset.
+    AdminWebDashboardFlutter-->>FirestoreDatabase: QuerySnapshot with filtered report documents.
+    AdminWebDashboardFlutter->>AdminWebDashboardFlutter: 8. 8. Provider updates its state with the new filtered data, triggering a UI rebuild.
+    AdminWebDashboardFlutter-->>AdminWebDashboardFlutter: UI now displays the filtered report.
+
+    note over AdminWebDashboardFlutter: The reactive nature of Riverpod is key. The UI doesn't explicitly 're-fetch' data. It updates the...
+    note over FirestoreDatabase: Performance is critically dependent on having the correct composite indexes defined in 'firestore...
+
+    deactivate FirestoreDatabase
+    deactivate AdminWebDashboardFlutter

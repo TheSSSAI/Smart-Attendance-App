@@ -1,0 +1,852 @@
+# 1 Overview
+
+## 1.1 Diagram Id
+
+SEQ-RV-011
+
+## 1.2 Name
+
+Daily Database Backup for Disaster Recovery
+
+## 1.3 Description
+
+An automated daily job, managed by the Google Cloud Platform, exports the entire Firestore database to a separate, secure Google Cloud Storage bucket. This provides a point-in-time backup for disaster recovery.
+
+## 1.4 Type
+
+🔹 RecoveryFlow
+
+## 1.5 Purpose
+
+To ensure business continuity by creating regular, reliable backups of all application data, meeting defined RPO and RTO targets.
+
+## 1.6 Complexity
+
+Low
+
+## 1.7 Priority
+
+🚨 Critical
+
+## 1.8 Frequency
+
+Daily
+
+## 1.9 Participants
+
+- data-persistence-layer
+
+## 1.10 Key Interactions
+
+- The GCP managed export service is configured with a daily schedule and a target GCS bucket.
+- At the scheduled time, the service invokes the Firestore export API for the production project.
+- Firestore creates a point-in-time snapshot of the database to ensure consistency.
+- The data from the snapshot is written to the designated Google Cloud Storage bucket in a timestamped folder.
+- The status of the export job (success or failure) is logged to Google Cloud Logging.
+- A monitoring alert is configured to fire if the backup job fails, notifying the operations team.
+
+## 1.11 Triggers
+
+- A pre-configured, time-based schedule in the Google Cloud Platform.
+
+## 1.12 Outcomes
+
+- A complete, point-in-time backup of the Firestore database is securely stored.
+- The Recovery Point Objective (RPO) of 24 hours is met (REQ-NFR-002).
+- A clear source for data restoration is available in case of a catastrophic failure.
+
+## 1.13 Business Rules
+
+- Backups must be performed daily (REQ-NFR-002).
+- Backups must be stored in a separate location (Cloud Storage bucket) from the primary database.
+
+## 1.14 Error Scenarios
+
+- The export job fails due to insufficient IAM permissions for the service account.
+- The target Cloud Storage bucket is misconfigured or deleted.
+- A rare GCP-level outage prevents the job from running.
+
+## 1.15 Integration Points
+
+- GCP Managed Export Service
+- Google Cloud Storage
+
+# 2.0 Details
+
+## 2.1 Diagram Id
+
+SEQ-RV-011
+
+## 2.2 Name
+
+Automated Daily Firestore Backup to GCS for Disaster Recovery
+
+## 2.3 Description
+
+Implementation-ready sequence for an automated daily backup of the entire production Firestore database to a designated Google Cloud Storage bucket. This process is orchestrated by the GCP Managed Export Service, triggered by a time-based schedule, to meet the system's Recovery Point Objective (RPO) and enable the Recovery Time Objective (RTO) as defined in REQ-NFR-002.
+
+## 2.4 Participants
+
+### 2.4.1 Scheduler
+
+#### 2.4.1.1 Repository Id
+
+gcp-scheduler
+
+#### 2.4.1.2 Display Name
+
+Google Cloud Scheduler
+
+#### 2.4.1.3 Type
+
+🔹 Scheduler
+
+#### 2.4.1.4 Technology
+
+GCP
+
+#### 2.4.1.5 Order
+
+1
+
+#### 2.4.1.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #D1E2FF |
+| Stereotype | <<timer>> |
+
+### 2.4.2.0 Orchestrator
+
+#### 2.4.2.1 Repository Id
+
+gcp-export-service
+
+#### 2.4.2.2 Display Name
+
+GCP Managed Export Service
+
+#### 2.4.2.3 Type
+
+🔹 Orchestrator
+
+#### 2.4.2.4 Technology
+
+GCP
+
+#### 2.4.2.5 Order
+
+2
+
+#### 2.4.2.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #FAD2CF |
+| Stereotype | <<control>> |
+
+### 2.4.3.0 Database
+
+#### 2.4.3.1 Repository Id
+
+firestore-prod-db
+
+#### 2.4.3.2 Display Name
+
+Firestore Database (Production)
+
+#### 2.4.3.3 Type
+
+🔹 Database
+
+#### 2.4.3.4 Technology
+
+Firestore
+
+#### 2.4.3.5 Order
+
+3
+
+#### 2.4.3.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | database |
+| Color | #FFDDC3 |
+| Stereotype | <<database>> |
+
+### 2.4.4.0 Storage
+
+#### 2.4.4.1 Repository Id
+
+gcs-backup-bucket
+
+#### 2.4.4.2 Display Name
+
+Google Cloud Storage (Backup Bucket)
+
+#### 2.4.4.3 Type
+
+🔹 Storage
+
+#### 2.4.4.4 Technology
+
+GCS
+
+#### 2.4.4.5 Order
+
+4
+
+#### 2.4.4.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | artifact |
+| Color | #E1E1E1 |
+| Stereotype | <<artifact>> |
+
+### 2.4.5.0 LoggingService
+
+#### 2.4.5.1 Repository Id
+
+gcp-cloud-logging
+
+#### 2.4.5.2 Display Name
+
+Google Cloud Logging
+
+#### 2.4.5.3 Type
+
+🔹 LoggingService
+
+#### 2.4.5.4 Technology
+
+GCP
+
+#### 2.4.5.5 Order
+
+5
+
+#### 2.4.5.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #D5E8D4 |
+| Stereotype | <<boundary>> |
+
+### 2.4.6.0 MonitoringService
+
+#### 2.4.6.1 Repository Id
+
+gcp-cloud-monitoring
+
+#### 2.4.6.2 Display Name
+
+Google Cloud Monitoring
+
+#### 2.4.6.3 Type
+
+🔹 MonitoringService
+
+#### 2.4.6.4 Technology
+
+GCP
+
+#### 2.4.6.5 Order
+
+6
+
+#### 2.4.6.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | component |
+| Color | #D5E8D4 |
+| Stereotype | <<boundary>> |
+
+### 2.4.7.0 Human
+
+#### 2.4.7.1 Repository Id
+
+on-call-team
+
+#### 2.4.7.2 Display Name
+
+On-Call Operations Team
+
+#### 2.4.7.3 Type
+
+🔹 Human
+
+#### 2.4.7.4 Technology
+
+Email/PagerDuty
+
+#### 2.4.7.5 Order
+
+7
+
+#### 2.4.7.6 Style
+
+| Property | Value |
+|----------|-------|
+| Shape | actor |
+| Color | #FFE6CC |
+| Stereotype | <<human>> |
+
+## 2.5.0.0 Interactions
+
+### 2.5.1.0 Trigger
+
+#### 2.5.1.1 Source Id
+
+gcp-scheduler
+
+#### 2.5.1.2 Target Id
+
+gcp-export-service
+
+#### 2.5.1.3 Message
+
+1. Trigger Scheduled Export Job
+
+#### 2.5.1.4 Sequence Number
+
+1
+
+#### 2.5.1.5 Type
+
+🔹 Trigger
+
+#### 2.5.1.6 Is Synchronous
+
+✅ Yes
+
+#### 2.5.1.7 Return Message
+
+
+
+#### 2.5.1.8 Has Return
+
+❌ No
+
+#### 2.5.1.9 Is Activation
+
+✅ Yes
+
+#### 2.5.1.10 Technical Details
+
+##### 2.5.1.10.1 Protocol
+
+Pub/Sub
+
+##### 2.5.1.10.2 Method
+
+SendMessage
+
+##### 2.5.1.10.3 Parameters
+
+###### 2.5.1.10.3.1 Schedule
+
+####### 2.5.1.10.3.1.1 Name
+
+Schedule
+
+####### 2.5.1.10.3.1.2 Value
+
+Configured to run daily at a specified time (e.g., '02:00 UTC')
+
+###### 2.5.1.10.3.2.0 Target
+
+####### 2.5.1.10.3.2.1 Name
+
+Target
+
+####### 2.5.1.10.3.2.2 Value
+
+Pub/Sub topic linked to the export service
+
+##### 2.5.1.10.4.0.0 Authentication
+
+Implicit via GCP Service Account
+
+##### 2.5.1.10.5.0.0 Error Handling
+
+GCP Scheduler has its own retry mechanism for trigger failures.
+
+##### 2.5.1.10.6.0.0 Performance
+
+###### 2.5.1.10.6.1.0 Latency
+
+N/A
+
+###### 2.5.1.10.6.2.0 Throughput
+
+1 invocation/day
+
+### 2.5.2.0.0.0.0 Request
+
+#### 2.5.2.1.0.0.0 Source Id
+
+gcp-export-service
+
+#### 2.5.2.2.0.0.0 Target Id
+
+firestore-prod-db
+
+#### 2.5.2.3.0.0.0 Message
+
+2. Initiate Database Export(outputUriPrefix, collectionIds=['__all__'])
+
+#### 2.5.2.4.0.0.0 Sequence Number
+
+2
+
+#### 2.5.2.5.0.0.0 Type
+
+🔹 Request
+
+#### 2.5.2.6.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.2.7.0.0.0 Return Message
+
+longRunningOperationId
+
+#### 2.5.2.8.0.0.0 Has Return
+
+✅ Yes
+
+#### 2.5.2.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.2.10.0.0.0 Technical Details
+
+##### 2.5.2.10.1.0.0 Protocol
+
+GCP API Call (gRPC)
+
+##### 2.5.2.10.2.0.0 Method
+
+google.firestore.admin.v1.FirestoreAdmin.ExportDocuments
+
+##### 2.5.2.10.3.0.0 Parameters
+
+###### 2.5.2.10.3.1.0 outputUriPrefix
+
+####### 2.5.2.10.3.1.1 Name
+
+outputUriPrefix
+
+####### 2.5.2.10.3.1.2 Value
+
+🔗 [gs://<backup-bucket-name>/YYYY-MM-DD-HHMMSS/](gs://<backup-bucket-name>/YYYY-MM-DD-HHMMSS/)
+
+###### 2.5.2.10.3.2.0 collectionIds
+
+####### 2.5.2.10.3.2.1 Name
+
+collectionIds
+
+####### 2.5.2.10.3.2.2 Value
+
+Empty array `[]` or `['__all__']` to export all collections.
+
+##### 2.5.2.10.4.0.0 Authentication
+
+Service Account with 'Cloud Datastore Import Export Admin' IAM role.
+
+##### 2.5.2.10.5.0.0 Error Handling
+
+Initial API call can fail due to invalid parameters or permissions. The long-running operation can fail later.
+
+##### 2.5.2.10.6.0.0 Performance
+
+###### 2.5.2.10.6.1.0 Latency
+
+API call is fast (<1s), but the operation is long-running.
+
+###### 2.5.2.10.6.2.0 Throughput
+
+N/A
+
+### 2.5.3.0.0.0.0 InternalProcess
+
+#### 2.5.3.1.0.0.0 Source Id
+
+firestore-prod-db
+
+#### 2.5.3.2.0.0.0 Target Id
+
+firestore-prod-db
+
+#### 2.5.3.3.0.0.0 Message
+
+3. Create Point-in-Time Snapshot
+
+#### 2.5.3.4.0.0.0 Sequence Number
+
+3
+
+#### 2.5.3.5.0.0.0 Type
+
+🔹 InternalProcess
+
+#### 2.5.3.6.0.0.0 Is Synchronous
+
+✅ Yes
+
+#### 2.5.3.7.0.0.0 Return Message
+
+
+
+#### 2.5.3.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.3.9.0.0.0 Is Activation
+
+❌ No
+
+#### 2.5.3.10.0.0.0 Technical Details
+
+##### 2.5.3.10.1.0.0 Protocol
+
+Internal
+
+##### 2.5.3.10.2.0.0 Method
+
+N/A
+
+##### 2.5.3.10.3.0.0 Parameters
+
+*No items available*
+
+##### 2.5.3.10.4.0.0 Authentication
+
+N/A
+
+##### 2.5.3.10.5.0.0 Error Handling
+
+Handled internally by GCP. Failures are rare and would be reported in the operation status.
+
+##### 2.5.3.10.6.0.0 Performance
+
+###### 2.5.3.10.6.1.0 Latency
+
+Depends on database size, but is highly optimized.
+
+###### 2.5.3.10.6.2.0 Throughput
+
+N/A
+
+### 2.5.4.0.0.0.0 DataTransfer
+
+#### 2.5.4.1.0.0.0 Source Id
+
+firestore-prod-db
+
+#### 2.5.4.2.0.0.0 Target Id
+
+gcs-backup-bucket
+
+#### 2.5.4.3.0.0.0 Message
+
+4. Write Snapshot Data to Bucket
+
+#### 2.5.4.4.0.0.0 Sequence Number
+
+4
+
+#### 2.5.4.5.0.0.0 Type
+
+🔹 DataTransfer
+
+#### 2.5.4.6.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.4.7.0.0.0 Return Message
+
+
+
+#### 2.5.4.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.4.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.4.10.0.0.0 Technical Details
+
+##### 2.5.4.10.1.0.0 Protocol
+
+GCP Internal Fabric
+
+##### 2.5.4.10.2.0.0 Method
+
+Streaming Write
+
+##### 2.5.4.10.3.0.0 Parameters
+
+- {'name': 'Format', 'value': 'Firestore Export Metadata (LevelDB format)'}
+
+##### 2.5.4.10.4.0.0 Authentication
+
+Internal GCP service-to-service authentication.
+
+##### 2.5.4.10.5.0.0 Error Handling
+
+Failures (e.g., bucket not found, permissions error) will cause the long-running operation to fail.
+
+##### 2.5.4.10.6.0.0 Performance
+
+###### 2.5.4.10.6.1.0 Latency
+
+Dependent on total database size.
+
+###### 2.5.4.10.6.2.0 Throughput
+
+High-speed internal GCP network.
+
+### 2.5.5.0.0.0.0 Log
+
+#### 2.5.5.1.0.0.0 Source Id
+
+gcp-export-service
+
+#### 2.5.5.2.0.0.0 Target Id
+
+gcp-cloud-logging
+
+#### 2.5.5.3.0.0.0 Message
+
+5. Log Job Status (SUCCESS or FAILURE)
+
+#### 2.5.5.4.0.0.0 Sequence Number
+
+5
+
+#### 2.5.5.5.0.0.0 Type
+
+🔹 Log
+
+#### 2.5.5.6.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.5.7.0.0.0 Return Message
+
+
+
+#### 2.5.5.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.5.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.5.10.0.0.0 Technical Details
+
+##### 2.5.5.10.1.0.0 Protocol
+
+GCP API Call
+
+##### 2.5.5.10.2.0.0 Method
+
+google.logging.v2.LoggingServiceV2.WriteLogEntries
+
+##### 2.5.5.10.3.0.0 Parameters
+
+###### 2.5.5.10.3.1.0 logName
+
+####### 2.5.5.10.3.1.1 Name
+
+logName
+
+####### 2.5.5.10.3.1.2 Value
+
+projects/<project-id>/logs/cloudaudit.googleapis.com%2Factivity
+
+###### 2.5.5.10.3.2.0 payload
+
+####### 2.5.5.10.3.2.1 Name
+
+payload
+
+####### 2.5.5.10.3.2.2 Value
+
+Structured log containing operation details, status, start/end times, and any error messages.
+
+##### 2.5.5.10.4.0.0 Authentication
+
+Implicit via service context.
+
+##### 2.5.5.10.5.0.0 Error Handling
+
+Logging failures are rare; primary job failure is the key event.
+
+##### 2.5.5.10.6.0.0 Performance
+
+###### 2.5.5.10.6.1.0 Latency
+
+<100ms
+
+###### 2.5.5.10.6.2.0 Throughput
+
+N/A
+
+### 2.5.6.0.0.0.0 Event
+
+#### 2.5.6.1.0.0.0 Source Id
+
+gcp-cloud-logging
+
+#### 2.5.6.2.0.0.0 Target Id
+
+gcp-cloud-monitoring
+
+#### 2.5.6.3.0.0.0 Message
+
+6. [IF FAILURE] Evaluate Log-based Alert Rule
+
+#### 2.5.6.4.0.0.0 Sequence Number
+
+6
+
+#### 2.5.6.5.0.0.0 Type
+
+🔹 Event
+
+#### 2.5.6.6.0.0.0 Is Synchronous
+
+❌ No
+
+#### 2.5.6.7.0.0.0 Return Message
+
+
+
+#### 2.5.6.8.0.0.0 Has Return
+
+❌ No
+
+#### 2.5.6.9.0.0.0 Is Activation
+
+✅ Yes
+
+#### 2.5.6.10.0.0.0 Nested Interactions
+
+- {'sourceId': 'gcp-cloud-monitoring', 'targetId': 'on-call-team', 'message': "7. Fire 'FirestoreBackupFailed' Alert", 'sequenceNumber': 7, 'type': 'Notification', 'isSynchronous': False, 'returnMessage': '', 'hasReturn': False, 'isActivation': False, 'technicalDetails': {'protocol': 'Email/PagerDuty/Slack', 'method': 'SendMessage', 'parameters': [{'name': 'Subject', 'value': 'CRITICAL: Production Firestore Backup Failed'}, {'name': 'Body', 'value': 'The daily Firestore backup job failed. Reason: [Error details from log]. Immediate investigation is required to ensure data recoverability. See runbook: [link-to-runbook]'}], 'authentication': 'N/A', 'errorHandling': 'Failures in notification delivery are handled by the respective provider.', 'performance': {'latency': '< 1 minute', 'throughput': 'N/A'}}}
+
+#### 2.5.6.11.0.0.0 Technical Details
+
+##### 2.5.6.11.1.0.0 Protocol
+
+GCP Internal
+
+##### 2.5.6.11.2.0.0 Method
+
+Log Sink Evaluation
+
+##### 2.5.6.11.3.0.0 Parameters
+
+- {'name': 'Filter', 'value': 'resource.type="audited_resource" AND protoPayload.methodName="google.firestore.admin.v1.FirestoreAdmin.ExportDocuments" AND protoPayload.status.code != 0'}
+
+##### 2.5.6.11.4.0.0 Authentication
+
+N/A
+
+##### 2.5.6.11.5.0.0 Error Handling
+
+Misconfiguration of the alert rule is the primary failure mode.
+
+##### 2.5.6.11.6.0.0 Performance
+
+###### 2.5.6.11.6.1.0 Latency
+
+Near real-time (1-2 minutes).
+
+###### 2.5.6.11.6.2.0 Throughput
+
+N/A
+
+## 2.6.0.0.0.0.0 Notes
+
+### 2.6.1.0.0.0.0 Content
+
+#### 2.6.1.1.0.0.0 Content
+
+
+
+```
+RPO is 24 hours (daily backup).
+RTO is 4 hours (target to restore service from backup).
+Reference: REQ-NFR-002, REQ-1-071
+```
+
+#### 2.6.1.2.0.0.0 Position
+
+top-right
+
+#### 2.6.1.3.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.1.4.0.0.0 Sequence Number
+
+*Not specified*
+
+### 2.6.2.0.0.0.0 Content
+
+#### 2.6.2.1.0.0.0 Content
+
+The GCP Managed Export service account requires 'Cloud Datastore Import Export Admin' and 'Storage Object Creator' IAM roles.
+
+#### 2.6.2.2.0.0.0 Position
+
+bottom-left
+
+#### 2.6.2.3.0.0.0 Participant Id
+
+gcp-export-service
+
+#### 2.6.2.4.0.0.0 Sequence Number
+
+2
+
+### 2.6.3.0.0.0.0 Content
+
+#### 2.6.3.1.0.0.0 Content
+
+The disaster recovery plan, including this restoration process, must be tested semi-annually by restoring to a non-production environment and validating data integrity.
+
+#### 2.6.3.2.0.0.0 Position
+
+bottom-right
+
+#### 2.6.3.3.0.0.0 Participant Id
+
+*Not specified*
+
+#### 2.6.3.4.0.0.0 Sequence Number
+
+*Not specified*
+
+## 2.7.0.0.0.0.0 Implementation Guidance
+
+| Property | Value |
+|----------|-------|
+| Security Requirements | The GCS backup bucket must have a restrictive acce... |
+| Performance Targets | The RPO is strictly 24 hours. The RTO is 4 hours. ... |
+| Error Handling Strategy | The primary error handling strategy is reactive. A... |
+| Testing Considerations | A documented, semi-annual disaster recovery drill ... |
+| Monitoring Requirements | A log-based alert in Google Cloud Monitoring is RE... |
+| Deployment Considerations | The GCP Managed Export job, GCS bucket, IAM roles,... |
+

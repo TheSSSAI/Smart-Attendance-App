@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organism: Report Filters Bar</title>
+    <style>
+        /* 1. FOUNDATION & DESIGN TOKENS */
+        :root {
+            /* Colors */
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-neutral-white: #FFFFFF;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-500: #64748B;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+
+            /* Typography */
+            --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-width-1: 1px;
+            --border-width-2: 2px;
+
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* 2. BASE & LAYOUT STYLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: var(--font-family-sans);
+            background-color: var(--color-neutral-50);
+            padding: var(--space-8);
+        }
+        .showcase {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .showcase__header {
+            margin-bottom: var(--space-8);
+            text-align: center;
+        }
+        .showcase__header h1 {
+            font-size: 36px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-2);
+        }
+        .component-group {
+            margin-bottom: var(--space-8);
+        }
+        .component-group > h2 {
+            font-size: 24px;
+            color: var(--color-neutral-900);
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-4);
+            border-bottom: var(--border-width-1) solid var(--color-neutral-200);
+        }
+
+        /* 3. ATOMIC DEPENDENCY STYLES (Button) */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            border-radius: var(--border-radius-md);
+            border: var(--border-width-1) solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            min-height: 48px;
+        }
+        .btn:focus-visible {
+            outline: var(--border-width-2) solid var(--color-primary-500);
+            outline-offset: 2px;
+        }
+        .btn--primary {
+            background-color: var(--color-primary-500);
+            color: var(--color-neutral-white);
+        }
+        .btn--primary:hover {
+            background-color: var(--color-primary-600);
+        }
+        .btn--secondary {
+            background-color: var(--color-neutral-white);
+            color: var(--color-neutral-700);
+            border-color: var(--color-neutral-300);
+            box-shadow: var(--shadow-sm);
+        }
+        .btn--secondary:hover {
+            background-color: var(--color-neutral-100);
+        }
+
+        /* 4. ORGANISM COMPONENT: REPORT FILTERS BAR */
+        .filters-bar {
+            display: flex;
+            flex-direction: column; /* Mobile-first: stack vertically */
+            gap: var(--space-4);
+            background-color: var(--color-neutral-white);
+            padding: var(--space-6);
+            border-radius: var(--border-radius-md);
+            border: var(--border-width-1) solid var(--color-neutral-200);
+        }
+
+        .filters-bar__item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            min-width: 180px; /* Prevent shrinking too much on desktop */
+        }
+
+        .filters-bar__label {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--color-neutral-700);
+        }
+
+        .filters-bar__actions {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        /* Mock Controls for Showcase */
+        .mock-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 var(--space-4);
+            font-size: var(--font-size-md);
+            border: var(--border-width-1) solid var(--color-neutral-300);
+            border-radius: var(--border-radius-md);
+            background-color: var(--color-neutral-white);
+            min-height: 48px; /* Touch target */
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .mock-control:hover {
+            border-color: var(--color-neutral-400);
+        }
+        .mock-control:focus-visible {
+            outline: none;
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 var(--border-width-2) var(--color-primary-500);
+        }
+        .mock-control__placeholder {
+            color: var(--color-neutral-500);
+        }
+        .mock-control__icon {
+            color: var(--color-neutral-500);
+        }
+
+        /* Responsive Adaptations */
+        @media (min-width: 1024px) {
+            .filters-bar {
+                flex-direction: row; /* Horizontal layout on desktop */
+                flex-wrap: wrap;
+                align-items: flex-end; /* Align items to the bottom */
+                gap: var(--space-6);
+            }
+
+            .filters-bar__item {
+                flex: 1 1 200px; /* Allow items to grow and shrink */
+            }
+
+            .filters-bar__actions {
+                margin-left: var(--space-4); 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase">
+        <header class="showcase__header">
+            <h1>Organism: Report Filters Bar</h1>
+        </header>
+
+        <main>
+            <div class="component-group">
+                <h2>Attendance Summary Variant</h2>
+                <div class="filters-bar" role="toolbar" aria-label="Attendance Summary Filters">
+                    <!-- Date Range Filter -->
+                    <div class="filters-bar__item">
+                        <label for="date-range-1" class="filters-bar__label">Date Range</label>
+                        <div id="date-range-1" class="mock-control" tabindex="0">
+                            <span class="mock-control__placeholder">Select dates...</span>
+                            <span class="mock-control__icon">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.8333 3.33331H4.16667C3.24619 3.33331 2.5 4.07951 2.5 4.99998V16.6666C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6666V4.99998C17.5 4.07951 16.7538 3.33331 15.8333 3.33331Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13.3333 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.66669 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.5 8.33331H17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- User Filter -->
+                    <div class="filters-bar__item">
+                        <label for="user-filter-1" class="filters-bar__label">Filter by User</label>
+                        <div id="user-filter-1" class="mock-control" tabindex="0">
+                            <span class="mock-control__placeholder">All Users</span>
+                            <span class="mock-control__icon">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Team Filter -->
+                    <div class="filters-bar__item">
+                        <label for="team-filter-1" class="filters-bar__label">Filter by Team</label>
+                        <div id="team-filter-1" class="mock-control" tabindex="0">
+                            <span class="mock-control__placeholder">All Teams</span>
+                            <span class="mock-control__icon">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Actions -->
+                    <div class="filters-bar__actions">
+                        <button class="btn btn--secondary">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="component-group">
+                <h2>Exception Report Variant</h2>
+                <div class="filters-bar" role="toolbar" aria-label="Exception Report Filters">
+                    <!-- Date Range Filter -->
+                    <div class="filters-bar__item">
+                        <label for="date-range-2" class="filters-bar__label">Date Range</label>
+                        <div id="date-range-2" class="mock-control" tabindex="0">
+                            <span class="mock-control__placeholder">Last 30 days</span>
+                            <span class="mock-control__icon">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.8333 3.33331H4.16667C3.24619 3.33331 2.5 4.07951 2.5 4.99998V16.6666C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6666V4.99998C17.5 4.07951 16.7538 3.33331 15.8333 3.33331Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13.3333 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.66669 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.5 8.33331H17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Team Filter -->
+                    <div class="filters-bar__item">
+                        <label for="team-filter-2" class="filters-bar__label">Team</label>
+                        <div id="team-filter-2" class="mock-control" tabindex="0">
+                            <span class="mock-control__placeholder">All Teams</span>
+                            <span class="mock-control__icon">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                            </span>
+                        </div>
+                    </div>
+                     <!-- Exception Type Filter -->
+                    <div class="filters-bar__item">
+                        <label for="exception-filter-2" class="filters-bar__label">Exception Type</label>
+                        <div id="exception-filter-2" class="mock-control" tabindex="0">
+                            <span class="mock-control__placeholder">Clock Discrepancy</span>
+                            <span class="mock-control__icon">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Actions -->
+                    <div class="filters-bar__actions">
+                        <button class="btn btn--secondary">Clear</button>
+                        <button class="btn btn--primary">Apply</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div> 
+        <h2> Component Variations</h2>
+        <div>
+            <h3>Variant Name : attendance_summary</h3>
+            <normal> Includes filters for Date Range, User, Team, and Status. Designed for general attendance reporting.</normal>
+            <div class="filters-bar" role="toolbar" aria-label="Attendance Summary Filters">
+                <!-- Date Range Filter -->
+                <div class="filters-bar__item">
+                    <label for="date-range-1-var" class="filters-bar__label">Date Range</label>
+                    <div id="date-range-1-var" class="mock-control" tabindex="0">
+                        <span class="mock-control__placeholder">Select dates...</span>
+                        <span class="mock-control__icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.8333 3.33331H4.16667C3.24619 3.33331 2.5 4.07951 2.5 4.99998V16.6666C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6666V4.99998C17.5 4.07951 16.7538 3.33331 15.8333 3.33331Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13.3333 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.66669 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.5 8.33331H17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </span>
+                    </div>
+                </div>
+                <!-- User Filter -->
+                <div class="filters-bar__item">
+                    <label for="user-filter-1-var" class="filters-bar__label">Filter by User</label>
+                    <div id="user-filter-1-var" class="mock-control" tabindex="0">
+                        <span class="mock-control__placeholder">All Users</span>
+                        <span class="mock-control__icon">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                        </span>
+                    </div>
+                </div>
+            </div>     
+        </div>
+        <div>
+            <h3>Variant Name : exception_report</h3>
+            <normal> Includes a specific multi-select filter for different types of attendance exceptions (e.g., 'Offline Entry', 'Clock Discrepancy').</normal>
+            <div class="filters-bar" role="toolbar" aria-label="Exception Report Filters">
+                <!-- Date Range Filter -->
+                <div class="filters-bar__item">
+                    <label for="date-range-2-var" class="filters-bar__label">Date Range</label>
+                    <div id="date-range-2-var" class="mock-control" tabindex="0">
+                        <span class="mock-control__placeholder">Last 30 days</span>
+                        <span class="mock-control__icon">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.8333 3.33331H4.16667C3.24619 3.33331 2.5 4.07951 2.5 4.99998V16.6666C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6666V4.99998C17.5 4.07951 16.7538 3.33331 15.8333 3.33331Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13.3333 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.66669 1.66669V5.00002" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2.5 8.33331H17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </span>
+                    </div>
+                </div>
+                <!-- Exception Type Filter -->
+                <div class="filters-bar__item">
+                    <label for="exception-filter-2-var" class="filters-bar__label">Exception Type</label>
+                    <div id="exception-filter-2-var" class="mock-control" tabindex="0">
+                        <span class="mock-control__placeholder">Clock Discrepancy</span>
+                        <span class="mock-control__icon">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path></svg>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

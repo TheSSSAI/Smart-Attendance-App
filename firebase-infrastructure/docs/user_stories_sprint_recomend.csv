@@ -1,0 +1,6 @@
+"sprint_number","story_ids","total_points","sprint_goal","dependencies_resolved"
+"1","[""US-001"",""US-002"",""US-017"",""US-027"",""US-021""]","21","Establish the foundational tenant registration and user login flow with basic security.","true"
+"2","[""US-004"",""US-005"",""US-006"",""US-007"",""US-020""]","20","Implement the complete user invitation and activation workflow, including password reset.","true"
+"3","[""US-076"",""US-077"",""US-028"",""US-029"",""US-030"",""US-019""]","21","Deliver the core attendance marking (check-in/check-out) functionality for Subordinates with proper permissions handling and login security.","true"
+"4","[""US-033"",""US-034"",""US-037"",""US-039"",""US-040""]","19","Implement offline attendance capabilities and the initial Supervisor approval workflow (view, approve, reject).","true"
+"5","[""US-011"",""US-014"",""US-012"",""US-016"",""US-043""]","21","Build the core team management features for Admins, including data integrity checks for the organizational hierarchy.","true"

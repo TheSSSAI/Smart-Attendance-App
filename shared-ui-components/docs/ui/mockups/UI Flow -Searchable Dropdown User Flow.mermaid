@@ -1,0 +1,44 @@
+flowchart TD
+    subgraph User Interaction Flow
+        A[User focuses on input] --> B[UI: Open dropdown menu];
+        B --> C[User types search query];
+        C --> D{Query length > 2 chars?};
+        D -->|No| B;
+        D -->|Yes| E[UI: Show loading indicator];
+    end
+
+    subgraph Data Fetching
+        E --> F[Client: Debounce input & call API];
+        F --> G{API Response};
+    end
+
+    subgraph Result Handling
+        G -->|Success with data| H[UI: Display list of results];
+        G -->|Success, no data| I[UI: Display 'No results found'];
+        G -->|Error| J[UI: Display error message];
+        H --> K[User selects an item];
+        K --> L[UI: Update input with selection];
+        L --> M[UI: Close dropdown & emit value];
+        I --> C;
+        J --> C;
+    end
+
+    subgraph Alternative Paths
+        B --> N[User clicks away];
+        C --> N;
+        H --> N;
+        I --> N;
+        J --> N;
+        N --> O[UI: Close dropdown menu];
+    end
+
+    %% Styling
+    classDef process fill:#e3f2fd,stroke:#2196f3,color:#000;
+    classDef decision fill:#fff9c4,stroke:#fbc02d,color:#000;
+    classDef io fill:#f3e5f5,stroke:#8e24aa,color:#000;
+    classDef error fill:#ffebee,stroke:#d32f2f,color:#000;
+
+    class B,E,H,I,L,M,O process;
+    class D,G decision;
+    class A,C,K,N io;
+    class J error;

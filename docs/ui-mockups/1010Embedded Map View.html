@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedded Map View Component</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* CSS Reset */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background-color: #F1F5F9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #334155;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        img,
+        picture,
+        video,
+        canvas,
+        svg {
+            display: block;
+            max-width: 100%;
+        }
+
+        input,
+        button,
+        textarea,
+        select {
+            font: inherit;
+        }
+
+        /* Design System Tokens */
+        :root {
+            /* Color Palette */
+            --primary-500: #0073FF;
+            --primary-700: #0052B3;
+            --success-500: #16A34A; /* Check-in pin */
+            --error-500: #DC2626; /* Check-out pin */
+            --warning-500: #F59E0B;
+            --neutral-white: #FFFFFF;
+            --neutral-gray-50: #F8FAFC;
+            --neutral-gray-100: #F1F5F9;
+            --neutral-gray-400: #94A3B8;
+            --neutral-gray-700: #334155;
+            --neutral-gray-800: #1E293B;
+            --neutral-gray-900: #0F172A;
+
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-body: 16px;
+            --font-size-caption: 14px;
+            --font-weight-regular: 400;
+            --font-weight-semibold: 600;
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+
+            /* Borders */
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+
+            /* Shadows */
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        /* Screen Demo Styles */
+        .screen-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-lg);
+            gap: var(--space-lg);
+            width: 100%;
+        }
+        .component-wrapper {
+            width: 100%;
+            max-width: 400px; /* Mobile screen simulation */
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .component-title {
+            font-size: 20px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-gray-800);
+            margin-bottom: var(--space-md);
+            text-align: center;
+        }
+
+        /* Embedded Map View Component Styles */
+        .map-view-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            background-color: var(--neutral-gray-100);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-background {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            filter: grayscale(0.3);
+        }
+
+        /* States: Loading & Error */
+         .map-state-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-md);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .map-state-overlay--loading {
+            background-color: var(--neutral-gray-50);
+        }
+
+        .shimmer {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                var(--neutral-gray-100) 25%, 
+                var(--neutral-gray-50) 50%, 
+                var(--neutral-gray-100) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+        
+        .map-state-overlay--error {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(2px);
+            gap: var(--space-sm);
+        }
+        
+        .map-error-icon {
+            width: 32px;
+            height: 32px;
+            color: var(--neutral-gray-400);
+        }
+        
+        .map-error-text {
+            font-size: var(--font-size-caption);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-gray-700);
+        }
+
+
+        /* Map Pins and Info Windows */
+        .map-pin {
+            position: absolute;
+            z-index: 5;
+            width: 36px;
+            height: 36px;
+            transform: translate(-50%, -100%); /* Center horizontally, position tip at location */
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+            outline: none;
+        }
+        .map-pin:hover, .map-pin:focus-within {
+            transform: translate(-50%, -100%) scale(1.1);
+            z-index: 6;
+        }
+
+        .pin-body {
+            width: 100%;
+            height: 100%;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+        }
+        .pin-body::after { /* Pin tip */
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 8px;
+            background: var(--neutral-gray-400);
+            left: 50%;
+            bottom: -8px;
+            transform: translateX(-50%);
+        }
+
+        .pin-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--neutral-white);
+            transform: rotate(45deg);
+        }
+        
+        /* Pin Variants */
+        .map-pin--check-in { top: 40%; left: 35%; }
+        .map-pin--check-in .pin-body { background-color: var(--success-500); }
+        .map-pin--check-out { top: 60%; left: 65%; }
+        .map-pin--check-out .pin-body { background-color: var(--error-500); }
+        .map-pin--single { top: 50%; left: 50%; }
+
+        /* Info Window */
+        .info-window {
+            position: absolute;
+            bottom: 44px; /* Above the pin body */
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--neutral-white);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-lg);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            transform: translateX(-50%) translateY(10px);
+            text-align: center;
+        }
+        .map-pin:hover .info-window, .map-pin:focus-within .info-window {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .info-window-title {
+            font-size: var(--font-size-caption);
+            font-weight: var(--font-weight-semibold);
+            color: var(--neutral-gray-900);
+        }
+        .info-window-time {
+            font-size: 12px;
+            color: var(--neutral-gray-700);
+        }
+
+        /* Screen Variations Wrapper */
+        .screen-variations {
+            margin-top: var(--space-lg);
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
+            padding: var(--space-lg);
+        }
+        .variation-group {
+            background: var(--neutral-white);
+            padding: var(--space-lg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        .variation-group h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .variation-group p {
+            font-size: 14px;
+            color: var(--neutral-gray-500);
+            margin-bottom: var(--space-md);
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="screen-container">
+        <h1 class="component-title">Embedded Map View Component</h1>
+
+        <div class="component-wrapper">
+            <div class="map-view-container" role="group" aria-label="Map showing check-in and check-out locations.">
+                <!-- Background Image -->
+                <img class="map-background"
+                    src="https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/google-map-background.jpg"
+                    alt="Faded map background">
+
+                <!-- Check-in Pin -->
+                <div class="map-pin map-pin--check-in" tabindex="0"
+                    aria-label="Check-in location pin. Press to see details.">
+                    <div class="pin-body">
+                        <svg class="pin-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                        </svg>
+                    </div>
+                    <div class="info-window">
+                        <div class="info-window-title">Check-In</div>
+                        <div class="info-window-time">09:02 AM</div>
+                    </div>
+                </div>
+
+                <!-- Check-out Pin -->
+                <div class="map-pin map-pin--check-out" tabindex="0"
+                    aria-label="Check-out location pin. Press to see details.">
+                    <div class="pin-body">
+                        <svg class="pin-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12" />
+                        </svg>
+                    </div>
+                    <div class="info-window">
+                        <div class="info-window-title">Check-Out</div>
+                        <div class="info-window-time">05:31 PM</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="screen-variations">
+        
+        <div class="variation-group">
+            <h3>Variant Name: "Loading"</h3>
+            <p>State shown while the map and data are being fetched.</p>
+            <div class="map-view-container" role="status" aria-label="Map data is loading.">
+                 <div class="map-state-overlay map-state-overlay--loading">
+                    <div class="shimmer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="variation-group">
+            <h3>Variant Name: "Error: No Network"</h3>
+            <p>State shown when map tiles cannot load due to no internet.</p>
+            <div class="map-view-container" role="alert" aria-label="Map loading failed due to a network error.">
+                <div class="map-state-overlay map-state-overlay--error">
+                    <svg class="map-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                    <div class="map-error-text">Map cannot be loaded. Check connection.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="variation-group">
+            <h3>Variant Name: "Error: No Data"</h3>
+            <p>State shown when the attendance record has no GPS data.</p>
+             <div class="map-view-container" role="alert" aria-label="No location data available for this record.">
+                <div class="map-state-overlay map-state-overlay--error">
+                     <svg class="map-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                     </svg>
+                    <div class="map-error-text">Location data not available for this record.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="variation-group">
+            <h3>Variant Name: "Loaded (Single Pin)"</h3>
+            <p>State after a user has checked in but not yet checked out.</p>
+            <div class="map-view-container" role="group" aria-label="Map showing check-in location.">
+                <img class="map-background"
+                    src="https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/google-map-background.jpg"
+                    alt="Faded map background">
+
+                <div class="map-pin map-pin--check-in map-pin--single" tabindex="0"
+                    aria-label="Check-in location pin. Press to see details.">
+                    <div class="pin-body">
+                        <svg class="pin-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                        </svg>
+                    </div>
+                    <div class="info-window">
+                        <div class="info-window-title">Check-In</div>
+                        <div class="info-window-time">08:58 AM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

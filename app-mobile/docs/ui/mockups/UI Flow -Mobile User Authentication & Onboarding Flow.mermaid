@@ -1,0 +1,60 @@
+flowchart TD
+    subgraph Admin Action
+        A["Admin invites new user via email (US-004)"]
+    end
+
+    subgraph System Backend
+        B["System creates 'invited' user doc <br> Generates 24hr token"]
+        C["Sends invitation email via SendGrid (US-005)"]
+    end
+
+    subgraph Invited User Journey
+        D["User receives email & clicks registration link"] 
+        E{System validates link token & expiry}
+        F["User sees 'Set Password' page (US-006)"]
+        G["User enters password matching policy (US-027) <br> & accepts ToS/PP (US-026)"]
+        H["User clicks 'Activate Account'"]
+    end
+
+    subgraph System Activation & Login
+        I["Backend activates user (status: 'active') <br> Invalidates token"]
+        J["User is automatically logged in (US-017)"]
+        K{System checks role from auth token}
+        L["Redirect to Supervisor Dashboard (US-021)"]
+        M["Redirect to Subordinate Dashboard (US-021)"]
+    end
+
+    subgraph Error Paths
+        N["User sees 'Link Expired/Invalid' page (US-007)"]
+        O["UI shows password policy/mismatch errors"]
+    end
+
+    %% Flow
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E -->|Invalid/Expired| N
+    E -->|Valid| F
+    F --> G
+    G -- "Invalid Password" --> O
+    O --> G
+    G -- "Valid Password" --> H
+    H --> I
+    I --> J
+    J --> K
+    K -- "Role: Supervisor" --> L
+    K -- "Role: Subordinate" --> M
+
+    %% Styling
+    classDef adminAction fill:#f0e6ff,stroke:#9370db,color:#000
+    classDef systemAction fill:#e3f2fd,stroke:#2196f3,color:#000
+    classDef userAction fill:#e8f5e9,stroke:#4caf50,color:#000
+    classDef errorNode fill:#ffebee,stroke:#d32f2f,color:#000
+    classDef successNode fill:#d4edda,stroke:#155724,color:#000
+
+    class A adminAction
+    class B,C,E,I,J,K systemAction
+    class D,F,G,H userAction
+    class L,M successNode
+    class N,O errorNode

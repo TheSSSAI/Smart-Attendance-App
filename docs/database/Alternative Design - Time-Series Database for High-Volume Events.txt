@@ -1,0 +1,26 @@
+# InfluxDB v2.x / Cloud Setup Script
+# This script demonstrates how to set up the necessary components and write data,
+# which implicitly defines the schema for the 'AttendanceMeasurement' measurement.
+
+# 1. Create a new organization (replace 'my-org' with your desired organization name)
+# This is a one-time setup step for a new InfluxDB environment.
+influx org create --name "my-org"
+
+# 2. Create a bucket named 'app_events_timeseries_db' within your organization.
+# A bucket is a named location where time series data is stored.
+# We'll set a sample retention policy of 30 days.
+influx bucket create --name "app_events_timeseries_db" --org "my-org" --retention 30d
+
+# 3. Write data using InfluxDB Line Protocol.
+# The schema is automatically created when the first point is written.
+# The format is: <measurement>,<tag_set> <field_set> <timestamp>
+# Tags are indexed and used for filtering/grouping: tenantId, userId, supervisorId, eventType
+# Fields are the actual data values: latitude, longitude, attendanceRecordId
+
+# Example of a 'checkIn' event:
+influx write --bucket "app_events_timeseries_db" --org "my-org" --precision "s" \
+  "AttendanceMeasurement,tenantId=tenant-01,userId=user-123,supervisorId=sup-abc,eventType=checkIn latitude=40.7128,longitude=-74.0060,attendanceRecordId=\"rec-xyz-789\" 1672531200"
+
+# Example of a corresponding 'checkOut' event for the same record:
+influx write --bucket "app_events_timeseries_db" --org "my-org" --precision "s" \
+  "AttendanceMeasurement,tenantId=tenant-01,userId=user-123,supervisorId=sup-abc,eventType=checkOut latitude=40.7130,longitude=-74.0058,attendanceRecordId=\"rec-xyz-789\" 1672560000"

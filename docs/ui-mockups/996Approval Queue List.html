@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Organism: Approval Queue List</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------------- */
+        /* --- 1. Design System Foundations & Reset --- */
+        /* ------------------------- */
+        :root {
+            /* Colors */
+            --color-primary-50: #E6F0FF;
+            --color-primary-500: #0073FF;
+            --color-primary-600: #0062D9;
+            --color-primary-700: #0052B3;
+            --color-neutral-50: #F8FAFC;
+            --color-neutral-100: #F1F5F9;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-300: #CBD5E1;
+            --color-neutral-400: #94A3B8;
+            --color-neutral-600: #475569;
+            --color-neutral-700: #334155;
+            --color-neutral-900: #0F172A;
+            --color-white: #FFFFFF;
+            --color-success-50: #F0FDF4;
+            --color-success-900: #14532D;
+            --color-warning-50: #FFFBEB;
+            --color-warning-900: #78350F;
+            --color-error-50: #FEF2F2;
+            --color-error-500: #DC2626;
+            --color-error-600: #B91C1C;
+            --color-error-900: #7F1D1D;
+            /* Typography */
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-size-sm: 14px;
+            --font-size-md: 16px;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+            /* Borders */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-primary); background-color: var(--color-neutral-200); color: var(--color-neutral-700); line-height: 1.5; padding: var(--space-24); }
+        .showcase-header { text-align: center; margin-bottom: var(--space-24); }
+        .showcase-header h1 { font-size: 2rem; color: var(--color-neutral-900); }
+        .showcase-header p { color: var(--color-neutral-600); }
+        .showcase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(375px, 1fr)); gap: var(--space-24); justify-items: center; }
+        .mockup-wrapper { display: flex; flex-direction: column; align-items: center; gap: var(--space-16); }
+        .mockup-wrapper h3 { font-size: 1.125rem; color: var(--color-neutral-900); }
+        .phone-frame { width: 375px; height: 812px; background-color: var(--color-neutral-100); border: 8px solid var(--color-neutral-900); border-radius: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; }
+
+        /* ------------------------- */
+        /* --- 2. ATOMIC/MOLECULAR DEPENDENCIES --- */
+        /* ------------------------- */
+        /* Icon Button */
+        .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background-color: transparent; border: none; color: var(--color-neutral-700); cursor: pointer; transition: background-color var(--transition-fast); padding: 0; flex-shrink: 0; }
+        .icon-btn svg { width: 24px; height: 24px; }
+        .icon-btn:hover { background-color: var(--color-neutral-100); }
+        .icon-btn:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+        /* App Bar */
+        .app-bar { background-color: var(--color-white); padding: var(--space-8) var(--space-16); padding-top: calc(var(--space-8) + env(safe-area-inset-top, 20px)); border-bottom: 1px solid var(--color-neutral-200); flex-shrink: 0; }
+        .app-bar__main { display: flex; align-items: center; min-height: 48px; position: relative; }
+        .app-bar__leading, .app-bar__actions { display: flex; align-items: center; gap: var(--space-8); flex-shrink: 0; }
+        .app-bar__title { font-size: 20px; font-weight: var(--font-weight-semibold); text-align: left; flex-grow: 1; margin: 0 var(--space-16); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Badge */
+        .badge { display: inline-flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-8); border-radius: 9999px; font-size: 12px; font-weight: var(--font-weight-semibold); text-transform: uppercase; }
+        .badge--pending { background-color: var(--color-warning-50); color: var(--color-warning-900); }
+        .badge--offline { background-color: var(--color-neutral-100); color: var(--color-neutral-700); }
+        /* Checkbox */
+        .checkbox-input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .checkbox-box { width: 20px; height: 20px; border: 2px solid var(--color-neutral-300); border-radius: var(--border-radius-sm); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); flex-shrink: 0; }
+        .checkbox-box svg { display: none; width: 16px; height: 16px; color: var(--color-white); }
+        .checkbox-input:checked + .checkbox-box { background-color: var(--color-primary-500); border-color: var(--color-primary-500); }
+        .checkbox-input:checked + .checkbox-box svg { display: block; }
+        /* Button */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-8); padding: 8px var(--space-12); font-family: inherit; font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); border-radius: var(--border-radius-md); border: 1px solid transparent; cursor: pointer; text-decoration: none; transition: all var(--transition-fast); }
+        .btn--primary { background-color: var(--color-primary-500); color: var(--color-white); }
+        .btn--primary:hover { background-color: var(--color-primary-600); }
+        .btn--danger { background-color: var(--color-error-500); color: var(--color-white); }
+        .btn--danger:hover { background-color: var(--color-error-600); }
+        /* Attendance List Item */
+        .att-item { display: flex; align-items: center; gap: var(--space-16); background-color: var(--color-white); border: 1px solid var(--color-neutral-200); border-radius: var(--border-radius-md); padding: var(--space-16); transition: all var(--transition-fast); cursor: pointer; }
+        .att-item:hover { border-color: var(--color-neutral-300); background-color: var(--color-neutral-50); }
+        .att-item.is-selected { background-color: var(--color-primary-50); border-color: var(--color-primary-500); }
+        .att-item__checkbox-wrapper { display: none; }
+        .att-item--multi_select_enabled .att-item__checkbox-wrapper { display: block; }
+        .att-item__content { flex-grow: 1; display: flex; flex-direction: column; gap: var(--space-8); min-width: 0; }
+        .att-item__main { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-16); }
+        .att-item__info { display: flex; flex-direction: column; min-width: 0; }
+        .att-item__name { display: block; font-weight: var(--font-weight-semibold); color: var(--color-neutral-900); font-size: var(--font-size-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .att-item__date { font-size: var(--font-size-sm); color: var(--color-neutral-600); font-weight: var(--font-weight-medium); }
+        .att-item__times { display: flex; align-items: center; gap: var(--space-12); font-size: var(--font-size-sm); color: var(--color-neutral-700); flex-shrink: 0; }
+        .att-item__footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-8); }
+        .att-item__flags { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+
+        /* ------------------------- */
+        /* --- 3. ORGANISM: Approval Queue List --- */
+        /* ------------------------- */
+        .approval-queue { display: flex; flex-direction: column; height: 100%; background-color: var(--color-neutral-100); }
+        /* --- Header / App Bar --- */
+        .approval-queue__header { flex-shrink: 0; }
+        .app-bar__contextual-actions { display: none; }
+        .state--multi-select-active .app-bar__main-title,
+        .state--multi-select-active .app-bar__main-actions { display: none; }
+        .state--multi-select-active .app-bar__contextual-actions { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+        .contextual-actions__title { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-neutral-900); }
+        .contextual-actions__buttons { display: flex; gap: var(--space-8); }
+        /* --- Main Content --- */
+        .approval-queue__content { flex-grow: 1; overflow-y: auto; padding: var(--space-16); }
+        /* --- States Display Logic --- */
+        .approval-queue .state-content { display: none; }
+        .state--with-data .approval-queue__list-wrapper,
+        .state--multi-select-active .approval-queue__list-wrapper,
+        .state--empty .approval-queue__empty-state,
+        .state--loading .approval-queue__loading-state { display: block; }
+        /* --- List State --- */
+        .approval-queue__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-12); }
+        /* --- Empty State --- */
+        .approval-queue__empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; padding: var(--space-24); }
+        .approval-queue__empty-state-icon { width: 64px; height: 64px; color: var(--color-neutral-300); margin-bottom: var(--space-16); }
+        .approval-queue__empty-state-title { font-size: 1.125rem; font-weight: var(--font-weight-semibold); color: var(--color-neutral-900); margin-bottom: var(--space-8); }
+        .approval-queue__empty-state-text { font-size: var(--font-size-md); color: var(--color-neutral-600); max-width: 300px; }
+        /* --- Loading State --- */
+        .skeleton-item { display: flex; align-items: center; gap: var(--space-16); background-color: var(--color-white); border: 1px solid var(--color-neutral-200); border-radius: var(--border-radius-md); padding: var(--space-16); }
+        .skeleton-item__checkbox { width: 20px; height: 20px; background-color: var(--color-neutral-200); border-radius: var(--border-radius-sm); flex-shrink: 0; }
+        .skeleton-item__content { flex-grow: 1; display: flex; flex-direction: column; gap: var(--space-12); }
+        .skeleton-item__line { height: 16px; background-color: var(--color-neutral-200); border-radius: var(--border-radius-sm); }
+        .skeleton-item__line--short { width: 40%; }
+        .skeleton-item__line--long { width: 70%; }
+        /* Shimmer Animation */
+        .shimmer { position: relative; overflow: hidden; }
+        .shimmer::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.4) 20%, rgba(255, 255, 255, 0.6) 60%, rgba(255, 255, 255, 0)); animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+    </style>
+</head>
+<body>
+    <div class="showcase-header">
+        <h1>Organism: Approval Queue List</h1>
+        <p>This component provides a full-screen interface for Supervisors to manage pending requests. It demonstrates various states including loading, empty, default data view, and a multi-select mode for bulk actions.</p>
+    </div>
+    <div class="showcase-grid">
+
+        <!-- STATE 1: Default (With Data) -->
+        <div class="mockup-wrapper">
+            <h3>State: Default (With Data)</h3>
+            <div class="phone-frame">
+                <div class="approval-queue state--with-data">
+                    <header class="approval-queue__header">
+                        <div class="app-bar">
+                            <div class="app-bar__main">
+                                <div class="app-bar__main-title">
+                                    <h1 class="app-bar__title">Pending Approvals</h1>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    <main class="approval-queue__content state-content approval-queue__list-wrapper">
+                        <ul class="approval-queue__list">
+                            <li>
+                                <div class="att-item" tabindex="0">
+                                    <div class="att-item__content">
+                                        <div class="att-item__main">
+                                            <div class="att-item__info">
+                                                <span class="att-item__name">Eleanor Vance</span>
+                                                <span class="att-item__date">January 20, 2025</span>
+                                            </div>
+                                            <div class="att-item__times">08:58 AM - 05:01 PM</div>
+                                        </div>
+                                        <div class="att-item__footer">
+                                            <div class="att-item__flags"></div>
+                                            <span class="badge badge--pending">Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="att-item" tabindex="0">
+                                    <div class="att-item__content">
+                                        <div class="att-item__main">
+                                            <div class="att-item__info">
+                                                <span class="att-item__name">Marcus Holloway</span>
+                                                <span class="att-item__date">January 19, 2025</span>
+                                            </div>
+                                            <div class="att-item__times">09:15 AM - 05:30 PM</div>
+                                        </div>
+                                        <div class="att-item__footer">
+                                            <div class="att-item__flags"><span class="badge badge--offline">Offline</span></div>
+                                            <span class="badge badge--pending">Correction Review</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATE 2: Multi-Select Active -->
+        <div class="mockup-wrapper">
+            <h3>State: Multi-Select Active</h3>
+            <div class="phone-frame">
+                <div class="approval-queue state--multi-select-active">
+                    <header class="approval-queue__header">
+                        <div class="app-bar">
+                            <div class="app-bar__main">
+                                <div class="app-bar__main-title">
+                                    <h1 class="app-bar__title">Pending Approvals</h1>
+                                </div>
+                                <div class="app-bar__contextual-actions">
+                                    <div class="app-bar__leading">
+                                        <button class="icon-btn" aria-label="Cancel selection">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>
+                                        </button>
+                                        <span class="contextual-actions__title" aria-live="polite">2 Selected</span>
+                                    </div>
+                                    <div class="contextual-actions__buttons">
+                                        <button class="btn btn--danger">Reject</button>
+                                        <button class="btn btn--primary">Approve</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    <main class="approval-queue__content state-content approval-queue__list-wrapper">
+                        <ul class="approval-queue__list">
+                            <li>
+                                <label class="att-item att-item--multi_select_enabled is-selected">
+                                    <div class="att-item__checkbox-wrapper">
+                                        <input type="checkbox" class="checkbox-input" checked aria-label="Deselect Eleanor Vance">
+                                        <span class="checkbox-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></span>
+                                    </div>
+                                    <div class="att-item__content">
+                                        <div class="att-item__main"><div class="att-item__info"><span class="att-item__name">Eleanor Vance</span><span class="att-item__date">January 20, 2025</span></div><div class="att-item__times">08:58 AM - 05:01 PM</div></div>
+                                        <div class="att-item__footer"><div class="att-item__flags"></div><span class="badge badge--pending">Pending</span></div>
+                                    </div>
+                                </label>
+                            </li>
+                            <li>
+                                <label class="att-item att-item--multi_select_enabled is-selected">
+                                    <div class="att-item__checkbox-wrapper">
+                                        <input type="checkbox" class="checkbox-input" checked aria-label="Deselect Marcus Holloway">
+                                        <span class="checkbox-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg></span>
+                                    </div>
+                                    <div class="att-item__content">
+                                        <div class="att-item__main"><div class="att-item__info"><span class="att-item__name">Marcus Holloway</span><span class="att-item__date">January 19, 2025</span></div><div class="att-item__times">09:15 AM - 05:30 PM</div></div>
+                                        <div class="att-item__footer"><div class="att-item__flags"><span class="badge badge--offline">Offline</span></div><span class="badge badge--pending">Correction Review</span></div>
+                                    </div>
+                                </label>
+                            </li>
+                        </ul>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATE 3: Empty State -->
+        <div class="mockup-wrapper">
+            <h3>State: Empty</h3>
+            <div class="phone-frame">
+                <div class="approval-queue state--empty">
+                    <header class="approval-queue__header">
+                         <div class="app-bar">
+                            <div class="app-bar__main">
+                                <h1 class="app-bar__title">Pending Approvals</h1>
+                            </div>
+                        </div>
+                    </header>
+                    <main class="approval-queue__content state-content approval-queue__empty-state">
+                        <svg class="approval-queue__empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <h3 class="approval-queue__empty-state-title">All Caught Up!</h3>
+                        <p class="approval-queue__empty-state-text">There are no pending attendance records for you to review at this time.</p>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATE 4: Loading State -->
+        <div class="mockup-wrapper">
+            <h3>State: Loading</h3>
+            <div class="phone-frame">
+                <div class="approval-queue state--loading">
+                    <header class="approval-queue__header">
+                         <div class="app-bar">
+                            <div class="app-bar__main">
+                                <h1 class="app-bar__title">Pending Approvals</h1>
+                            </div>
+                        </div>
+                    </header>
+                    <main class="approval-queue__content state-content approval-queue__loading-state">
+                        <ul class="approval-queue__list">
+                            <li>
+                                <div class="skeleton-item shimmer">
+                                    <div class="skeleton-item__content">
+                                        <div class="skeleton-item__line skeleton-item__line--long"></div>
+                                        <div class="skeleton-item__line skeleton-item__line--short"></div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="skeleton-item shimmer">
+                                    <div class="skeleton-item__content">
+                                        <div class="skeleton-item__line skeleton-item__line--long"></div>
+                                        <div class="skeleton-item__line skeleton-item__line--short"></div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="skeleton-item shimmer">
+                                    <div class="skeleton-item__content">
+                                        <div class="skeleton-item__line skeleton-item__line--long"></div>
+                                        <div class="skeleton-item__line skeleton-item__line--short"></div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+    </div>
+	
+	<div> <h2> Component Variations</h2>
+      <div>
+        <h3>Variant Name : attendance_approval<h3>
+		<!--description--><normal> The primary view for a Supervisor, showing a list of standard, pending attendance records submitted by their subordinates. </normal>
+      <div>
+	 </div>
+      <div>
+        <h3>Variant Name : correction_review<h3>
+		<!--description--><normal> A secondary view or tab within the Supervisor's dashboard that specifically lists attendance records for which a subordinate has submitted a correction request. These items may be visually distinct to indicate they are reviews of existing data, not new entries. </normal>
+      <div>
+	 </div>
+</body>
+</html>

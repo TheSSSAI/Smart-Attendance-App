@@ -1,0 +1,4 @@
+"component_name","business_criticality","technical_complexity","change_frequency","test_types_required","unit_test_coverage","integration_test_coverage","e2e_test_coverage","automation_percentage","manual_test_effort","automated_test_effort","total_test_cases","risk_mitigation_score","quality_confidence","maintenance_overhead","tool_compatibility","team_skill_alignment"
+"Authentication & Authorization Module","Critical","High","Low","[""Unit"",""Integration"",""Security"",""Performance"",""Accessibility""]","90","95","85","95","8","80","60","0.98","High","Low","Excellent","Good"
+"Reporting Module (Admin Dashboard)","High","High","Medium","[""Unit"",""Integration"",""Performance"",""E2E"",""Accessibility""]","85","80","70","80","24","100","75","0.9","High","Medium","Excellent","Good"
+"Offline Sync Module","Critical","High","Low","[""Unit"",""Integration"",""E2E""]","80","75","90","70","30","60","40","0.92","Medium","High","Good","Medium"

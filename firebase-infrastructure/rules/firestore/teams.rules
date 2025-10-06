@@ -1,0 +1,44 @@
+// This module contains security rules for the 'teams' collection.
+// It governs who can create, read, update, and delete team data.
+
+// Helper function to validate incoming team data on write operations.
+function isValidTeamData(teamData) {
+    return teamData.name is string && teamData.name.size() > 0
+        && teamData.supervisorId is string
+        && teamData.tenantId is string
+        && ('memberIds' in teamData ? teamData.memberIds is list : true)
+        && teamData.keys().hasOnly(['name', 'supervisorId', 'tenantId', 'memberIds', 'createdAt', 'updatedAt']);
+}
+
+// Helper function to check if only the member list has changed,
+// allowing a supervisor to manage their team roster.
+function onlyMembersChanged() {
+    let changedKeys = request.resource.data.diff(resource.data).affectedKeys();
+    return changedKeys.hasOnly(['memberIds', 'updatedAt']);
+}
+
+match /teams/{teamId} {
+    // READ:
+    // - Any authenticated user within the tenant can read team information.
+    //   This is needed to resolve team names and memberships across the app.
+    allow read: if isTenantMember(tenantId);
+
+    // CREATE:
+    // - Only Admins can create new teams. (US-011)
+    allow create: if isTenantMember(tenantId) 
+                  && isAdmin() 
+                  && isValidTeamData(request.resource.data)
+                  && request.resource.data.tenantId == tenantId;
+
+    // UPDATE:
+    // - Admins can update any field of a team. (US-012)
+    // - A team's designated Supervisor can update only the list of members. (US-015)
+    allow update: if isTenantMember(tenantId) && (
+        (isAdmin() && isValidTeamData(request.resource.data)) ||
+        (isSupervisor() && request.auth.uid == resource.data.supervisorId && onlyMembersChanged())
+    );
+
+    // DELETE:
+    // - Only Admins can delete teams. (US-013)
+    allow delete: if isTenantMember(tenantId) && isAdmin();
+}
