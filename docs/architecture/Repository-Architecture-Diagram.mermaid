@@ -51,35 +51,3 @@ graph TD
     classDef infra fill:#f3e5f5,stroke:#333,stroke-width:2px;
 
 
-mermaid
-sequenceDiagram
-    actor User as Subordinate User
-    participant MobileApp as Flutter Mobile App
-    participant Firestore
-    participant AttendanceSvc as Attendance Service (Cloud Function)
-
-    title User Attendance Check-in Flow
-
-    User->>MobileApp: Taps 'Check-in'
-    MobileApp->>MobileApp: Captures GPS Location & Timestamp
-    MobileApp->>Firestore: Writes new Attendance Record (status: pending)
-    note right of Firestore: This write action triggers a Cloud Function
-    Firestore-->>AttendanceSvc: onWrite Event (EVT-ATTENDANCE-001)
-    AttendanceSvc->>Firestore: Reads the new record
-    AttendanceSvc->>AttendanceSvc: Validates data (e.g., clock discrepancy)
-    AttendanceSvc->>Firestore: Updates record with validation flags
-
-    actor Admin
-    participant WebApp as Admin Web App
-    participant IdentitySvc as Identity Service (Callable Function)
-    participant SendGrid
-
-    title Admin User Invitation Flow
-
-    Admin->>WebApp: Fills and submits 'Invite User' form
-    WebApp->>IdentitySvc: Invokes inviteUser(email, role)
-    IdentitySvc->>Firestore: Creates User document (status: 'invited')
-    IdentitySvc->>SendGrid: Sends invitation email via API
-    SendGrid-->>IdentitySvc: Acknowledges email sent
-    IdentitySvc-->>WebApp: Returns success response
-    WebApp-->>Admin: Displays 'Invitation Sent' confirmation
